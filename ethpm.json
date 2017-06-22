@@ -1,0 +1,12 @@
+{
+  "package_name": "sharpe-token",
+  "version": "0.0.1",
+  "description": "Sharpe Capital ICO token",
+  "authors": [
+    "Lewis Barber <lewis.barber@sharpecapital.co.uk>"
+  ],
+  "dependencies": {
+    "tokens": "^0.0.2"
+  },
+  "license": "MIT"
+}
