@@ -5,8 +5,5 @@
   "authors": [
     "Lewis Barber <lewis.barber@sharpecapital.co.uk>"
   ],
-  "dependencies": {
-    "tokens": "^0.0.2"
-  },
   "license": "MIT"
 }
