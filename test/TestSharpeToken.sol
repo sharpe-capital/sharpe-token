@@ -7,14 +7,16 @@ import "../contracts/SharpeToken.sol";
 contract TestSharpeToken {
 
     function testInitialBalanceUsingDeployedContract() {
-        SharpeToken meta = SharpeToken(DeployedAddresses.SharpeToken());
-        uint expected = 10000;
-        Assert.equal(meta.getBalance(tx.origin), expected, "Owner should have 10000 Sharpe tokens initially");
+        SharpeToken token = SharpeToken(DeployedAddresses.SharpeToken());
+        assertBalance(10000, token);
     }
 
     function testInitialBalanceWithNewSharpeToken() {
-        SharpeToken meta = new SharpeToken(10000);
-        uint expected = 10000;
-        Assert.equal(meta.getBalance(tx.origin), expected, "Owner should have 10000 MetaCoin initially");
+        SharpeToken token = new SharpeToken(10000);
+        assertBalance(10000, token);
+    }
+
+    function assertBalance(uint balance, SharpeToken token) {
+        Assert.equal(token.getBalance(tx.origin), balance, "Token has the wrong balance");
     }
 }
