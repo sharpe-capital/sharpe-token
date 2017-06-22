@@ -20,7 +20,7 @@ contract SharpeToken is StandardToken {
     string  public name         =   'Sharpe Token';
     uint8   public decimals     =   18;
     string  public symbol       =   'SHP';
-    string  public version      =   'H0.1';
+    string  public version      =   'v1.0';
 
 	function getBalance(address addr) returns(uint) {
 		return balances[addr];
