@@ -26,6 +26,10 @@ contract SharpeToken is StandardToken {
 		return balances[addr];
 	}
 
+    function getName() returns(string) {
+        return name;
+    }
+
     /**
      * This function executes once, and only once, when the new blockchain is created for the Sharpe token.
      * Upon creation of the blockchain, all of the Sharpe Tokens are initially rewarded to the creating 

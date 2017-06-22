@@ -6,17 +6,17 @@ import "../contracts/SharpeToken.sol";
 
 contract TestSharpeToken {
 
-    function testInitialBalanceUsingDeployedContract() {
+    function testBalanceWithDeployedSharpeToken() {
         SharpeToken token = SharpeToken(DeployedAddresses.SharpeToken());
-        assertBalance(10000, token);
+        assertToken(token);
     }
 
-    function testInitialBalanceWithNewSharpeToken() {
+    function testBalanceWithNewSharpeToken() {
         SharpeToken token = new SharpeToken(10000);
-        assertBalance(10000, token);
+        assertToken(token);
     }
 
-    function assertBalance(uint balance, SharpeToken token) {
-        Assert.equal(token.getBalance(tx.origin), balance, "Token has the wrong balance");
+    function assertToken(SharpeToken token) {
+        Assert.equal(token.getBalance(tx.origin), 10000, "Token has the wrong balance");
     }
 }
