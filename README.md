@@ -1,2 +1,2 @@
-# ico-token
-Sharpe Capital ICO token
+# Sharpe Capital Token
+The Sharpe Capital token will be available on the Ethereum public blockchain, with the ticker symbol SHP. We will be launching our ICO soon, more details on our website and here coming soon...
