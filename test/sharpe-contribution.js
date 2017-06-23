@@ -16,15 +16,33 @@ contract("SharpeContribution", function(accounts) {
     let shp;
     let sharpeContribution;
 
-    it("Deploys all contracts", async function() {
+    it('deploys all contracts with correct addresses', async function() {
         multisigEtherEscrow = await MultiSigWallet.new([etherEscrowAddress], 1);
         multisigFounders = await MultiSigWallet.new([foundersAddress], 1);
         multisigReserve = await MultiSigWallet.new([reserveAddress], 1);
         miniMeTokenFactory = await MiniMeTokenFactory.new();
         shp = await SHP.new(miniMeTokenFactory.address);
         sharpeContribution = await SharpeContribution.new();
-        sharpeContribution.initialize(multisigEtherEscrow.address, multisigReserve.address, multisigFounders.address, shp);
+        await sharpeContribution.initialize(
+            multisigEtherEscrow.address, 
+            multisigReserve.address, 
+            multisigFounders.address,
+            sharpeContribution.address);
     });
+
+    // it('should have the correct addresses', async function() {
+    //     const contributionAddress = await sharpeContribution.contributionAddress();
+    //     console.log(contributionAddress);
+    //     assert.equal(contributionAddress, shp.address);
+    //     assert.equal(etherEscrowAddress, multisigEtherEscrow.address);
+    //     assert.equal(sharpeContribution.etherEscrowAddress(), etherEscrowAddress);
+    //     assert.equal(sharpeContribution.foundersAddress(), foundersAddress);
+    //     assert.equal(sharpeContribution.reserveAddress(), reserveAddress);
+    // });
+
+    // it('should have correct initial balances', async function() {
+
+    // });
 
     // it("should create initial Sharpe token with expected details", async function() {
 
