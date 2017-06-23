@@ -11,6 +11,7 @@ contract SharpeContribution is Owned, TokenController {
     using SafeMath for uint256;
 
     MiniMeToken public shp;
+    address public contributionAddress;
     address public etherEscrowAddress;
     address public reserveAddress;
     address public founderAddress;
@@ -59,6 +60,7 @@ contract SharpeContribution is Owned, TokenController {
         etherEscrowAddress = _etherEscrowAddress;
         reserveAddress = _reserveAddress;
         founderAddress = _founderAddress;
+        contributionAddress = _contributionAddress;
         shp = SHP(_contributionAddress);
     }
 
