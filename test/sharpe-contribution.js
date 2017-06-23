@@ -1,9 +1,10 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
 const SHP = artifacts.require("SHP");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 
 contract("SharpeContribution", function(accounts) {
-    
+
     const etherEscrowAddress = accounts[0];
     const foundersAddress = accounts[1];
     const reserveAddress = accounts[2];
@@ -19,15 +20,10 @@ contract("SharpeContribution", function(accounts) {
         multisigEtherEscrow = await MultiSigWallet.new([etherEscrowAddress], 1);
         multisigFounders = await MultiSigWallet.new([foundersAddress], 1);
         multisigReserve = await MultiSigWallet.new([reserveAddress], 1);
-
         miniMeTokenFactory = await MiniMeTokenFactory.new();
-
-        sgt = await SGT.new(miniMeTokenFactory.address);
-        await sgt.generateTokens(addressSGTHolder, 2500);
-        await sgt.generateTokens(addressStatus, 2500);
-
         shp = await SHP.new(miniMeTokenFactory.address);
-        sharpeContribution = await SharpeContribution.new(etherEscrowAddress, reserveAddress, foundersAddress, shp);
+        sharpeContribution = await SharpeContribution.new();
+        sharpeContribution.initialize(multisigEtherEscrow.address, multisigReserve.address, multisigFounders.address, shp);
     });
 
     // it("should create initial Sharpe token with expected details", async function() {
