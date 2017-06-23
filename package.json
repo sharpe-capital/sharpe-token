@@ -27,6 +27,8 @@
         "test": "test"
     },
     "scripts": {
-        "test": "truffle test"
+        "test": "truffle test",
+        "lint": "solium --dir contracts",
+        "coverage": ""
     }
 }

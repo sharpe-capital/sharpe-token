@@ -5,9 +5,9 @@ const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 
 contract("SharpeContribution", function(accounts) {
 
-    const etherEscrowAddress = accounts[0];
-    const foundersAddress = accounts[1];
-    const reserveAddress = accounts[2];
+    const etherEscrowAddress = accounts[1];
+    const foundersAddress = accounts[2];
+    const reserveAddress = accounts[3];
 
     let multisigEtherEscrow;
     let multisigFounders;
@@ -30,6 +30,9 @@ contract("SharpeContribution", function(accounts) {
             multisigReserve.address, 
             multisigFounders.address,
             sharpeContribution.address);
+    });
+
+    it('should have correct addresses', async function() {
 
         const contributionAddr = await sharpeContribution.contributionAddress();
         const etherEscrowAddr = await sharpeContribution.etherEscrowAddress();
@@ -44,5 +47,14 @@ contract("SharpeContribution", function(accounts) {
 
     it('should have correct initial balances', async function() {
 
+        const contributionBalance = web3.fromWei(web3.eth.getBalance(sharpeContribution.address).toNumber());
+        const etherEscrowBalance = web3.fromWei(web3.eth.getBalance(etherEscrowAddress).toNumber());
+        const foundersBalance = web3.fromWei(web3.eth.getBalance(foundersAddress).toNumber());
+        const reserveBalance = web3.fromWei(web3.eth.getBalance(reserveAddress).toNumber());
+
+        assert.equal(contributionBalance, 0);
+        assert.equal(etherEscrowBalance, 100);
+        assert.equal(foundersBalance, 100);
+        assert.equal(reserveBalance, 100);
     });
 });
