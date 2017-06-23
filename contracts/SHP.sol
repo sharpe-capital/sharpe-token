@@ -4,7 +4,7 @@ import "./MiniMeToken.sol";
 
 contract SHP is MiniMeToken {
 
-    // @dev SHP constructor just parametrizes the MiniMeIrrevocableVestedToken constructor
+    // @dev SHP constructor just parametrizes the MiniMeToken constructor
     function SHP(address _tokenFactory)
         MiniMeToken(
             _tokenFactory,

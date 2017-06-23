@@ -65,7 +65,7 @@ contract SharpeContribution is Owned, TokenController {
     }
 
     /// @notice called only once when the contract is initialized
-    function SharpeContribution() public {
+    function SharpeContribution() public payable {
         paused = false;
     }
 
@@ -91,7 +91,7 @@ contract SharpeContribution is Owned, TokenController {
         require(tx.gasprice <= MAX_GAS_PRICE);
         address caller = safeCaller(callerAddress);
         require(!isContract(caller));
-        require(getBlockNumber().sub(lastCallBlock[caller]) >= MAX_CALL_FREQUENCY);
+        // require(getBlockNumber().sub(lastCallBlock[caller]) >= MAX_CALL_FREQUENCY);
         lastCallBlock[caller] = getBlockNumber();
         return doBuy(callerAddress, msg.value);
     }
@@ -133,19 +133,26 @@ contract SharpeContribution is Owned, TokenController {
     /// It also generates the founder's tokens and the reserve tokens at the same time.
     /// @return True if the payment succeeds
     function doBuy(address callerAddress, uint256 etherAmount) internal returns (bool) {
+
         assert(totalEtherPaid <= FAIL_SAFE_LIMIT);
         totalEtherPaid = totalEtherPaid.add(etherAmount);
+
         if (etherAmount > 0) {
+
             uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
             uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
             uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
+
             assert(shp.generateTokens(callerAddress, callerTokens));
             assert(shp.generateTokens(reserveAddress, reserveTokens));
             assert(shp.generateTokens(founderAddress, founderTokens));
-            etherEscrowAddress.transfer(etherAmount);
+
+            // etherEscrowAddress.transfer(etherAmount);
+
             NewSale(callerAddress, etherAmount, callerTokens);
             NewSale(reserveAddress, etherAmount, reserveTokens);
             NewSale(founderAddress, etherAmount, founderTokens);
+            
             return true;
         } else {
             return false;
