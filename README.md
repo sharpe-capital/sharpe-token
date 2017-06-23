@@ -47,6 +47,8 @@ Our tests are implemented using Truffle's JS testing Framework. You can execute 
 
 `npm run coverage`
 
+_Note:_ You can view the coverage report by opening {{PROJECT_ROOT}}/coverage/lcov-report/index.html
+
 ### More Information
 
 For more information about the tools we've used to implement our token, you can check out the links below:
