@@ -13,7 +13,17 @@ Once our ICO launches, contributors will be able to "mint" SHP tokens by sending
 - 2,000 SHP will be sent to a multi-signature 'reserve address'. These tokens will be used to raise further capital in future.
 - 1,000 SHP will be sent to a multi-signature 'founders & community address'. These tokens will vest according the the vesting schedule set out below, and will be used to reward those that contribute to the success of the Sharpe project.
 
-### Cloning this GitHub Repo
+## Vesting Schedule
+
+TBC
+
+## ICO Launch
+
+For more information about when our ICO launches you can visit our website:
+
+[https://sharpecapital.co.uk](https://sharpecapital.co.uk)
+
+## Project Contributions
 
 Please feel free to use the source code in this repository as inspiration for your own token by cloning the repo.
 
