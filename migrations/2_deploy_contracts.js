@@ -1,5 +1,8 @@
-var SharpeToken = artifacts.require("./SharpeToken.sol");
+var SharpeContribution = artifacts.require("./SharpeContribution.sol");
 
-module.exports = async function(deployer) {
-    deployer.deploy(SharpeToken, 10000);
+module.exports = function(deployer) {
+    if (network === "development") {
+        return;
+    }
+    deployer.deploy(SharpeContribution, 10000);
 };
