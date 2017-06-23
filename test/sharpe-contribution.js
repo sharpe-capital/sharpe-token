@@ -14,8 +14,6 @@ function round(value) {
 
 contract("SharpeContribution", function(accounts) {
 
-    // accounts.forEach(account => console.log(web3.fromWei(web3.eth.getBalance(account).toNumber())))
-
     const etherEscrowAddress = accounts[1];
     const foundersAddress = accounts[2];
     const reserveAddress = accounts[3];
@@ -138,8 +136,8 @@ contract("SharpeContribution", function(accounts) {
         const contributionBalance = round(web3.fromWei(web3.eth.getBalance(sharpeContributionAddress).toNumber()));
         const contributorOneBalance = round(web3.fromWei(web3.eth.getBalance(contributorOneAddress).toNumber()));
 
-        // assert.equal(etherEscrowBalance, 1);
-        assert.equal(contributionBalance, 1);
+        assert.equal(etherEscrowBalance, 1);
+        assert.equal(contributionBalance, 0);
         assert.equal(contributorOneBalance, 99);
     });
 });
