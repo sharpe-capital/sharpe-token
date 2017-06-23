@@ -1,3 +1,5 @@
 installed_contracts
 build
 node_modules
+coverage.json
+coverage

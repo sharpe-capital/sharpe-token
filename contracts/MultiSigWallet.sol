@@ -309,11 +309,7 @@ contract MultiSigWallet {
 
     /// @dev Returns list of owners.
     /// @return List of owner addresses.
-    function getOwners()
-        public
-        constant
-        returns (address[])
-    {
+    function getOwners() public constant returns (address[] owners) {
         return owners;
     }
 

@@ -29,6 +29,6 @@
     "scripts": {
         "test": "truffle test",
         "lint": "solium --dir contracts",
-        "coverage": ""
+        "coverage": "./node_modules/.bin/solidity-coverage"
     }
 }
