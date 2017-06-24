@@ -82,8 +82,8 @@ contract("SharpeContribution", function(accounts) {
         assert.equal(foundersAddr, foundersWallet.address);
         assert.equal(reserveAddr, reserveWallet.address);
 
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 100, 100, 0, 0, 100);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not accept contributions from contribution address', async function() {
@@ -96,8 +96,8 @@ contract("SharpeContribution", function(accounts) {
                 from: sharpeContribution.address
             });
         });
-        assertBalances.ether(1, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
     it('should not accept contributions from ether escrow address', async function() {
@@ -110,8 +110,8 @@ contract("SharpeContribution", function(accounts) {
                 from: etherEscrowWallet.address
             });
         });
-        assertBalances.ether(1, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 98);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
     it('should not accept contributions from founder address', async function() {
@@ -124,8 +124,8 @@ contract("SharpeContribution", function(accounts) {
                 from: foundersWallet.address
             });
         });
-        assertBalances.ether(1, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 97);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
     it('should not accept contributions from reserve address', async function() {
@@ -138,8 +138,8 @@ contract("SharpeContribution", function(accounts) {
                 from: reserveWallet.address
             });
         });
-        assertBalances.ether(1, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 96);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
     it('should prevent 0 ETH contributions', async function() {
@@ -152,8 +152,8 @@ contract("SharpeContribution", function(accounts) {
                 from: contributorOneAddress
             });
         });
-        assertBalances.ether(1, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 95);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
     it('should accept Ether from contributor account and generate SHP', async function() {
@@ -164,48 +164,48 @@ contract("SharpeContribution", function(accounts) {
             gasPrice: "20000000000", 
             from: contributorOneAddress
         });
-        assertBalances.ether(11, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000);
+        assertBalances.ether(11, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
     });
 
     it('should not allow calling of isContract externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.isContract(contributionAddress);
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of safeCaller externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.safeCaller(contributionAddress);
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of getBlockNumber externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.getBlockNumber();
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of doBuy externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.doBuy(contributorTwoAddress, 1);
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of proxyPayment externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.proxyPayment(contributorTwoAddress);
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should block contributions when paused & accept when resumed', async function() {
@@ -219,8 +219,8 @@ contract("SharpeContribution", function(accounts) {
                 from: contributorOneAddress
             });
         });
-        assertBalances.ether(1, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
+        assertBalances.ether(1, 0, 90, 100, 0, 0, 93);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
         await sharpeContribution.resumeContribution();
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
@@ -228,8 +228,8 @@ contract("SharpeContribution", function(accounts) {
             gasPrice: "20000000000", 
             from: contributorOneAddress
         });
-        assertBalances.ether(11, 0, 80, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000);
+        assertBalances.ether(11, 0, 80, 100, 0, 0, 93);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
     });
 
     // TODO - there will be a known address that must make the first contribution...

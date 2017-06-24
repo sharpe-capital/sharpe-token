@@ -48,13 +48,15 @@ module.exports = {
         contributorOneBalance, 
         contributorTwoBalance,
         reserveBalance,
-        foundersBalance) {
+        foundersBalance,
+        masterBalance) {
             assert.equal(getRoundedBalance(etherEscrowAddress), etherEscrowBalance);
             assert.equal(getRoundedBalance(contributionAddress), contributionBalance);
             assert.equal(getRoundedBalance(contributorOneAddress), contributorOneBalance);
             assert.equal(getRoundedBalance(contributorTwoAddress), contributorTwoBalance);
             assert.equal(getRoundedBalance(reserveAddress), reserveBalance);
             assert.equal(getRoundedBalance(foundersAddress), foundersBalance);
+            assert.equal(getRoundedBalance(masterAddress), masterBalance);
     },
     SHP: async function(
         etherEscrowBalance, 
@@ -62,12 +64,14 @@ module.exports = {
         contributorOneBalance, 
         contributorTwoBalance,
         reserveBalance,
-        foundersBalance) {
+        foundersBalance,
+        masterBalance) {
             assert.equal(roundFromWei(await shp.balanceOf(etherEscrowAddress)), etherEscrowBalance);
             assert.equal(roundFromWei(await shp.balanceOf(contributionAddress)), contributionBalance);
             assert.equal(roundFromWei(await shp.balanceOf(contributorOneAddress)), contributorOneBalance);
             assert.equal(roundFromWei(await shp.balanceOf(contributorTwoAddress)), contributorTwoBalance);
             assert.equal(roundFromWei(await shp.balanceOf(reserveAddress)), reserveBalance);
             assert.equal(roundFromWei(await shp.balanceOf(foundersAddress)), foundersBalance);
+            assert.equal(roundFromWei(await shp.balanceOf(masterAddress)), masterBalance);
     }
 };
