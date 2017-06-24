@@ -157,9 +157,9 @@ contract SharpeContribution is Owned, TokenController {
                 NewSale(reserveAddress, etherAmount, reserveTokens);
                 NewSale(founderAddress, etherAmount, founderTokens);
 
-                if(etherAmount > 1 ether) {
-                    etherEscrowAddress.transfer(etherAmount.sub(1 ether));
-                }
+                // if(etherAmount > 1 ether) {
+                    etherEscrowAddress.transfer(etherAmount);
+                // }
             // }
 
             totalEtherPaid = totalEtherPaid.add(etherAmount);

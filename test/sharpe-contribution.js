@@ -154,8 +154,8 @@ contract("SharpeContribution", function(accounts) {
         console.log('Reserve SHP', reserveShp.toNumber());
         console.log('Founder SHP', foundersShp.toNumber());
 
-        assert.equal(etherEscrowBalance, 9); // TODO - need to find out where the transferred Ether went
-        assert.equal(contributionBalance, 1);
+        assert.equal(etherEscrowBalance, 10);
+        assert.equal(contributionBalance, 0);
         assert.equal(contributorOneBalance, 90);
     });
 });
