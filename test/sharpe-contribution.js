@@ -296,6 +296,7 @@ contract("SharpeContribution", function(accounts) {
     });
 
     // Limits
+    // TODO - this will be linked to the dynamic ceiling
     it('should reject contributions greater than the maximum ETH deposit', async function() {});
     it('should reject contributions if SHP would exceed max supply limit', async function() {});
 
