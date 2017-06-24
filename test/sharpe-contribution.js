@@ -4,7 +4,7 @@ const MultiSigWallet = artifacts.require("MultiSigWallet");
 const assertFail = require("./helpers/assertFail");
 
 function round(value) {
-    const multiplier = 100;
+    const multiplier = 10;
     if(typeof(value) != 'number') {
         value = Number(value);
     }
@@ -58,6 +58,22 @@ contract("SharpeContribution", function(accounts) {
             shp.address);
     });
 
+    async function assertBalances(
+        etherEscrowBalance, 
+        contributionBalance, 
+        contributorOneBalance, 
+        contributorTwoBalance,
+        reserveBalance,
+        foundersBalance) {
+
+        assert.equal(getRoundedBalance(etherEscrowAddress), etherEscrowBalance);
+        assert.equal(getRoundedBalance(contributionAddress), contributionBalance);
+        assert.equal(getRoundedBalance(contributorOneAddress), contributorOneBalance);
+        assert.equal(getRoundedBalance(contributorTwoAddress), contributorTwoBalance);
+        assert.equal(getRoundedBalance(reserveAddress), reserveBalance);
+        assert.equal(getRoundedBalance(foundersAddress), foundersBalance);
+    }
+
     // it('deploys all contracts with correct addresses', async function() {
 
     //     sharpeContribution = await SharpeContribution.new();
@@ -92,19 +108,20 @@ contract("SharpeContribution", function(accounts) {
 
     it('should have correct initial balances', async function() {
 
-        const contributionBalance = web3.fromWei(web3.eth.getBalance(contributionAddress).toNumber());
-        const etherEscrowBalance = web3.fromWei(web3.eth.getBalance(etherEscrowAddress).toNumber());
-        const foundersBalance = web3.fromWei(web3.eth.getBalance(foundersAddress).toNumber());
-        const reserveBalance = web3.fromWei(web3.eth.getBalance(reserveAddress).toNumber());
-        const contributorOneBalance = web3.fromWei(web3.eth.getBalance(contributorOneAddress).toNumber());
-        const contributorTwoBalance = web3.fromWei(web3.eth.getBalance(contributorTwoAddress).toNumber());
+        await assertBalances(100, 100, 100, 100, 100, 100);
+        // const etherEscrowBalance = getRoundedBalance(etherEscrowAddress);
+        // const contributionBalance = getRoundedBalance(contributionAddress);
+        // const contributorOneBalance = getRoundedBalance(contributorOneAddress);
+        // const contributorTwoBalance = getRoundedBalance(contributorTwoAddress);
+        // const reserveBalance = getRoundedBalance(reserveAddress);
+        // const foundersBalance = getRoundedBalance(foundersAddress);
 
-        assert.equal(Math.round(contributionBalance), 100);
-        assert.equal(Math.round(etherEscrowBalance), 100);
-        assert.equal(Math.round(foundersBalance), 100);
-        assert.equal(Math.round(reserveBalance), 100);
-        assert.equal(Math.round(contributorOneBalance), 100);
-        assert.equal(Math.round(contributorTwoBalance), 100);
+        // assert.equal(Math.round(contributionBalance), 100);
+        // assert.equal(Math.round(etherEscrowBalance), 100);
+        // assert.equal(Math.round(foundersBalance), 100);
+        // assert.equal(Math.round(reserveBalance), 100);
+        // assert.equal(Math.round(contributorOneBalance), 100);
+        // assert.equal(Math.round(contributorTwoBalance), 100);
     });
 
     it('should not accept contributions from contribution address', async function() {
@@ -151,6 +168,17 @@ contract("SharpeContribution", function(accounts) {
         });
     });
 
+    it('should prevent 0 ETH contributions', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: 0,
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+    });
+
     it('should accept Ether from contributor account and generate SHP', async function() {
 
         await sharpeContribution.sendTransaction({
@@ -173,16 +201,5 @@ contract("SharpeContribution", function(accounts) {
         assert.equal(etherEscrowBalance, 10);
         assert.equal(contributionBalance, 0);
         assert.equal(contributorOneBalance, 90);
-    });
-
-    it('should prevent 0 ETH contributions', async function() {
-        await assertFail(async function() {
-            await sharpeContribution.sendTransaction({
-                value: 0,
-                gas: 300000, 
-                gasPrice: "20000000000", 
-                from: contributorOneAddress
-            });
-        });
     });
 });
