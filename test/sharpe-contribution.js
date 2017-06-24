@@ -232,11 +232,28 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
     });
 
-    // TODO - there will be a known address that must make the first contribution...
-    // After which, all other contributions will be allowed (for a fixed time period)
-    it('should only allow master address to start contribution phase', async function() {});
-    it('should open contributions for everyone after known address is used', async function() {});
-    it('should not allow any more contributions from master address after used to start contribution phase', async function(){});
+    it('should only allow master address to start contribution phase', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(10),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 93);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
+    it('should not allow any more contributions from master address after used to start contribution phase', async function() {
+        await openContributions();
+        await assertFail(async function() {
+            await openContributions();
+        });
+        assertBalances.ether(1, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
+
     it('should not allow pausing when not owner of contract', async function() {});
     it('should not allow resuming when not owner of contract', async function() {});
     it('should not allow contributions when contract is not initialized', async function() {});
