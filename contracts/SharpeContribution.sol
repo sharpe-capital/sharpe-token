@@ -16,6 +16,7 @@ contract SharpeContribution is Owned, TokenController {
     address public reserveAddress;
     address public founderAddress;
     uint256 public totalEtherPaid = 0;
+    uint256 public totalContributions = 0;
 
     uint256 constant public FAIL_SAFE_LIMIT = 300000 ether;
     uint256 constant public CALLER_EXCHANGE_RATE = 2000;
@@ -135,24 +136,35 @@ contract SharpeContribution is Owned, TokenController {
     function doBuy(address callerAddress, uint256 etherAmount) internal returns (bool) {
 
         assert(totalEtherPaid <= FAIL_SAFE_LIMIT);
-        totalEtherPaid = totalEtherPaid.add(etherAmount);
 
         if (etherAmount > 0) {
 
-            uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
-            uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
-            uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
+            // TODO - this transfer seems to fail, probably because the account hasn't
+            // got enough Ether to cover the gas fees
+            // We'll only start forwarding to the Escrow account once the balance of the
+            // contribution account is more than 10 ETH
+            // if(totalContributions > 0) {
 
-            assert(shp.generateTokens(callerAddress, callerTokens));
-            assert(shp.generateTokens(reserveAddress, reserveTokens));
-            assert(shp.generateTokens(founderAddress, founderTokens));
+                uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
+                uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
+                uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
 
-            // etherEscrowAddress.transfer(etherAmount);
+                assert(shp.generateTokens(callerAddress, callerTokens));
+                assert(shp.generateTokens(reserveAddress, reserveTokens));
+                assert(shp.generateTokens(founderAddress, founderTokens));
 
-            NewSale(callerAddress, etherAmount, callerTokens);
-            NewSale(reserveAddress, etherAmount, reserveTokens);
-            NewSale(founderAddress, etherAmount, founderTokens);
-            
+                NewSale(callerAddress, etherAmount, callerTokens);
+                NewSale(reserveAddress, etherAmount, reserveTokens);
+                NewSale(founderAddress, etherAmount, founderTokens);
+
+                if(etherAmount > 1 ether) {
+                    etherEscrowAddress.transfer(etherAmount.sub(1 ether));
+                }
+            // }
+
+            totalEtherPaid = totalEtherPaid.add(etherAmount);
+            totalContributions = totalContributions.add(1);
+
             return true;
         } else {
             return false;
