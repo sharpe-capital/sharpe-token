@@ -46,7 +46,6 @@ contract("SharpeContribution", function(accounts) {
         etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersAddress], 1);
         reserveWallet = await MultiSigWallet.new([reserveAddress], 1);
-        contributionWallet = await MultiSigWallet.new([contributionAddress], 1);
 
         await sharpeContribution.initialize(
             etherEscrowWallet.address, 
@@ -56,35 +55,35 @@ contract("SharpeContribution", function(accounts) {
             shp.address);
     });
 
-    // it('should have correct addresses', async function() {
+    it('should have correct addresses', async function() {
 
-    //     const contributionAddr = await sharpeContribution.contributionAddress();
-    //     const etherEscrowAddr = await sharpeContribution.etherEscrowAddress();
-    //     const foundersAddr = await sharpeContribution.founderAddress();
-    //     const reserveAddr = await sharpeContribution.reserveAddress();
+        const contributionAddr = await sharpeContribution.contributionAddress();
+        const etherEscrowAddr = await sharpeContribution.etherEscrowAddress();
+        const foundersAddr = await sharpeContribution.founderAddress();
+        const reserveAddr = await sharpeContribution.reserveAddress();
 
-    //     assert.equal(contributionAddr, contributionWallet.address);
-    //     assert.equal(etherEscrowAddr, etherEscrowWallet.address);
-    //     assert.equal(foundersAddr, foundersWallet.address);
-    //     assert.equal(reserveAddr, reserveWallet.address);
-    // });
+        assert.equal(contributionAddr, sharpeContribution.address);
+        assert.equal(etherEscrowAddr, etherEscrowWallet.address);
+        assert.equal(foundersAddr, foundersWallet.address);
+        assert.equal(reserveAddr, reserveWallet.address);
+    });
 
-    // it('should have correct initial balances', async function() {
+    it('should have correct initial balances', async function() {
 
-    //     const contributionBalance = web3.fromWei(web3.eth.getBalance(contributionAddress).toNumber());
-    //     const etherEscrowBalance = web3.fromWei(web3.eth.getBalance(etherEscrowAddress).toNumber());
-    //     const foundersBalance = web3.fromWei(web3.eth.getBalance(foundersAddress).toNumber());
-    //     const reserveBalance = web3.fromWei(web3.eth.getBalance(reserveAddress).toNumber());
-    //     const contributorOneBalance = web3.fromWei(web3.eth.getBalance(contributorOneAddress).toNumber());
-    //     const contributorTwoBalance = web3.fromWei(web3.eth.getBalance(contributorTwoAddress).toNumber());
+        const contributionBalance = web3.fromWei(web3.eth.getBalance(contributionAddress).toNumber());
+        const etherEscrowBalance = web3.fromWei(web3.eth.getBalance(etherEscrowAddress).toNumber());
+        const foundersBalance = web3.fromWei(web3.eth.getBalance(foundersAddress).toNumber());
+        const reserveBalance = web3.fromWei(web3.eth.getBalance(reserveAddress).toNumber());
+        const contributorOneBalance = web3.fromWei(web3.eth.getBalance(contributorOneAddress).toNumber());
+        const contributorTwoBalance = web3.fromWei(web3.eth.getBalance(contributorTwoAddress).toNumber());
 
-    //     assert.equal(Math.round(contributionBalance), 100);
-    //     assert.equal(Math.round(etherEscrowBalance), 100);
-    //     assert.equal(Math.round(foundersBalance), 100);
-    //     assert.equal(Math.round(reserveBalance), 100);
-    //     assert.equal(Math.round(contributorOneBalance), 100);
-    //     assert.equal(Math.round(contributorTwoBalance), 100);
-    // });
+        assert.equal(Math.round(contributionBalance), 100);
+        assert.equal(Math.round(etherEscrowBalance), 100);
+        assert.equal(Math.round(foundersBalance), 100);
+        assert.equal(Math.round(reserveBalance), 100);
+        assert.equal(Math.round(contributorOneBalance), 100);
+        assert.equal(Math.round(contributorTwoBalance), 100);
+    });
 
     // it('should not accept contributions from contribution address', async function() {
     //     await assertFail(async function() {
