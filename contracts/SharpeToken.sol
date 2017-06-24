@@ -36,7 +36,7 @@ contract SharpeToken is StandardToken {
     string public version = 'v1.0';                     // v1.0 standard. Just an arbitrary versioning scheme.
 
     function SharpeToken(uint256 _totalSupply) {
-        balances[msg.sender] = 0;                 // Give the creator all initial tokens
+        balances[msg.sender] = 0;                            // Give the creator all initial tokens
         totalSupply = _totalSupply;                          // Update total supply
     }
 

@@ -58,14 +58,15 @@ contract SharpeContribution {
         address _etherEscrowAddress, 
         address _reserveAddress, 
         address _founderAddress, 
-        address _contributionAddress) public 
+        address _contributionAddress,
+        address _shp) public 
     {
         etherEscrowAddress = _etherEscrowAddress;
         reserveAddress = _reserveAddress;
         founderAddress = _founderAddress;
         contributionAddress = _contributionAddress;
 
-        shp = new SharpeToken(300000000);
+        shp = SharpeToken(_shp);
     }
 
     /// @notice called only once when the contract is initialized
@@ -84,6 +85,10 @@ contract SharpeContribution {
 
     function onApprove(address, address, uint256) public returns (bool) {
         return false;
+    }
+
+    function balanceOf(address addr) returns (uint256) {
+        return shp.balanceOf(addr);
     }
 
     /// @notice This method will generally be called by the Sharpe token contribution contract to

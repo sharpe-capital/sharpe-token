@@ -1,5 +1,6 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
 const SHP = artifacts.require("SHP");
+const SharpeToken = artifacts.require("SharpeToken");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const assertFail = require("./helpers/assertFail");
@@ -12,8 +13,12 @@ function round(value) {
     return Math.round(value * multiplier) / multiplier;
 }
 
+function roundFromWei(value) {
+    return round(web3.fromWei(value));
+}
+
 function getRoundedBalance(address) {
-    return round(web3.fromWei(web3.eth.getBalance(address).toNumber()));
+    return roundFromWei(web3.eth.getBalance(address).toNumber());
 }
 
 contract("SharpeContribution", function(accounts) {
@@ -36,6 +41,7 @@ contract("SharpeContribution", function(accounts) {
     it('deploys all contracts with correct addresses', async function() {
 
         sharpeContribution = await SharpeContribution.new();
+        shp = await SharpeToken.new(300000000);
 
         etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersAddress], 1);
@@ -44,9 +50,10 @@ contract("SharpeContribution", function(accounts) {
 
         await sharpeContribution.initialize(
             etherEscrowWallet.address, 
-            foundersWallet.address, 
             reserveWallet.address, 
-            sharpeContribution.address);
+            foundersWallet.address, 
+            sharpeContribution.address,
+            shp.address);
     });
 
     // it('should have correct addresses', async function() {
@@ -123,7 +130,7 @@ contract("SharpeContribution", function(accounts) {
     //     });
     // });
 
-    it('should accept Ether from contributor account and generate SHP', async function() {
+    it('should accept Ether from contributor account', async function() {
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
             gas: 300000, 
@@ -132,30 +139,20 @@ contract("SharpeContribution", function(accounts) {
         });
     });
 
-    // it('should have the expected balances and generate SHP after receiving Ether', async function() {
+    it('should have the expected balances and generate SHP after receiving Ether', async function() {
 
-    //     const etherEscrowBalance = getRoundedBalance(etherEscrowWallet.address);
-    //     const contributionBalance = getRoundedBalance(sharpeContribution.address);
-    //     const contributorOneBalance = getRoundedBalance(contributorOneAddress);
+        const etherEscrowBalance = getRoundedBalance(etherEscrowWallet.address);
+        const contributionBalance = getRoundedBalance(sharpeContribution.address);
+        const contributorOneBalance = getRoundedBalance(contributorOneAddress);
+        const contributorOne_SHP = roundFromWei(await shp.balanceOf(contributorOneAddress));
+        const reserve_SHP = roundFromWei(await shp.balanceOf(reserveWallet.address));
+        const founders_SHP = roundFromWei(await shp.balanceOf(foundersWallet.address));
 
-    //     console.log('Escrow balance', etherEscrowBalance);
-    //     console.log('Contribution balance', contributionBalance);
-    //     console.log('Contributor balance', contributorOneBalance);
-
-    //     // const shp = await sharpeContribution.getShp();
-
-    //     // console.log(shp);
-
-    //     const contributorOneShp = await shp.balanceOf(contributorOneAddress);
-    //     const reserveShp = await shp.balanceOf(reserveWallet.address);
-    //     const foundersShp = await shp.balanceOf(foundersWallet.address);
-
-    //     console.log('Contributor SHP', contributorOneShp);
-    //     console.log('Reserve SHP', reserveShp);
-    //     console.log('Founder SHP', foundersShp);
-
-    //     assert.equal(etherEscrowBalance, 10);
-    //     assert.equal(contributionBalance, 0);
-    //     assert.equal(contributorOneBalance, 90);
-    // });
+        assert.equal(contributorOne_SHP, 20000);
+        assert.equal(reserve_SHP, 20000);
+        assert.equal(founders_SHP, 10000);
+        assert.equal(etherEscrowBalance, 10);
+        assert.equal(contributionBalance, 0);
+        assert.equal(contributorOneBalance, 90);
+    });
 });
