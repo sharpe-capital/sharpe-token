@@ -41,7 +41,7 @@ contract("SharpeContribution", function(accounts) {
         sharpeContribution = await SharpeContribution.new();
         shp = await SharpeToken.new("SHP");
         
-        shp.changeOwner(sharpeContribution.address);
+        await shp.changeOwner(sharpeContribution.address);
 
         etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersSignAddress], 1);
@@ -254,8 +254,20 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
-    it('should not allow pausing when not owner of contract', async function() {});
-    it('should not allow resuming when not owner of contract', async function() {});
+    it('should not allow pausing when not owner of contract', async function() {
+        await sharpeContribution.changeOwner(etherEscrowAddress);
+        await assertFail(async function() {
+            await sharpeContribution.pauseContribution();
+        });
+    });
+
+    it('should not allow resuming when not owner of contract', async function() {
+        await sharpeContribution.changeOwner(etherEscrowAddress);
+        await assertFail(async function() {
+            await sharpeContribution.resumeContribution();
+        });
+    });
+
     it('should not allow contributions when contract is not initialized', async function() {});
     it('should only allow the owner of the SharpeToken contract to mint SHP tokens', async function() {});
     it('should only allow the owner to initialize', async function() {});
