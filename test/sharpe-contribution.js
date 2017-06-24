@@ -85,49 +85,49 @@ contract("SharpeContribution", function(accounts) {
         assert.equal(Math.round(contributorTwoBalance), 100);
     });
 
-    // it('should not accept contributions from contribution address', async function() {
-    //     await assertFail(async function() {
-    //         await shp.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: sharpeContribution.address
-    //         });
-    //     });
-    // });
+    it('should not accept contributions from contribution address', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: sharpeContribution.address
+            });
+        });
+    });
 
-    // it('should not accept contributions from ether escrow address', async function() {
-    //     await assertFail(async function() {
-    //         await shp.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: etherEscrowAddress
-    //         });
-    //     });
-    // });
+    it('should not accept contributions from ether escrow address', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: etherEscrowWallet.address
+            });
+        });
+    });
 
-    // it('should not accept contributions from founder address', async function() {
-    //     await assertFail(async function() {
-    //         await shp.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: foundersAddress
-    //         });
-    //     });
-    // });
+    it('should not accept contributions from founder address', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: foundersWallet.address
+            });
+        });
+    });
 
-    // it('should not accept contributions from reserve address', async function() {
-    //     await assertFail(async function() {
-    //         await sharpeContribution.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: reserveAddress
-    //         });
-    //     });
-    // });
+    it('should not accept contributions from reserve address', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: reserveWallet.address
+            });
+        });
+    });
 
     it('should accept Ether from contributor account', async function() {
         await sharpeContribution.sendTransaction({

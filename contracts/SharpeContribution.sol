@@ -76,6 +76,10 @@ contract SharpeContribution {
 
     /// @notice If anybody sends Ether directly to this contract, assume they are buying Sharpe tokens
     function () public payable notPaused {
+        require(msg.sender != etherEscrowAddress && 
+            msg.sender != reserveAddress && 
+            msg.sender != founderAddress && 
+            msg.sender != contributionAddress);
         proxyPayment(msg.sender);
     }
 
