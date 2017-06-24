@@ -157,4 +157,14 @@ contract SharpeContribution is Owned {
             return (size > 0);
         }
     }
+
+    /// @notice Pauses the contribution if there is any issue
+    function pauseContribution() onlyOwner {
+        paused = true;
+    }
+
+    /// @notice Resumes the contribution
+    function resumeContribution() onlyOwner {
+        paused = false;
+    }
 }

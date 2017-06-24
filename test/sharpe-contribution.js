@@ -143,4 +143,34 @@ contract("SharpeContribution", function(accounts) {
         assertBalances.ether(10, 0, 90, 100, 0, 0);
         await assertBalances.SHP(0, 0, 20000, 0, 20000, 10000);
     });
+
+    it('should not allow calling of isContract externally', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.isContract(contributionAddress);
+        });
+    });
+
+    it('should not allow calling of safeCaller externally', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.safeCaller(contributionAddress);
+        });
+    });
+
+    it('should not allow calling of getBlockNumber externally', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.getBlockNumber();
+        });
+    });
+
+    it('should not allow calling of doBuy externally', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.doBuy(contributorTwoAddress, 1);
+        });
+    });
+
+    it('should not allow calling of proxyPayment externally', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.proxyPayment(contributorTwoAddress);
+        });
+    });
 });
