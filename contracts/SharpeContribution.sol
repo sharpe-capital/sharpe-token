@@ -74,7 +74,7 @@ contract SharpeContribution is Owned {
 
     /// @notice This function fires when someone sends Ether to the address of this contract. 
     /// The ETH will be exchanged for SHP and it ensures contributions cannot be made from known addresses.
-    function () public payable notPaused {
+    function () public payable notPaused initialized contributionOpen {
         require(msg.sender != etherEscrowAddress && 
             msg.sender != reserveAddress && 
             msg.sender != founderAddress && 
@@ -85,7 +85,7 @@ contract SharpeContribution is Owned {
     /// @notice This method will be called by the Sharpe token contribution contract to acquire SHP.
     /// @param callerAddress SHP holder where the SHP will be minted
     /// @return True if the payment succeeds
-    function proxyPayment(address callerAddress) payable notPaused initialized contributionOpen returns (bool) {
+    function proxyPayment(address callerAddress) internal returns (bool) {
         require(callerAddress != 0x0);
         require(tx.gasprice <= MAX_GAS_PRICE);
         address caller = safeCaller(callerAddress);
@@ -129,7 +129,7 @@ contract SharpeContribution is Owned {
     /// @notice This is an antispam mechanism
     /// @param callerAddress the caller's address
     /// @return The safe caller address
-    function safeCaller(address callerAddress) returns (address) {
+    function safeCaller(address callerAddress) internal returns (address) {
         if (msg.sender == address(shp)) {
             return callerAddress;
         } else {
@@ -146,7 +146,7 @@ contract SharpeContribution is Owned {
     /// @notice Internal function to determine if an address is a contract
     /// @param callerAddress The address being queried
     /// @return True if `callerAddress` is a contract
-    function isContract(address callerAddress) constant internal returns (bool) {
+    function isContract(address callerAddress) internal constant returns (bool) {
         if (callerAddress == 0) {
             return false;
         } else {

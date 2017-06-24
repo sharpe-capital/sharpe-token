@@ -21,6 +21,8 @@ function getRoundedBalance(address) {
 
 contract("SharpeContribution", function(accounts) {
 
+    accounts.forEach(acc => console.log(acc));
+
     const etherEscrowAddress = accounts[1];
     const foundersAddress = accounts[2];
     const reserveAddress = accounts[3];
@@ -40,9 +42,8 @@ contract("SharpeContribution", function(accounts) {
 
         sharpeContribution = await SharpeContribution.new();
         shp = await SharpeToken.new("SHP");
-
+        
         shp.changeOwner(sharpeContribution.address);
-        shp.acceptOwnership();
 
         etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersAddress], 1);
@@ -57,6 +58,11 @@ contract("SharpeContribution", function(accounts) {
     });
 
     it('should have correct addresses', async function() {
+
+        console.log(await sharpeContribution.owner());
+        console.log(await shp.owner());
+        console.log(sharpeContribution.address);
+        console.log(shp.address);
 
         const contributionAddr = await sharpeContribution.contributionAddress();
         const etherEscrowAddr = await sharpeContribution.etherEscrowAddress();
