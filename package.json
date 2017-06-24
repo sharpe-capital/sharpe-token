@@ -29,7 +29,7 @@
     },
     "scripts": {
         "pretest": "testrpc -a 10 > /dev/null 2>&1 &",
-        "posttest": "killall -9 testrpc",
+        "posttest": "killall -9 node",
         "test": "truffle test",
         "lint": "solium --dir contracts",
         "coverage": "./node_modules/.bin/solidity-coverage"
