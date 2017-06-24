@@ -35,11 +35,6 @@ contract SharpeContribution is Owned {
 
     event NewSale(address indexed callerAddress, uint256 etherAmount, uint256 tokensGenerated);
 
-    modifier initialized() {
-        require(address(shp) != 0x0);
-        _;
-    }
-
     modifier contributionOpen() {
         // require(finalizedBlock == 0 && address(shp) != 0x0);
         require((!masterAddressUsed && masterAddress == msg.sender) || 
@@ -80,7 +75,7 @@ contract SharpeContribution is Owned {
 
     /// @notice This function fires when someone sends Ether to the address of this contract. 
     /// The ETH will be exchanged for SHP and it ensures contributions cannot be made from known addresses.
-    function () public payable notPaused initialized contributionOpen {
+    function () public payable notPaused contributionOpen {
         require(msg.sender != etherEscrowAddress && 
             msg.sender != reserveAddress && 
             msg.sender != founderAddress && 

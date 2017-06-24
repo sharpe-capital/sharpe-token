@@ -259,6 +259,8 @@ contract("SharpeContribution", function(accounts) {
         await assertFail(async function() {
             await sharpeContribution.pauseContribution();
         });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow resuming when not owner of contract', async function() {
@@ -266,11 +268,32 @@ contract("SharpeContribution", function(accounts) {
         await assertFail(async function() {
             await sharpeContribution.resumeContribution();
         });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
-    it('should not allow contributions when contract is not initialized', async function() {});
-    it('should only allow the owner of the SharpeToken contract to mint SHP tokens', async function() {});
-    it('should only allow the owner to initialize', async function() {});
+    it('should only allow the owner of the SharpeToken contract to mint SHP tokens', async function() {
+        await assertFail(async function() {
+            await shp.mintTokens(1000, contributorOneAddress);
+        });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
+    it('should only allow the owner to initialize', async function() {
+        await sharpeContribution.changeOwner(etherEscrowAddress);
+        await assertFail(async function() {
+            await sharpeContribution.initialize(
+                etherEscrowWallet.address, 
+                reserveWallet.address, 
+                foundersWallet.address, 
+                sharpeContribution.address,
+                masterAddress,
+                shp.address);
+        });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
 
     // Limits
     it('should reject contributions greater than the maximum ETH deposit', async function() {});
