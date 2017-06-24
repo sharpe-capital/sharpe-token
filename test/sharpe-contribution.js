@@ -1,8 +1,6 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
-const SHP = artifacts.require("SHP");
 const SharpeToken = artifacts.require("SharpeToken");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
-const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const assertFail = require("./helpers/assertFail");
 
 function round(value) {
@@ -41,7 +39,7 @@ contract("SharpeContribution", function(accounts) {
     it('deploys all contracts with correct addresses', async function() {
 
         sharpeContribution = await SharpeContribution.new();
-        shp = await SharpeToken.new(300000000);
+        shp = await SharpeToken.new("SHP");
 
         etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersAddress], 1);

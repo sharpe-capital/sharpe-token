@@ -1,9 +1,7 @@
 pragma solidity ^0.4.11;
 
-import "./SHP.sol";
-import "./MiniMeToken.sol";
-import "./SafeMath.sol";
-import "./Owned.sol";
+import "./lib/SafeMath.sol";
+import "./lib/Owned.sol";
 import "./SharpeToken.sol";
 
 
@@ -32,7 +30,8 @@ contract SharpeContribution {
     
     uint256 public finalizedBlock;
     uint256 public finalizedTime;
-    address public shpController;
+
+    event NewSale(address indexed callerAddress, uint256 etherAmount, uint256 tokensGenerated);
 
     modifier initialized() {
         require(address(shp) != 0x0);
@@ -47,6 +46,11 @@ contract SharpeContribution {
     modifier notPaused() {
         require(!paused);
         _;
+    }
+
+    /// @notice called only once when the contract is initialized
+    function SharpeContribution() public payable {
+        paused = false;
     }
 
     /// @notice Initializes the contribution contract with all of the other addresses
@@ -65,16 +69,11 @@ contract SharpeContribution {
         reserveAddress = _reserveAddress;
         founderAddress = _founderAddress;
         contributionAddress = _contributionAddress;
-
         shp = SharpeToken(_shp);
     }
 
-    /// @notice called only once when the contract is initialized
-    function SharpeContribution() public payable {
-        paused = false;
-    }
-
-    /// @notice If anybody sends Ether directly to this contract, assume they are buying Sharpe tokens
+    /// @notice If anybody sends Ether directly to this contract, assume they are buying Sharpe tokens.
+    /// Ensures contributions cannot be made from known addresses.
     function () public payable notPaused {
         require(msg.sender != etherEscrowAddress && 
             msg.sender != reserveAddress && 
@@ -83,54 +82,15 @@ contract SharpeContribution {
         require(proxyPayment(msg.sender));
     }
 
-    function balanceOf(address addr) returns (uint256) {
-        return shp.balanceOf(addr);
-    }
-
-    /// @notice This method will generally be called by the Sharpe token contribution contract to
-    /// acquire SHP. Or directly from third parties that want to acquire SHP on behalf of a token holder.
-    /// @param callerAddress SHP holder where the SHP will be minted.
+    /// @notice This method will be called by the Sharpe token contribution contract to acquire SHP.
+    /// @param callerAddress SHP holder where the SHP will be minted
     /// @return True if the payment succeeds
-    function proxyPayment(address callerAddress) public payable notPaused initialized contributionOpen returns (bool) {
+    function proxyPayment(address callerAddress) payable notPaused initialized contributionOpen returns (bool) {
         require(callerAddress != 0x0);
         require(tx.gasprice <= MAX_GAS_PRICE);
         address caller = safeCaller(callerAddress);
         require(!isContract(caller));
-        // require(getBlockNumber().sub(lastCallBlock[caller]) >= MAX_CALL_FREQUENCY);
-        lastCallBlock[caller] = getBlockNumber();
         return doBuy(callerAddress, msg.value);
-    }
-
-    /// @notice This is an antispam mechanism
-    /// @param callerAddress the caller's address
-    /// @return The safe caller address
-    function safeCaller(address callerAddress) returns (address) {
-        if (msg.sender == address(shp)) {
-            return callerAddress;
-        } else {
-            return msg.sender;
-        }
-    }
-
-    /// @notice Returns the current block number
-    /// @return The current block number
-    function getBlockNumber() internal constant returns (uint256) {
-        return block.number;
-    }
-
-    /// @notice Internal function to determine if an address is a contract
-    /// @param callerAddress The address being queried
-    /// @return True if `callerAddress` is a contract
-    function isContract(address callerAddress) constant internal returns (bool) {
-        if (callerAddress == 0) {
-            return false;
-        } else {
-            uint256 size;
-            assembly {
-                size := extcodesize(callerAddress)
-            }
-            return (size > 0);
-        }
     }
 
     /// @notice This method sends the Ether received to the Ether escrow address
@@ -166,5 +126,35 @@ contract SharpeContribution {
         }
     }
 
-    event NewSale(address indexed callerAddress, uint256 etherAmount, uint256 tokensGenerated);
+    /// @notice This is an antispam mechanism
+    /// @param callerAddress the caller's address
+    /// @return The safe caller address
+    function safeCaller(address callerAddress) returns (address) {
+        if (msg.sender == address(shp)) {
+            return callerAddress;
+        } else {
+            return msg.sender;
+        }
+    }
+
+    /// @notice Returns the current block number
+    /// @return The current block number
+    function getBlockNumber() internal constant returns (uint256) {
+        return block.number;
+    }
+
+    /// @notice Internal function to determine if an address is a contract
+    /// @param callerAddress The address being queried
+    /// @return True if `callerAddress` is a contract
+    function isContract(address callerAddress) constant internal returns (bool) {
+        if (callerAddress == 0) {
+            return false;
+        } else {
+            uint256 size;
+            assembly {
+                size := extcodesize(callerAddress)
+            }
+            return (size > 0);
+        }
+    }
 }

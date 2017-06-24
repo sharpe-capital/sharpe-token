@@ -1,47 +1,41 @@
-/*
-This Token Contract implements the standard token functionality (https://github.com/ethereum/EIPs/issues/20) as well as the following OPTIONAL extras intended for use by humans.
-
-In other words. This is intended for deployment in something like a Token Factory or Mist wallet, and then used by humans.
-Imagine coins, currencies, shares, voting weight, etc.
-Machine-based, rapid creation of many tokens would not necessarily need these extra features or will be minted in other manners.
-
-1) Initial Finite Supply (upon creation one specifies how much is minted).
-2) In the absence of a token registry: Optional Decimal, Symbol & Name.
-3) Optional approveAndCall() functionality to notify a contract if an approval() has occurred.
-
-.*/
-
-import "./StandardToken.sol";
+import "./lib/StandardToken.sol";
+import "./lib/Owned.sol";
 
 pragma solidity ^0.4.11;
 
 contract SharpeToken is StandardToken {
 
+    /// @notice This returns any Ether sent to the address
     function () {
-        //if ether is sent to this address, send it back.
         throw;
     }
 
-    /* Public variables of the token */
+    string public symbol;
+    string public name = "Sharpe Token";
+    uint8 public decimals = 18;
+    string public version = 'v1.0';
+    uint256 public currentSupply = 0;
+    uint256 public totalSupply = 300000 ether;
 
-    /*
-    NOTE:
-    The following variables are OPTIONAL vanities. One does not have to include them.
-    They allow one to customise the token contract & in no way influences the core functionality.
-    Some wallets/interfaces might not even bother to look at this information.
-    */
-    string public name = "Sharpe Token";                //fancy name: eg Simon Bucks
-    uint8 public decimals = 18;                         //How many decimals to show. ie. There could 1000 base units with 3 decimals. Meaning 0.980 SBX = 980 base units. It's like comparing 1 wei to 1 ether.
-    string public symbol = "SHP";                       //An identifier: eg SBX
-    string public version = 'v1.0';                     // v1.0 standard. Just an arbitrary versioning scheme.
-
-    function SharpeToken(uint256 _totalSupply) {
-        balances[msg.sender] = 0;                            // Give the creator all initial tokens
-        totalSupply = _totalSupply;                          // Update total supply
+    /// @notice Creates a new SharpeToken contract with the specified total supply
+    function SharpeToken(string _symbol) {
+        symbol = _symbol;
     }
 
-    function mintTokens(uint256 _amount, address _recipient) returns (bool) {
-        balances[_recipient] += _amount;
-        return true;
+    /// @notice This creates new SHP tokens and sends them to the specified recipient
+    /// @param amount The amount of SHP tokens to create
+    /// @param recipient The recipients address
+    /// @return True if the minting is successful
+    function mintTokens(uint256 amount, address recipient) returns (bool) {
+
+        uint256 newSupply = currentSupply + amount;
+
+        if(newSupply > totalSupply) {
+            return false;
+        } else {
+            balances[recipient] += amount;
+            currentSupply += amount;
+            return true;
+        }
     }
 }

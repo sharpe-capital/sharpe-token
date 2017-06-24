@@ -28,7 +28,6 @@ contract Owned {
         newOwner = _newOwner;
     }
 
-
     function acceptOwnership() {
         if (msg.sender == newOwner) {
             owner = newOwner;
