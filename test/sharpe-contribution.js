@@ -14,6 +14,7 @@ contract("SharpeContribution", function(accounts) {
     const escrowSignAddress = accounts[3];
     const reserveSignAddress = accounts[4];
     const foundersSignAddress = accounts[5];
+    const masterAddress = accounts[6];
 
     let etherEscrowWallet;
     let foundersWallet;
@@ -25,6 +26,15 @@ contract("SharpeContribution", function(accounts) {
     let etherEscrowAddress;
     let foundersAddress;
     let reserveAddress;
+
+    async function openContributions() {
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(1),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: masterAddress
+        });
+    };
 
     beforeEach(async function() {
 
@@ -48,6 +58,7 @@ contract("SharpeContribution", function(accounts) {
             contributorTwoAddress, 
             reserveAddress, 
             foundersAddress,
+            masterAddress,
             shp);
 
         await sharpeContribution.initialize(
@@ -55,6 +66,7 @@ contract("SharpeContribution", function(accounts) {
             reserveWallet.address, 
             foundersWallet.address, 
             sharpeContribution.address,
+            masterAddress,
             shp.address);
     });
 
@@ -76,6 +88,7 @@ contract("SharpeContribution", function(accounts) {
 
     it('should not accept contributions from contribution address', async function() {
         await assertFail(async function() {
+            await openContributions();
             await sharpeContribution.sendTransaction({
                 value: web3.toWei(1), 
                 gas: 300000, 
@@ -83,12 +96,13 @@ contract("SharpeContribution", function(accounts) {
                 from: sharpeContribution.address
             });
         });
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(1, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
     });
 
     it('should not accept contributions from ether escrow address', async function() {
         await assertFail(async function() {
+            await openContributions();
             await sharpeContribution.sendTransaction({
                 value: web3.toWei(1), 
                 gas: 300000, 
@@ -96,12 +110,13 @@ contract("SharpeContribution", function(accounts) {
                 from: etherEscrowWallet.address
             });
         });
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(1, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
     });
 
     it('should not accept contributions from founder address', async function() {
         await assertFail(async function() {
+            await openContributions();
             await sharpeContribution.sendTransaction({
                 value: web3.toWei(1), 
                 gas: 300000, 
@@ -109,12 +124,13 @@ contract("SharpeContribution", function(accounts) {
                 from: foundersWallet.address
             });
         });
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(1, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
     });
 
     it('should not accept contributions from reserve address', async function() {
         await assertFail(async function() {
+            await openContributions();
             await sharpeContribution.sendTransaction({
                 value: web3.toWei(1), 
                 gas: 300000, 
@@ -122,12 +138,13 @@ contract("SharpeContribution", function(accounts) {
                 from: reserveWallet.address
             });
         });
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(1, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
     });
 
     it('should prevent 0 ETH contributions', async function() {
         await assertFail(async function() {
+            await openContributions();
             await sharpeContribution.sendTransaction({
                 value: 0,
                 gas: 300000, 
@@ -135,19 +152,20 @@ contract("SharpeContribution", function(accounts) {
                 from: contributorOneAddress
             });
         });
-        assertBalances.ether(0, 0, 100, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+        assertBalances.ether(1, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
     });
 
     it('should accept Ether from contributor account and generate SHP', async function() {
+        openContributions();
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
             gas: 300000, 
             gasPrice: "20000000000", 
             from: contributorOneAddress
         });
-        assertBalances.ether(10, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 20000, 0, 20000, 10000);
+        assertBalances.ether(11, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000);
     });
 
     it('should not allow calling of isContract externally', async function() {
@@ -191,9 +209,8 @@ contract("SharpeContribution", function(accounts) {
     });
 
     it('should block contributions when paused & accept when resumed', async function() {
-
+        await openContributions();
         await sharpeContribution.pauseContribution();
-
         await assertFail(async function() {
             await sharpeContribution.sendTransaction({
                 value: web3.toWei(10),
@@ -202,19 +219,17 @@ contract("SharpeContribution", function(accounts) {
                 from: contributorOneAddress
             });
         });
-        assertBalances.ether(0, 0, 90, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
-
+        assertBalances.ether(1, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000);
         await sharpeContribution.resumeContribution();
-
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
             gas: 300000, 
             gasPrice: "20000000000", 
             from: contributorOneAddress
         });
-        assertBalances.ether(10, 0, 80, 100, 0, 0);
-        await assertBalances.SHP(0, 0, 20000, 0, 20000, 10000);
+        assertBalances.ether(11, 0, 80, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000);
     });
 
     // TODO - there will be a known address that must make the first contribution...
@@ -226,6 +241,7 @@ contract("SharpeContribution", function(accounts) {
     it('should not allow resuming when not owner of contract', async function() {});
     it('should not allow contributions when contract is not initialized', async function() {});
     it('should only allow the owner of the SharpeToken contract to mint SHP tokens', async function() {});
+    it('should only allow the owner to initialize', async function() {});
 
     // Limits
     it('should reject contributions greater than the maximum ETH deposit', async function() {});

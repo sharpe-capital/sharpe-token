@@ -10,6 +10,7 @@ contract SharpeContribution is Owned {
     using SafeMath for uint256;
 
     SharpeToken public shp;
+    address public masterAddress;
     address public contributionAddress;
     address public etherEscrowAddress;
     address public reserveAddress;
@@ -27,6 +28,7 @@ contract SharpeContribution is Owned {
     mapping (address => uint256) public lastCallBlock;
 
     bool public paused = true;
+    bool public masterAddressUsed = false;
     
     uint256 public finalizedBlock;
     uint256 public finalizedTime;
@@ -39,7 +41,9 @@ contract SharpeContribution is Owned {
     }
 
     modifier contributionOpen() {
-        require(finalizedBlock == 0 && address(shp) != 0x0);
+        // require(finalizedBlock == 0 && address(shp) != 0x0);
+        require((!masterAddressUsed && masterAddress == msg.sender) || 
+            (masterAddressUsed && masterAddress != msg.sender));
         _;
     }
 
@@ -63,8 +67,10 @@ contract SharpeContribution is Owned {
         address _reserveAddress, 
         address _founderAddress, 
         address _contributionAddress,
+        address _masterAddress,
         address _shp) public onlyOwner
     {
+        masterAddress = _masterAddress;
         etherEscrowAddress = _etherEscrowAddress;
         reserveAddress = _reserveAddress;
         founderAddress = _founderAddress;
@@ -119,6 +125,10 @@ contract SharpeContribution is Owned {
 
             totalEtherPaid = totalEtherPaid.add(etherAmount);
             totalContributions = totalContributions.add(1);
+
+            if(!masterAddressUsed) {
+                masterAddressUsed = true;
+            }
 
             return true;
         } else {

@@ -20,6 +20,7 @@ let contributorOneAddress;
 let contributorTwoAddress;
 let reserveAddress;
 let foundersAddress;
+let masterAddress;
 let shp;
 
 module.exports = {
@@ -30,6 +31,7 @@ module.exports = {
         _contributorTwoAddress,
         _reserveAddress,
         _foundersAddress,
+        _masterAddress,
         _shp) {
             etherEscrowAddress = _etherEscrowAddress;
             contributionAddress = _contributionAddress;
@@ -37,6 +39,7 @@ module.exports = {
             contributorTwoAddress = _contributorTwoAddress;
             reserveAddress = _reserveAddress;
             foundersAddress = _foundersAddress;
+            masterAddress = _masterAddress;
             shp = _shp;
     },
     ether: function(
