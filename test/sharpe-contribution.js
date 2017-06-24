@@ -39,7 +39,7 @@ contract("SharpeContribution", function(accounts) {
     let miniMeTokenFactory;
     let shp;
 
-    it('deploys all contracts with correct addresses', async function() {
+    beforeEach(async function() {
 
         sharpeContribution = await SharpeContribution.new();
         shp = await SharpeToken.new("SHP");
@@ -57,6 +57,25 @@ contract("SharpeContribution", function(accounts) {
             sharpeContribution.address,
             shp.address);
     });
+
+    // it('deploys all contracts with correct addresses', async function() {
+
+    //     sharpeContribution = await SharpeContribution.new();
+    //     shp = await SharpeToken.new("SHP");
+        
+    //     shp.changeOwner(sharpeContribution.address);
+
+    //     etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
+    //     foundersWallet = await MultiSigWallet.new([foundersAddress], 1);
+    //     reserveWallet = await MultiSigWallet.new([reserveAddress], 1);
+
+    //     await sharpeContribution.initialize(
+    //         etherEscrowWallet.address, 
+    //         reserveWallet.address, 
+    //         foundersWallet.address, 
+    //         sharpeContribution.address,
+    //         shp.address);
+    // });
 
     it('should have correct addresses', async function() {
 
@@ -132,16 +151,14 @@ contract("SharpeContribution", function(accounts) {
         });
     });
 
-    it('should accept Ether from contributor account', async function() {
+    it('should accept Ether from contributor account and generate SHP', async function() {
+
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
             gas: 300000, 
             gasPrice: "20000000000", 
             from: contributorOneAddress
         });
-    });
-
-    it('should have the expected balances and generate SHP after receiving Ether', async function() {
 
         const etherEscrowBalance = getRoundedBalance(etherEscrowWallet.address);
         const contributionBalance = getRoundedBalance(sharpeContribution.address);
