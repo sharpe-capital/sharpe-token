@@ -80,15 +80,7 @@ contract SharpeContribution {
             msg.sender != reserveAddress && 
             msg.sender != founderAddress && 
             msg.sender != contributionAddress);
-        proxyPayment(msg.sender);
-    }
-
-    function onTransfer(address, address, uint256) public returns (bool) {
-        return false;
-    }
-
-    function onApprove(address, address, uint256) public returns (bool) {
-        return false;
+        require(proxyPayment(msg.sender));
     }
 
     function balanceOf(address addr) returns (uint256) {

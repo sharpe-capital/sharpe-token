@@ -154,4 +154,15 @@ contract("SharpeContribution", function(accounts) {
         assert.equal(contributionBalance, 0);
         assert.equal(contributorOneBalance, 90);
     });
+
+    it('should prevent 0 ETH contributions', async function() {
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: 0,
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+    });
 });
