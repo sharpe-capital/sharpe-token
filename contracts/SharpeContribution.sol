@@ -4,13 +4,14 @@ import "./SHP.sol";
 import "./MiniMeToken.sol";
 import "./SafeMath.sol";
 import "./Owned.sol";
+import "./SharpeToken.sol";
 
 
-contract SharpeContribution is Owned, TokenController {
+contract SharpeContribution {
 
     using SafeMath for uint256;
 
-    MiniMeToken public shp;
+    SharpeToken public shp;
     address public contributionAddress;
     address public etherEscrowAddress;
     address public reserveAddress;
@@ -31,6 +32,7 @@ contract SharpeContribution is Owned, TokenController {
     
     uint256 public finalizedBlock;
     uint256 public finalizedTime;
+    address public shpController;
 
     modifier initialized() {
         require(address(shp) != 0x0);
@@ -62,7 +64,8 @@ contract SharpeContribution is Owned, TokenController {
         reserveAddress = _reserveAddress;
         founderAddress = _founderAddress;
         contributionAddress = _contributionAddress;
-        shp = SHP(_contributionAddress);
+
+        shp = new SharpeToken(300000000);
     }
 
     /// @notice called only once when the contract is initialized
@@ -139,28 +142,19 @@ contract SharpeContribution is Owned, TokenController {
 
         if (etherAmount > 0) {
 
-            // TODO - this transfer seems to fail, probably because the account hasn't
-            // got enough Ether to cover the gas fees
-            // We'll only start forwarding to the Escrow account once the balance of the
-            // contribution account is more than 10 ETH
-            // if(totalContributions > 0) {
+            uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
+            uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
+            uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
 
-                uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
-                uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
-                uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
+            assert(shp.mintTokens(callerTokens, callerAddress));
+            assert(shp.mintTokens(reserveTokens, reserveAddress));
+            assert(shp.mintTokens(founderTokens, founderAddress));
 
-                assert(shp.generateTokens(callerAddress, callerTokens));
-                assert(shp.generateTokens(reserveAddress, reserveTokens));
-                assert(shp.generateTokens(founderAddress, founderTokens));
+            NewSale(callerAddress, etherAmount, callerTokens);
+            NewSale(reserveAddress, etherAmount, reserveTokens);
+            NewSale(founderAddress, etherAmount, founderTokens);
 
-                NewSale(callerAddress, etherAmount, callerTokens);
-                NewSale(reserveAddress, etherAmount, reserveTokens);
-                NewSale(founderAddress, etherAmount, founderTokens);
-
-                // if(etherAmount > 1 ether) {
-                    etherEscrowAddress.transfer(etherAmount);
-                // }
-            // }
+            etherEscrowAddress.transfer(etherAmount);
 
             totalEtherPaid = totalEtherPaid.add(etherAmount);
             totalContributions = totalContributions.add(1);
