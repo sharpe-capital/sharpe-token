@@ -25,6 +25,7 @@ contract SharpeToken is StandardToken, Owned {
     /// @notice This creates new SHP tokens and sends them to the specified recipient
     /// @param amount The amount of SHP tokens to create
     /// @param recipient The recipients address
+    /// @modifier onlyOwner This method can only be called by the owner
     /// @return True if the minting is successful
     function mintTokens(uint256 amount, address recipient) onlyOwner returns (bool) {
 
