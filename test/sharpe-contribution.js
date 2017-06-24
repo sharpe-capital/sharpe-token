@@ -21,6 +21,7 @@ function getRoundedBalance(address) {
 
 contract("SharpeContribution", function(accounts) {
 
+    console.log('Logging out all of the accounts for reference...');
     accounts.forEach(acc => console.log(acc));
 
     const etherEscrowAddress = accounts[1];
@@ -58,11 +59,6 @@ contract("SharpeContribution", function(accounts) {
     });
 
     it('should have correct addresses', async function() {
-
-        console.log(await sharpeContribution.owner());
-        console.log(await shp.owner());
-        console.log(sharpeContribution.address);
-        console.log(shp.address);
 
         const contributionAddr = await sharpeContribution.contributionAddress();
         const etherEscrowAddr = await sharpeContribution.etherEscrowAddress();
