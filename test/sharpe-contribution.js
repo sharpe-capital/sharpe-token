@@ -249,6 +249,7 @@ contract("SharpeContribution", function(accounts) {
     it('should reject transfer of contributors SHP tokens before contribution period ends', async function() {});
     it('should allow transfer of contributors SHP tokens after contribution period ends', async function() {});
 
+    // Vesting - ETH
     it('should allow ETH to be transferred after contribution period closes', async function() {});
     it('should reject ETH transfer before contribution period closes', async function() {});
     it('should allow ETH to be transferred with multiple signatures', async function() {});
