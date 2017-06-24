@@ -71,6 +71,7 @@ contract("SharpeContribution", function(accounts) {
         assert.equal(reserveAddr, reserveWallet.address);
 
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not accept contributions from contribution address', async function() {
@@ -83,6 +84,7 @@ contract("SharpeContribution", function(accounts) {
             });
         });
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not accept contributions from ether escrow address', async function() {
@@ -95,6 +97,7 @@ contract("SharpeContribution", function(accounts) {
             });
         });
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not accept contributions from founder address', async function() {
@@ -107,6 +110,7 @@ contract("SharpeContribution", function(accounts) {
             });
         });
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not accept contributions from reserve address', async function() {
@@ -119,6 +123,7 @@ contract("SharpeContribution", function(accounts) {
             });
         });
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should prevent 0 ETH contributions', async function() {
@@ -131,6 +136,7 @@ contract("SharpeContribution", function(accounts) {
             });
         });
         assertBalances.ether(0, 0, 100, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should accept Ether from contributor account and generate SHP', async function() {
@@ -148,29 +154,66 @@ contract("SharpeContribution", function(accounts) {
         await assertFail(async function() {
             await sharpeContribution.isContract(contributionAddress);
         });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of safeCaller externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.safeCaller(contributionAddress);
         });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of getBlockNumber externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.getBlockNumber();
         });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of doBuy externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.doBuy(contributorTwoAddress, 1);
         });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
     });
 
     it('should not allow calling of proxyPayment externally', async function() {
         await assertFail(async function() {
             await sharpeContribution.proxyPayment(contributorTwoAddress);
         });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+    });
+
+    it('should block contributions when paused & accept when resumed', async function() {
+
+        await sharpeContribution.pauseContribution();
+
+        await assertFail(async function() {
+            await sharpeContribution.sendTransaction({
+                value: web3.toWei(10),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(0, 0, 90, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0);
+
+        await sharpeContribution.resumeContribution();
+
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        });
+        assertBalances.ether(10, 0, 80, 100, 0, 0);
+        await assertBalances.SHP(0, 0, 20000, 0, 20000, 10000);
     });
 });

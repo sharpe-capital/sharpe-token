@@ -28,7 +28,8 @@
         "test": "test"
     },
     "scripts": {
-        "testrpc": "testrpc -a 10",
+        "pretest": "testrpc -a 10 > /dev/null 2>&1 &",
+        "posttest": "killall -9 testrpc",
         "test": "truffle test",
         "lint": "solium --dir contracts",
         "coverage": "./node_modules/.bin/solidity-coverage"
