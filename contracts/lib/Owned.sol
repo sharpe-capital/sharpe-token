@@ -1,6 +1,5 @@
 pragma solidity ^0.4.11;
 
-
 /// @dev `Owned` is a base level contract that assigns an `owner` that can be
 ///  later changed
 contract Owned {

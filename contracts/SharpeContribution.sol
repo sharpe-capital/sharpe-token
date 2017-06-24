@@ -5,7 +5,7 @@ import "./lib/Owned.sol";
 import "./SharpeToken.sol";
 
 
-contract SharpeContribution {
+contract SharpeContribution is Owned {
 
     using SafeMath for uint256;
 
@@ -49,7 +49,7 @@ contract SharpeContribution {
     }
 
     /// @notice called only once when the contract is initialized
-    function SharpeContribution() public payable {
+    function SharpeContribution() payable {
         paused = false;
     }
 
@@ -63,7 +63,7 @@ contract SharpeContribution {
         address _reserveAddress, 
         address _founderAddress, 
         address _contributionAddress,
-        address _shp) public 
+        address _shp) public onlyOwner
     {
         etherEscrowAddress = _etherEscrowAddress;
         reserveAddress = _reserveAddress;
@@ -72,8 +72,8 @@ contract SharpeContribution {
         shp = SharpeToken(_shp);
     }
 
-    /// @notice If anybody sends Ether directly to this contract, assume they are buying Sharpe tokens.
-    /// Ensures contributions cannot be made from known addresses.
+    /// @notice This function fires when someone sends Ether to the address of this contract. 
+    /// The ETH will be exchanged for SHP and it ensures contributions cannot be made from known addresses.
     function () public payable notPaused {
         require(msg.sender != etherEscrowAddress && 
             msg.sender != reserveAddress && 

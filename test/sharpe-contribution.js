@@ -41,6 +41,9 @@ contract("SharpeContribution", function(accounts) {
         sharpeContribution = await SharpeContribution.new();
         shp = await SharpeToken.new("SHP");
 
+        shp.changeOwner(sharpeContribution.address);
+        shp.acceptOwnership();
+
         etherEscrowWallet = await MultiSigWallet.new([etherEscrowAddress], 1);
         foundersWallet = await MultiSigWallet.new([foundersAddress], 1);
         reserveWallet = await MultiSigWallet.new([reserveAddress], 1);

@@ -3,7 +3,7 @@ import "./lib/Owned.sol";
 
 pragma solidity ^0.4.11;
 
-contract SharpeToken is StandardToken {
+contract SharpeToken is StandardToken, Owned {
 
     /// @notice This returns any Ether sent to the address
     function () {
