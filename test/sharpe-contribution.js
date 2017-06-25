@@ -313,6 +313,11 @@ contract("SharpeContribution", function(accounts) {
         });
         assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+        // TODO - this is an example of moving SHP around and setting msg.sender
+        // await shp.transfer(contributorTwoAddress, web3.toWei(1000), {
+        //     from: contributorOneAddress
+        // });
+        // await assertBalances.SHP(0, 0, 19000, 1000, 22000, 11000, 2000);
     });
     it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {});
     it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
