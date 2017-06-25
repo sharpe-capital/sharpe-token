@@ -375,8 +375,44 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
     });
     
-    it('should allow transfer of less than 25% of founders SHP tokens after 6 month vesting period', async function() {});
-    it('should reject transfer of more than 25% of founders SHP tokens after 6 month vesting period', async function() {});
+    it('should allow transfer of less than 25% of founders SHP tokens after 6 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 182) + 1000;
+        await foundersWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        });
+        assertBalances.ether(11, 0, 40, 100, 0, 0, 88);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await foundersWallet.transfer(web3.toWei(2750), contributorTwoAddress);
+        assertBalances.ether(11, 0, 40, 100, 0, 0, 88);
+        await assertBalances.SHP(0, 0, 20000, 2750, 22000, 8250, 2000);
+    });
+
+    it('should reject transfer of more than 25% of founders SHP tokens after 6 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 182) + 1000;
+        await reserveWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorTwoAddress
+        });
+        assertBalances.ether(11, 0, 40, 90, 0, 0, 87);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await assertFail(async function() {
+            await foundersWallet.transfer(web3.toWei(2751), contributorTwoAddress);
+        });
+        assertBalances.ether(11, 0, 40, 90, 0, 0, 87);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+    });
+
     it('should allow transfer of less than 75% of founders SHP tokens after 12 month vesting period', async function() {});
     it('should reject transfer of more than 75% of founders SHP tokens after 12 month vesting period', async function() {});
     it('should allow transfer of 100% of founders SHP tokens after 24 month vesting period', async function() {});
