@@ -27,8 +27,8 @@ contract FoundersWallet is Owned {
 
         // TODO - do we want to prevent transfers to contracts? Seems sensible since tokens could get 'stuck'
         
-        uint256 balance = shp.balanceOf(address(this)); // 11,000
-        uint256 totalMinted = shp.mintedAt(address(this)); // 11,000
+        uint256 balance = shp.balanceOf(address(this));
+        uint256 totalMinted = shp.mintedAt(address(this));
         uint256 finalizedTime = contribution.finalizedTime();
 
         require(finalizedTime > 0 && getTime() >= finalizedTime.add(months(6)));
@@ -46,9 +46,9 @@ contract FoundersWallet is Owned {
             multiplier = 75;
         }
 
-        uint256 totalPermitted = totalMinted.mul(percent(multiplier)).div(percent(100)); // 2,750
-        uint256 totalSpent = totalMinted.sub(balance); // 0
-        uint256 permitted = totalPermitted.sub(totalSpent); // 2,750
+        uint256 totalPermitted = totalMinted.mul(percent(multiplier)).div(percent(100));
+        uint256 totalSpent = totalMinted.sub(balance);
+        uint256 permitted = totalPermitted.sub(totalSpent);
 
         require(amount <= permitted);
         require(shp.transfer(toAddress, amount));

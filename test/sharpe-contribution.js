@@ -329,7 +329,7 @@ contract("SharpeContribution", function(accounts) {
     });
 
     it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
-        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 1000;
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
         await reserveWallet.setMockedTime(t);
         openContributions();
         await sharpeContribution.sendTransaction({
@@ -376,7 +376,7 @@ contract("SharpeContribution", function(accounts) {
     });
     
     it('should allow transfer of less than 25% of founders SHP tokens after 6 month vesting period', async function() {
-        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 182) + 1000;
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 180) + 20000;
         await foundersWallet.setMockedTime(t);
         openContributions();
         await sharpeContribution.sendTransaction({
@@ -394,8 +394,8 @@ contract("SharpeContribution", function(accounts) {
     });
 
     it('should reject transfer of more than 25% of founders SHP tokens after 6 month vesting period', async function() {
-        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 182) + 1000;
-        await reserveWallet.setMockedTime(t);
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 180) + 20000;
+        await foundersWallet.setMockedTime(t);
         openContributions();
         await sharpeContribution.sendTransaction({
             value: web3.toWei(10),
@@ -413,9 +413,61 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
     });
 
-    it('should allow transfer of less than 75% of founders SHP tokens after 12 month vesting period', async function() {});
-    it('should reject transfer of more than 75% of founders SHP tokens after 12 month vesting period', async function() {});
-    it('should allow transfer of 100% of founders SHP tokens after 24 month vesting period', async function() {});
+    it('should allow transfer of less than 75% of founders SHP tokens after 12 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
+        await foundersWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorTwoAddress
+        });
+        assertBalances.ether(11, 0, 40, 80, 0, 0, 86);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await foundersWallet.transfer(web3.toWei(8250), contributorTwoAddress);
+        assertBalances.ether(11, 0, 40, 80, 0, 0, 86);
+        await assertBalances.SHP(0, 0, 0, 28250, 22000, 2750, 2000);
+    });
+
+    it('should reject transfer of more than 75% of founders SHP tokens after 12 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
+        await foundersWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorTwoAddress
+        });
+        assertBalances.ether(11, 0, 40, 70, 0, 0, 85);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await assertFail(async function() {
+            await foundersWallet.transfer(web3.toWei(8251), contributorTwoAddress);
+        });
+        assertBalances.ether(11, 0, 40, 70, 0, 0, 85);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+    });
+
+    it('should allow transfer of 100% of founders SHP tokens after 24 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 730) + 20000;
+        await foundersWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorTwoAddress
+        });
+        assertBalances.ether(11, 0, 40, 60, 0, 0, 84);
+        await assertBalances.SHP(0, 0, 0, 20000, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await foundersWallet.transfer(web3.toWei(11000), contributorTwoAddress);
+        assertBalances.ether(11, 0, 40, 60, 0, 0, 84);
+        await assertBalances.SHP(0, 0, 0, 31000, 22000, 0, 2000);
+    });
     // it('should allow founders SHP to be transferred with multiple signatures', async function() {});
     // it('should reject founders SHP transfer without multiple signatures', async function() {});
 
