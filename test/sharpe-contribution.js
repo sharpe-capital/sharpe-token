@@ -1,8 +1,8 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
 const SHP = artifacts.require("SHP");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
-const FoundersWallet = artifacts.require("FoundersWallet");
-const ReserveWallet = artifacts.require("ReserveWallet");
+const FoundersWallet = artifacts.require("FoundersWalletMock");
+const ReserveWallet = artifacts.require("ReserveWalletMock");
 const assertFail = require("./helpers/assertFail");
 const assertBalances = require("./helpers/assertBalances");
 
@@ -333,7 +333,23 @@ contract("SharpeContribution", function(accounts) {
         // });
         // await assertBalances.SHP(0, 0, 19000, 1000, 22000, 11000, 2000);
     });
-    it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {});
+    it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 1000;
+        await reserveWallet.setMockedTime(t);
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        });
+        assertBalances.ether(11, 0, 60, 100, 0, 0, 90);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await reserveWallet.transfer(web3.toWei(1000), contributorTwoAddress);
+        assertBalances.ether(11, 0, 60, 100, 0, 0, 90);
+        await assertBalances.SHP(0, 0, 20000, 1000, 21000, 11000, 2000);
+    });
     it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
     it('should reject reserve SHP transfer without multiple signatures', async function() {});
 
