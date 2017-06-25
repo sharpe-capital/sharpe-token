@@ -46,8 +46,8 @@ contract("SharpeContribution", function(accounts) {
         await shp.changeOwner(sharpeContribution.address);
 
         etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-        foundersWallet = await FoundersWallet.new();
-        reserveWallet = await ReserveWallet.new();
+        foundersWallet = await FoundersWallet.new(); // TODO - could apply multisign to this wallet
+        reserveWallet = await ReserveWallet.new(); // TODO - could apply multisign to this wallet
         contributionAddress = sharpeContribution.address;
         etherEscrowAddress = etherEscrowWallet.address;
         foundersAddress = foundersWallet.address;
