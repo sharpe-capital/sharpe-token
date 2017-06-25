@@ -131,6 +131,13 @@ contract SharpeContribution is Owned {
         }
     }
 
+    function finalize() onlyOwner contributionOpen {
+        require(getBlockNumber() >= 0);
+        require(finalizedBlock == 0);
+        finalizedBlock = getBlockNumber();
+        finalizedTime = now;
+    }
+
     /// @notice This is an antispam mechanism
     /// @param callerAddress the caller's address
     /// @return The safe caller address

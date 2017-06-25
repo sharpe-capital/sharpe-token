@@ -46,8 +46,8 @@ contract("SharpeContribution", function(accounts) {
         await shp.changeOwner(sharpeContribution.address);
 
         etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-        foundersWallet = await FoundersWallet.new(); // TODO - could apply multisign to this wallet
-        reserveWallet = await ReserveWallet.new(); // TODO - could apply multisign to this wallet
+        foundersWallet = await FoundersWallet.new(shp.address, sharpeContribution.address); // TODO - could apply multisign to this wallet
+        reserveWallet = await ReserveWallet.new(shp.address, sharpeContribution.address); // TODO - could apply multisign to this wallet
         contributionAddress = sharpeContribution.address;
         etherEscrowAddress = etherEscrowWallet.address;
         foundersAddress = foundersWallet.address;
@@ -303,6 +303,14 @@ contract("SharpeContribution", function(accounts) {
     it('should reject contributions if SHP would exceed max supply limit', async function() {});
 
     // Vesting - reserve
+    it('should reject attempt to transfer reserve funds before contributions finalized', async function() {
+        await assertFail(async function() {
+            await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
+        });
+        assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
     it('should reject transfer of SHP from reserve account before 12 month vesting period', async function() {
         openContributions();
         await sharpeContribution.sendTransaction({
@@ -310,6 +318,12 @@ contract("SharpeContribution", function(accounts) {
             gas: 300000, 
             gasPrice: "20000000000", 
             from: contributorOneAddress
+        });
+        assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await assertFail(async function() {
+            await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
         });
         assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);

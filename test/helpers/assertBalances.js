@@ -1,5 +1,5 @@
 function round(value) {
-    const multiplier = 10;
+    const multiplier = 1;
     if(typeof(value) != 'number') {
         value = Number(value);
     }

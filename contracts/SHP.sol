@@ -17,9 +17,15 @@ contract SHP is StandardToken, Owned {
     uint256 public currentSupply = 0;
     uint256 public totalSupply = 300000 ether;
 
+    mapping (address => uint256) minted;
+
     /// @notice Creates a new SHP contract with the specified total supply
     function SHP(string _symbol) {
         symbol = _symbol;
+    }
+
+    function mintedAt(address target) public returns (uint256) {
+        return minted[target];
     }
 
     /// @notice This creates new SHP tokens and sends them to the specified recipient
@@ -35,6 +41,7 @@ contract SHP is StandardToken, Owned {
         } else {
             balances[recipient] += amount;
             currentSupply += amount;
+            minted[recipient] += amount;
             return true;
         }
     }
