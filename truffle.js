@@ -5,23 +5,24 @@ const providerRopsten = new HDWalletProvider(mnemonic, 'https://ropsten.infura.i
 const providerKovan = new HDWalletProvider(mnemonic, 'https://kovan.infura.io', 0);
 
 module.exports = {
+    rpc: {
+        host: "localhost",
+        port: 8545
+    },
     networks: {
         development: {
             network_id: 15,
             host: "localhost",
-            port: 8545
+            port: 8545,
+            gas: 4000000,
+            gasPrice: 20e9,
         },
         ropsten: {
             network_id: 3,
-            provider: providerRopsten,
+            host: "localhost",
+            port: 8545,
             gas: 4000000,
             gasPrice: 20e9,
-        },
-        kovan: {
-            network_id: 42,
-            provider: providerKovan,
-            gas: 4000000,
-            gasPrice: 20e9,
-        },
+        }
     }
 };
