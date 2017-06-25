@@ -3,7 +3,7 @@ import "./lib/Owned.sol";
 
 pragma solidity ^0.4.11;
 
-contract SharpeToken is StandardToken, Owned {
+contract SHP is StandardToken, Owned {
 
     /// @notice This returns any Ether sent to the address
     function () {
@@ -17,8 +17,8 @@ contract SharpeToken is StandardToken, Owned {
     uint256 public currentSupply = 0;
     uint256 public totalSupply = 300000 ether;
 
-    /// @notice Creates a new SharpeToken contract with the specified total supply
-    function SharpeToken(string _symbol) {
+    /// @notice Creates a new SHP contract with the specified total supply
+    function SHP(string _symbol) {
         symbol = _symbol;
     }
 

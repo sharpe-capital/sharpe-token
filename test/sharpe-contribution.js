@@ -1,5 +1,5 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
-const SharpeToken = artifacts.require("SharpeToken");
+const SHP = artifacts.require("SHP");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const assertFail = require("./helpers/assertFail");
 const assertBalances = require("./helpers/assertBalances");
@@ -39,7 +39,7 @@ contract("SharpeContribution", function(accounts) {
     beforeEach(async function() {
 
         sharpeContribution = await SharpeContribution.new();
-        shp = await SharpeToken.new("SHP");
+        shp = await SHP.new("SHP");
         
         await shp.changeOwner(sharpeContribution.address);
 
@@ -194,7 +194,7 @@ contract("SharpeContribution", function(accounts) {
 
     it('should not allow calling of doBuy externally', async function() {
         await assertFail(async function() {
-            await sharpeContribution.doBuy(contributorTwoAddress, 1);
+            await sharpeContribution.doBuy(contributorOneAddress, 1);
         });
         assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
         await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
@@ -202,7 +202,7 @@ contract("SharpeContribution", function(accounts) {
 
     it('should not allow calling of proxyPayment externally', async function() {
         await assertFail(async function() {
-            await sharpeContribution.proxyPayment(contributorTwoAddress);
+            await sharpeContribution.proxyPayment(contributorOneAddress);
         });
         assertBalances.ether(0, 0, 90, 100, 0, 0, 94);
         await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
@@ -272,7 +272,7 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
-    it('should only allow the owner of the SharpeToken contract to mint SHP tokens', async function() {
+    it('should only allow the owner of the SHP contract to mint SHP tokens', async function() {
         await assertFail(async function() {
             await shp.mintTokens(1000, contributorOneAddress);
         });
@@ -301,7 +301,17 @@ contract("SharpeContribution", function(accounts) {
     it('should reject contributions if SHP would exceed max supply limit', async function() {});
 
     // Vesting - reserve
-    it('should reject transfer of SHP from reserve account before 12 month vesting period', async function() {});
+    it('should reject transfer of SHP from reserve account before 12 month vesting period', async function() {
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        });
+        assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+    });
     it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {});
     it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
     it('should reject reserve SHP transfer without multiple signatures', async function() {});
