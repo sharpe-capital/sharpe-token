@@ -328,6 +328,10 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
     });
 
+    it('should reject transfer of SHP reserve tokens to another contract address', async function() {
+        // TODO
+    });
+
     it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
         const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
         await reserveWallet.setMockedTime(t);
@@ -373,6 +377,10 @@ contract("SharpeContribution", function(accounts) {
         });
         assertBalances.ether(11, 0, 50, 100, 0, 0, 89);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+    });
+
+    it('should reject transfer of SHP founders tokens to another contract address', async function() {
+        // TODO
     });
     
     it('should allow transfer of less than 25% of founders SHP tokens after 6 month vesting period', async function() {
@@ -468,6 +476,7 @@ contract("SharpeContribution", function(accounts) {
         assertBalances.ether(11, 0, 40, 60, 0, 0, 84);
         await assertBalances.SHP(0, 0, 0, 31000, 22000, 0, 2000);
     });
+    
     // it('should allow founders SHP to be transferred with multiple signatures', async function() {});
     // it('should reject founders SHP transfer without multiple signatures', async function() {});
 
