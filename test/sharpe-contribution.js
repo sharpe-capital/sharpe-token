@@ -302,7 +302,6 @@ contract("SharpeContribution", function(accounts) {
     it('should reject contributions greater than the maximum ETH deposit', async function() {});
     it('should reject contributions if SHP would exceed max supply limit', async function() {});
 
-    // Vesting - reserve
     it('should reject attempt to transfer reserve funds before contributions finalized', async function() {
         await assertFail(async function() {
             await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
@@ -327,12 +326,8 @@ contract("SharpeContribution", function(accounts) {
         });
         assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
-        // TODO - this is an example of moving SHP around and setting msg.sender
-        // await shp.transfer(contributorTwoAddress, web3.toWei(1000), {
-        //     from: contributorOneAddress
-        // });
-        // await assertBalances.SHP(0, 0, 19000, 1000, 22000, 11000, 2000);
     });
+
     it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
         const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 1000;
         await reserveWallet.setMockedTime(t);
@@ -350,16 +345,43 @@ contract("SharpeContribution", function(accounts) {
         assertBalances.ether(11, 0, 60, 100, 0, 0, 90);
         await assertBalances.SHP(0, 0, 20000, 1000, 21000, 11000, 2000);
     });
-    it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
-    it('should reject reserve SHP transfer without multiple signatures', async function() {});
 
-    // Vesting - founders
-    it('should reject transfer of founders SHP tokens before 6 month vesting period', async function() {});
-    it('should allow transfer of 25% of founders SHP tokens after 6 month vesting period', async function() {});
-    it('should reject transfer of 75% of founders SHP tokens before 12 month vesting period', async function() {});
-    it('should allow transfer of 75% of founders SHP tokens after 12 month vesting period', async function() {});
-    it('should allow founders SHP to be transferred with multiple signatures', async function() {});
-    it('should reject founders SHP transfer without multiple signatures', async function() {});
+    // it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
+    // it('should reject reserve SHP transfer without multiple signatures', async function() {});
+
+    it('should reject transfer of founders SHP tokens before finalized', async function() {
+        await assertFail(async function() {
+            await foundersWallet.transfer(web3.toWei(10), contributorTwoAddress);
+        });
+        assertBalances.ether(0, 0, 60, 100, 0, 0, 90);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
+    it('should reject transfer of founders SHP tokens before 6 month vesting period', async function() {
+        openContributions();
+        await sharpeContribution.sendTransaction({
+            value: web3.toWei(10),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        });
+        assertBalances.ether(11, 0, 50, 100, 0, 0, 89);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+        await sharpeContribution.finalize();
+        await assertFail(async function() {
+            await foundersWallet.transfer(web3.toWei(10), contributorTwoAddress);
+        });
+        assertBalances.ether(11, 0, 50, 100, 0, 0, 89);
+        await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
+    });
+    
+    it('should allow transfer of less than 25% of founders SHP tokens after 6 month vesting period', async function() {});
+    it('should reject transfer of more than 25% of founders SHP tokens after 6 month vesting period', async function() {});
+    it('should allow transfer of less than 75% of founders SHP tokens after 12 month vesting period', async function() {});
+    it('should reject transfer of more than 75% of founders SHP tokens after 12 month vesting period', async function() {});
+    it('should allow transfer of 100% of founders SHP tokens after 24 month vesting period', async function() {});
+    // it('should allow founders SHP to be transferred with multiple signatures', async function() {});
+    // it('should reject founders SHP transfer without multiple signatures', async function() {});
 
     // Vesting - contributors
     it('should reject transfer of contributors SHP tokens before contribution period ends', async function() {});
