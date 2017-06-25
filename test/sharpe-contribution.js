@@ -1,6 +1,8 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
 const SHP = artifacts.require("SHP");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
+const FoundersWallet = artifacts.require("FoundersWallet");
+const ReserveWallet = artifacts.require("ReserveWallet");
 const assertFail = require("./helpers/assertFail");
 const assertBalances = require("./helpers/assertBalances");
 
@@ -44,8 +46,8 @@ contract("SharpeContribution", function(accounts) {
         await shp.changeOwner(sharpeContribution.address);
 
         etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-        foundersWallet = await MultiSigWallet.new([foundersSignAddress], 1);
-        reserveWallet = await MultiSigWallet.new([reserveSignAddress], 1);
+        foundersWallet = await FoundersWallet.new();
+        reserveWallet = await ReserveWallet.new();
         contributionAddress = sharpeContribution.address;
         etherEscrowAddress = etherEscrowWallet.address;
         foundersAddress = foundersWallet.address;
