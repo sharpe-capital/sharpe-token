@@ -42,6 +42,7 @@ contract SHP is StandardToken, Owned {
             balances[recipient] += amount;
             currentSupply += amount;
             minted[recipient] += amount;
+            Transfer(0, recipient, amount);
             return true;
         }
     }

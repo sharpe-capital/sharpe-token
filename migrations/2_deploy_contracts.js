@@ -1,56 +1,48 @@
-const SharpeContribution = artifacts.require("SharpeContribution");
-const SHP = artifacts.require("SHP");
-const MultiSigWallet = artifacts.require("MultiSigWallet");
-const FoundersWallet = artifacts.require("FoundersWalletMock");
-const ReserveWallet = artifacts.require("ReserveWalletMock");
-
-// Creator address: 0xd4135b5faabc9f58d8e80c1a63903331207d81f3
+const SharpeContribution = artifacts.require("./SharpeContribution.sol");
+const SHP = artifacts.require("./SHP.sol");
+const MultiSigWallet = artifacts.require("./MultiSigWallet");
+const FoundersWallet = artifacts.require("./FoundersWallet");
+const ReserveWallet = artifacts.require("./ReserveWallet");
 
 const masterAddress = '0x486f82b02d7de535054760c4d5ec089a9e06b5b8';
+const escrowSignAddress = '0x1be1d188b740562280ec4664d560783b4455587c';
 
 module.exports = async function(deployer, network, accounts) {
-    
+
     if (network === "development") {
         return;
     }
 
-    const sharpeContribution = await SharpeContribution.new();
-    const shp = await SHP.new("SHP");
-    
-    await shp.changeOwner(sharpeContribution.address);
+    await deployer.deploy(SharpeContribution);
+    await deployer.deploy(SHP, "SHP");
 
-    const etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-    const foundersWallet = await FoundersWallet.new(shp.address, sharpeContribution.address); // TODO - could apply multisign to this wallet
-    const reserveWallet = await ReserveWallet.new(shp.address, sharpeContribution.address); // TODO - could apply multisign to this wallet
-    const contributionAddress = sharpeContribution.address;
+    const contribution = await SharpeContribution.deployed();
+    const shp = await SHP.deployed();
+
+    await shp.changeOwner(contribution.address);
+    await deployer.deploy(MultiSigWallet, [escrowSignAddress], 1);
+    await deployer.deploy(FoundersWallet, shp.address, contribution.address);
+    await deployer.deploy(ReserveWallet, shp.address, contribution.address);
+    
+    const etherEscrowWallet = await MultiSigWallet.deployed();
+    const foundersWallet = await FoundersWallet.deployed();
+    const reserveWallet = await ReserveWallet.deployed();
+
     const etherEscrowAddress = etherEscrowWallet.address;
     const foundersAddress = foundersWallet.address;
     const reserveAddress = reserveWallet.address;
 
-    console.log('Contribution address:', contributionAddress);
+    console.log('Contribution address:', contribution.address);
+    console.log('SHP token address:', shp.address);
     console.log('Ether escrow address:', etherEscrowAddress);
     console.log('Founders SHP address:', foundersAddress);
     console.log('Reserve SHP address:', reserveAddress);
-    console.log('SHP token address:', shp.address);
 
-    await sharpeContribution.initialize(
+    await contribution.initialize(
         etherEscrowWallet.address, 
         reserveWallet.address, 
         foundersWallet.address, 
-        sharpeContribution.address,
+        contribution.address,
         masterAddress,
         shp.address);
 };
-
-
-
-// var SharpeContribution = artifacts.require("./SharpeContribution.sol");
-// var SHP = artifacts.require("./SHP.sol");
-
-// module.exports = async function(deployer, network, accounts) {
-//     if (network === "development") {
-//         return;
-//     }
-//     deployer.deploy(SharpeContribution);
-//     deployer.deploy(SHP, "SHP");
-// };

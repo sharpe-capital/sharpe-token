@@ -350,8 +350,12 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 20000, 1000, 21000, 11000, 2000);
     });
 
-    // it('should allow reserve SHP to be transferred with multiple signatures', async function() {});
-    // it('should reject reserve SHP transfer without multiple signatures', async function() {});
+    it('should allow reserve SHP to be transferred with multiple signatures', async function() {
+        // TODO
+    });
+    it('should reject reserve SHP transfer without multiple signatures', async function() {
+        // TODO
+    });
 
     it('should reject transfer of founders SHP tokens before finalized', async function() {
         await assertFail(async function() {
@@ -477,16 +481,36 @@ contract("SharpeContribution", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 31000, 22000, 0, 2000);
     });
     
-    // it('should allow founders SHP to be transferred with multiple signatures', async function() {});
-    // it('should reject founders SHP transfer without multiple signatures', async function() {});
+    it('should allow founders SHP to be transferred with multiple signatures', async function() {
+        // TODO
+    });
+    it('should reject founders SHP transfer without multiple signatures', async function() {
+        // TODO
+    });
 
     // Vesting - contributors
-    it('should reject transfer of contributors SHP tokens before contribution period ends', async function() {});
-    it('should allow transfer of contributors SHP tokens after contribution period ends', async function() {});
+    it('should reject transfer of contributors SHP tokens before contribution period ends', async function() {
+        // TODO
+    });
+
+    it('should allow transfer of contributors SHP tokens after contribution period ends', async function() {
+        // TODO
+    });
 
     // Vesting - ETH
-    it('should allow ETH to be transferred after contribution period closes', async function() {});
-    it('should reject ETH transfer before contribution period closes', async function() {});
-    it('should allow ETH to be transferred with multiple signatures', async function() {});
-    it('should reject ETH transfer without multiple signatures', async function() {});
+    it('should allow ETH to be transferred after contribution period closes', async function() {
+        // TODO
+    });
+
+    it('should reject ETH transfer before contribution period closes', async function() {
+        // TODO
+    });
+
+    it('should allow ETH to be transferred with multiple signatures', async function() {
+        // TODO
+    });
+
+    it('should reject ETH transfer without multiple signatures', async function() {
+        // TODO
+    });
 });
