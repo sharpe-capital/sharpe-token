@@ -29,10 +29,16 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should add a position', async function() {
-
+        await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        const result = await tradeLedger.countPositions.call();
+        assert.equal(result.toNumber(), 1);
     });
 
     it('should fail to add a position with invalid account', async function() {
-        
+        await assertFail(async function() {
+            await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '88888');
+            const result = await tradeLedger.countPositions.call();
+            assert.equal(result.toNumber(), 1);
+        });
     });
 });

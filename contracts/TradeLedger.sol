@@ -53,9 +53,10 @@ contract TradeLedger is Owned {
     string openDate,
     string ticker,
     string accountId
-  ) onlyOwner {
+  ) {
     
     require(accounts[accountId].isPresent);
+    positionIds.push(id);
     positions[accountId].push(
       Position(
         id,
@@ -73,7 +74,7 @@ contract TradeLedger is Owned {
     );
   }
 
-  function countPositions(string accountId) returns (uint256) {
+  function countAccountPositions(string accountId) returns (uint256) {
     return positions[accountId].length;
   }
 
