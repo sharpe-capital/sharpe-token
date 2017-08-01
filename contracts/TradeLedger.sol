@@ -10,7 +10,7 @@ contract TradeLedger is Owned {
   string[] private accountIds;
   mapping (string => Account) private accounts;
   mapping (string => Position) private positions;
-  mapping (string => Position[]) private accountPositions;
+  // mapping (string => Position[]) private accountPositions;
 
   // Fields - END
 
@@ -80,21 +80,21 @@ contract TradeLedger is Owned {
       KeyPair('TBC', 'TBC')
     );
     positionIds.push(id);
-    accountPositions[accountId].push(position);
+    // accountPositions[accountId].push(position);
     positions[id] = position;
   }
 
   function releaseKeyPair(string privateKey, string publicKey) onlyOwner {
 
-    for(uint x=0; x<accountIds.length; x++) {
+    // for(uint x=0; x<accountIds.length; x++) {
 
-      string accid = accountIds[x];
-      Position[] accountPos = accountPositions[accid];
+    //   string accid = accountIds[x];
+    //   Position[] accountPos = accountPositions[accid];
 
-      for(uint y=0; y<accountPos.length; y++) {
-        accountPos[y].keyPair = KeyPair(privateKey, publicKey);
-      }
-    }
+    //   for(uint y=0; y<accountPos.length; y++) {
+    //     accountPos[y].keyPair = KeyPair(privateKey, publicKey);
+    //   }
+    // }
 
     for(uint a=0; a<positionIds.length; a++) {
       string posid = positionIds[a];
@@ -108,9 +108,9 @@ contract TradeLedger is Owned {
 
   // Public functions - START
 
-  function countAccountPositions(string accountId) returns (uint256) {
-    return accountPositions[accountId].length;
-  }
+  // function countAccountPositions(string accountId) returns (uint256) {
+  //   return accountPositions[accountId].length;
+  // }
 
   function countPositions() returns (uint256) {
     return positionIds.length;
