@@ -41,4 +41,19 @@ contract("TradeLedger", function(accounts) {
             assert.equal(result.toNumber(), 1);
         });
     });
+
+    it('should hide the keys at first', async function() {
+        const result = await tradeLedger.getPosition.call("100");
+        assert.equal(result[0], '100');
+        assert.equal(result[1], 'TBC');
+        assert.equal(result[2], 'TBC');
+    });
+
+    it('should release the public keys', async function() {
+        await tradeLedger.releaseKeyPair('PRIVKEY', 'PUBKEY');
+        const result = await tradeLedger.getPosition.call("100");
+        assert.equal(result[0], '100');
+        assert.equal(result[1], 'PRIVKEY');
+        assert.equal(result[2], 'PUBKEY');
+    });
 });
