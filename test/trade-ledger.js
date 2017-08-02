@@ -220,6 +220,7 @@ contract("TradeLedger", function(accounts) {
     it('should fetch all positions for account', async function() {
         const result = await tradeLedger.countAccountPositions.call('12345');
         const count = result.toNumber();
+        assert.equal(count, 4);
         for(let idx=0; idx<count; idx++) {
             const result = await tradeLedger.getPositionByIndex.call('12345', idx);
             assert.equal(result[0], 'BASE64');
@@ -227,9 +228,20 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should fetch all position keys for account', async function() {
-        // TODO - there's an improvement here, where we just store the keys once with a mapping index
+        const result = await tradeLedger.countAccountPositions.call('12345');
+        const count = result.toNumber();
+        assert.equal(count, 4);
+        for(let idx=0; idx<count; idx++) {
+            const result = await tradeLedger.getPositionKeysByIndex.call('12345', idx);
+            assert.isDefined(result[0]);
+            assert.isDefined(result[1]);
+        }
     });
+
     it('should update P/L for a position', async function() {});
+
     it('should update account equity', async function() {});
+
     it('should fetch all equity points for account', async function() {});
+    
 });
