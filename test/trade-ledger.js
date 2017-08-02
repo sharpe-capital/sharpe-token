@@ -212,7 +212,10 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[1], 'PUBKEY');
     });
 
-    it('should count positions for account', async function() {});
+    it('should count positions for account', async function() {
+        const result = await tradeLedger.countAccountPositions.call('12345');
+        assert.equal(result.toNumber(), 4);
+    });
 
     it('should fetch all positions', async function() {});
 });
