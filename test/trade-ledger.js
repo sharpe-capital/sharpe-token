@@ -155,7 +155,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], '');
         assert.equal(result[2], 1);
-        assert.equal(result[3], 1);
+        assert.equal(result[3].toNumber(), 0);
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '');
         assert.equal(result[6], 'BASE64');
@@ -183,7 +183,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], 'BASE64');
         assert.equal(result[2], 1);
-        assert.equal(result[3], 1);
+        assert.equal(result[3].toNumber(), 0);
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '2017-02-01T11:00:00');
         assert.equal(result[6], 'BASE64');

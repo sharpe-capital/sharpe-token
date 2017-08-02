@@ -46,6 +46,7 @@ contract TradeLedger is Owned {
     string limitPrice; // encrypted
     uint256 size;
     uint256 exposure;
+    uint256 profitLoss;
     string openDate;
     string closeDate;
     string ticker; // encrypted
@@ -122,6 +123,7 @@ contract TradeLedger is Owned {
       limitPrice,
       size,
       exposure,
+      0,
       openDate,
       '',
       ticker,
@@ -159,7 +161,7 @@ contract TradeLedger is Owned {
       position.openPrice, 
       position.closePrice,
       position.size,
-      position.exposure,
+      position.profitLoss,
       position.openDate,
       position.closeDate,
       position.ticker
