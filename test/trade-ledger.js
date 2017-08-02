@@ -16,6 +16,17 @@ contract("TradeLedger", function(accounts) {
         tradeLedger = null;
     });
 
+    it('should not accept Ether payments', async function() {
+        await assertFail(async function() {
+            await tradeLedger.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: accounts[1]
+            });
+        });
+    });
+
     it('should add an account', async function() {
         await tradeLedger.addAccount("12345");
         const result = await tradeLedger.countAccounts.call();
