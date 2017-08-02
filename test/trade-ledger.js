@@ -56,4 +56,12 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[1], 'PRIVKEY');
         assert.equal(result[2], 'PUBKEY');
     });
+
+    it('should fetch all positions', async function() {
+
+    });
+
+    it('should only allow the owner to call addPosition', async function() {});
+
+    it('should only allow the owner to call releaseKeyPair', async function() {});
 });

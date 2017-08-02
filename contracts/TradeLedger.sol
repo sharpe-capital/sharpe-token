@@ -10,6 +10,7 @@ contract TradeLedger is Owned {
   string[] private accountIds;
   mapping (string => Account) private accounts;
   mapping (string => Position) private positions;
+  mapping (string => address) private accountOwners;
   // mapping (string => Position[]) private accountPositions;
 
   // Fields - END
@@ -53,37 +54,6 @@ contract TradeLedger is Owned {
 
   // Restricted functions - START
 
-  function addPosition(
-    string id,
-    string openPrice,
-    string stopPrice,
-    string limitPrice,
-    uint256 size,
-    uint256 exposure,
-    string openDate,
-    string ticker,
-    string accountId
-  ) onlyOwner {
-    
-    require(accounts[accountId].isPresent);
-    Position memory position = Position(
-      id,
-      openPrice,
-      '',
-      stopPrice,
-      limitPrice,
-      size,
-      exposure,
-      openDate,
-      '',
-      ticker,
-      KeyPair('TBC', 'TBC')
-    );
-    positionIds.push(id);
-    // accountPositions[accountId].push(position);
-    positions[id] = position;
-  }
-
   function releaseKeyPair(string privateKey, string publicKey) onlyOwner {
 
     // for(uint x=0; x<accountIds.length; x++) {
@@ -112,6 +82,40 @@ contract TradeLedger is Owned {
   //   return accountPositions[accountId].length;
   // }
 
+  function addPosition(
+    string id,
+    string openPrice,
+    string stopPrice,
+    string limitPrice,
+    uint256 size,
+    uint256 exposure,
+    string openDate,
+    string ticker,
+    string accountId
+  ) {
+    
+    require(accounts[accountId].isPresent);
+    require(accountOwners[accountId] == msg.sender);
+    // require(openPrice.length > 0);
+    // require(size.length > 0);
+
+    Position memory position = Position(
+      id,
+      openPrice,
+      '',
+      stopPrice,
+      limitPrice,
+      size,
+      exposure,
+      openDate,
+      '',
+      ticker,
+      KeyPair('TBC', 'TBC')
+    );
+    positionIds.push(id);
+    positions[id] = position;
+  }
+
   function countPositions() returns (uint256) {
     return positionIds.length;
   }
@@ -126,6 +130,7 @@ contract TradeLedger is Owned {
   }
 
   function addAccount(string id) {
+    require(!accounts[id].isPresent);
     saveAccount(id, 0, 0, 0, 0, 0);
   }
 
@@ -149,7 +154,10 @@ contract TradeLedger is Owned {
     uint256 profitLoss) internal {
 
     if(!accounts[id].isPresent) {
+      accountOwners[id] = msg.sender;
       accountIds.push(id);
+    } else {
+      require(accountOwners[id] == msg.sender);
     }
     accounts[id] = Account(id, balance, equity, deposit, leverage, profitLoss, true);
   }
