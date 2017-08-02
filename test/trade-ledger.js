@@ -22,7 +22,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result.toNumber(), 1);
     });
 
-    it('should get an account', async function() {
+    it('should get an account by ID', async function() {
         const result = await tradeLedger.getAccount.call("12345");
         assert.equal(result[0], "12345");
         assert.equal(result[1].toNumber(), 0);
@@ -32,11 +32,87 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[5].toNumber(), 0);
     });
 
+    it('should not allow duplicate account IDs', async function(){
+        await assertFail(async function() {
+            await tradeLedger.addAccount("12345");
+        });
+    });
+
     it('should add a position', async function() {
         await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
         await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
         const result = await tradeLedger.countPositions.call();
         assert.equal(result.toNumber(), 2);
+    });
+
+    it('should fail to add position if not the account owner', async function(){
+        await assertFail(async function() {
+            await tradeLedger.addPosition("102", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345', {
+                from: address[1]
+            });
+        });
+    });
+
+    it('should not add position with missing ID', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        });
+    });
+
+    it('should not add position with missing open price', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', '', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        });
+    });
+
+    it('should not add position with missing size', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 0, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        });
+    });
+
+    it('should not add position with missing exposure', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 0, '2017-01-01T11:00:00', 'BASE64', '12345');
+        });
+    });
+
+    it('should not add position with missing open date', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '', 'BASE64', '12345');
+        });
+    });
+
+    it('should not add position with missing ticker', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', '', '12345');
+        });
+    });
+
+    it('should not add position with missing account ID', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
+        });
+    });
+
+    it('should add position with missing stop price', async function() {
+        await tradeLedger.addPosition('102', 'BASE64', '', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        const result = await tradeLedger.getPosition.call("102");
+        assert.equal(result[0], 'BASE64');
+        assert.equal(result[4], '2017-01-01T11:00:00');
+    });
+
+    it('should add position with missing limit price', async function() {
+        await tradeLedger.addPosition('103', 'BASE64', 'BASE64', '', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        const result = await tradeLedger.getPosition.call("103");
+        assert.equal(result[0], 'BASE64');
+        assert.equal(result[4], '2017-01-01T11:00:00');
+    });
+
+    it('should not allow duplicate position IDs', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        });
     });
 
     it('should fail to add a position with invalid account', async function() {
@@ -115,7 +191,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[1], 'PUBKEY');
     });
 
+    it('should count positions for account', async function() {});
+
     it('should fetch all positions', async function() {});
-    it('should not allow duplicate position IDs', async function() {});
-    it('should only allow the account owner to call addPosition', async function() {});
 });

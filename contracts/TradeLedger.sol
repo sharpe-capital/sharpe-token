@@ -104,9 +104,8 @@ contract TradeLedger is Owned {
     string accountId
   ) {
     
-    require(accounts[accountId].isPresent);
-    require(!positions[id].isPresent);
     require(accountOwners[accountId] == msg.sender);
+    require(!positions[id].isPresent);
     require(openPrice.toSlice().len() > 0);
     require(ticker.toSlice().len() > 0);
     require(accountId.toSlice().len() > 0);
