@@ -217,5 +217,11 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result.toNumber(), 4);
     });
 
-    it('should fetch all positions', async function() {});
+    it('should fetch all positions for account', async function() {});
+    it('should fetch all position keys for account', async function() {
+        // TODO - there's an improvement here, where we just store the keys once with a mapping index
+    });
+    it('should update P/L for a position', async function() {});
+    it('should update account equity', async function() {});
+    it('should fetch all equity points for account', async function() {});
 });
