@@ -72,6 +72,14 @@ contract("TradeLedger", function(accounts) {
         });
     });
 
+    it('should fail on close position when not owner', async function() {
+        await assertFail(async function() {
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', {
+                from: accounts[1]
+            });
+        });
+    });
+
     it('should close the position', async function() {
         await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00');
         const result = await tradeLedger.getPosition.call("100");
@@ -84,30 +92,29 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[6], 'BASE64');
     });
 
-    it('should release the encryption keys for closed positions', async function() {
-        
-        await tradeLedger.releaseKeyPair('12345', 'PRIVKEY', 'PUBKEY');
+    it('should fail on close position when already closed', async function() {
+        await assertFail(async function() {
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00');
+        });
+    });
 
+    it('should release the encryption keys for closed positions', async function() {
+        await tradeLedger.releaseKeyPair('12345', 'PRIVKEY', 'PUBKEY');
         const result = await tradeLedger.getPositionKeys.call("100");
         assert.equal(result[0], 'PRIVKEY');
         assert.equal(result[1], 'PUBKEY');
-
         const result2 = await tradeLedger.getPositionKeys.call("101");
         assert.equal(result2[0], 'TBC');
         assert.equal(result2[1], 'TBC');
     });
 
     it('should fail to release the keys once already released', async function() {
-
         await tradeLedger.releaseKeyPair('12345', 'PRIVKEY2', 'PUBKEY2');
-
         const result = await tradeLedger.getPositionKeys.call("100");
         assert.equal(result[0], 'PRIVKEY');
         assert.equal(result[1], 'PUBKEY');
     });
 
-    it('should fail on close position when not owner', async function() {});
-    it('should fail on close position when already closed', async function() {});
     it('should fetch all positions', async function() {});
     it('should not allow duplicate position IDs', async function() {});
     it('should only allow the account owner to call addPosition', async function() {});

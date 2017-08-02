@@ -58,38 +58,28 @@ contract TradeLedger is Owned {
 
 
   // Restricted functions - START
-
-  function releaseKeyPair(string accountId, string privateKey, string publicKey) onlyOwner {
-
-    require(accountOwners[accountId] == msg.sender);
-
-    // for(uint x=0; x<accountIds.length; x++) {
-
-    //   string accid = accountIds[x];
-    //   Position[] accountPos = accountPositions[accid];
-
-    //   for(uint y=0; y<accountPos.length; y++) {
-    //     accountPos[y].keyPair = KeyPair(privateKey, publicKey);
-    //   }
-    // }
-
-    // TODO - this needs to be more sophisticated to ensure only the owner
-    // of the position can release decryption keys for it
-
-    for(uint idx=0; idx<accountPositions[accountId].length; idx++) {
-      string posid = accountPositions[accountId][idx];
-      Position position = positions[posid];
-      if(!position.keyPair.released && position.closeDate.toSlice().len() > 0) {
-        positions[posid].keyPair = KeyPair(privateKey, publicKey, true);
-      }
-    }
-  }
-
+  // ...
   // Restricted functions - END
 
 
 
   // Public functions - START
+
+  function releaseKeyPair(string accountId, string privateKey, string publicKey) {
+
+    require(accountOwners[accountId] == msg.sender);
+    string[] accountPos = accountPositions[accountId];
+
+    for(uint idx=0; idx<accountPos.length; idx++) {
+      
+      string posid = accountPos[idx];
+      Position position = positions[posid];
+
+      if(!position.keyPair.released && position.closeDate.toSlice().len() > 0) {
+        positions[posid].keyPair = KeyPair(privateKey, publicKey, true);
+      }
+    }
+  }
 
   function countAccountPositions(string accountId) returns (uint256) {
     return accountPositions[accountId].length;
