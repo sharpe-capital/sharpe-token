@@ -217,7 +217,15 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result.toNumber(), 4);
     });
 
-    it('should fetch all positions for account', async function() {});
+    it('should fetch all positions for account', async function() {
+        const result = await tradeLedger.countAccountPositions.call('12345');
+        const count = result.toNumber();
+        for(let idx=0; idx<count; idx++) {
+            const result = await tradeLedger.getPositionByIndex.call('12345', idx);
+            assert.equal(result[0], 'BASE64');
+        }
+    });
+
     it('should fetch all position keys for account', async function() {
         // TODO - there's an improvement here, where we just store the keys once with a mapping index
     });

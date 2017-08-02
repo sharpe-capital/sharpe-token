@@ -154,6 +154,12 @@ contract TradeLedger is Owned {
     saveAccount(id, 0, 0, 0, 0, 0);
   }
 
+  function getPositionByIndex(string accountId, uint256 idx) returns (string, string, uint256, uint256, string, string, string) {
+    string posid = accountPositions[accountId][idx];
+    require(posid.toSlice().len() > 0);
+    return getPosition(posid);
+  }
+
   function getPosition(string id) returns (string, string, uint256, uint256, string, string, string) {
     Position position = positions[id];
     require(position.isPresent);
