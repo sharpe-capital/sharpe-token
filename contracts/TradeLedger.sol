@@ -101,11 +101,13 @@ contract TradeLedger is Owned {
     return accountPositions[accountId].length;
   }
 
-  function closePosition(string id, string closePrice, string closeDate) {
+  function closePosition(string id, string closePrice, string closeDate, uint256 profitLoss) {
     require(positionOwners[id] == msg.sender);
     require(positions[id].closePrice.toSlice().len() == 0);
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
+    positions[id].profitLoss = profitLoss;
+    // TODO - update account balance??
   }
 
   function addPosition(

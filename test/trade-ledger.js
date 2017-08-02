@@ -171,19 +171,19 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail on close position when not owner', async function() {
         await assertFail(async function() {
-            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', {
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1, {
                 from: accounts[1]
             });
         });
     });
 
     it('should close the position', async function() {
-        await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00');
+        await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1);
         const result = await tradeLedger.getPosition.call("100");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], 'BASE64');
         assert.equal(result[2], 1);
-        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[3].toNumber(), 1);
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '2017-02-01T11:00:00');
         assert.equal(result[6], 'BASE64');
@@ -191,7 +191,7 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail on close position when already closed', async function() {
         await assertFail(async function() {
-            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00');
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1);
         });
     });
 
