@@ -4,17 +4,21 @@ import "./lib/Owned.sol";
 import "./lib/strings.sol";
 
 contract TradeLedger is Owned {
+
   using strings for *;
 
   // Fields - START
 
-  string[] private positionIds;
-  string[] private accountIds;
-  mapping (string => string[]) private accountPositions;
-  mapping (string => Account) private accounts;
-  mapping (string => Position) private positions;
-  mapping (string => address) private accountOwners;
-  mapping (string => address) private positionOwners; // todo - log who owns the position
+  string[] private equityPointIds; // list of all equity point IDs
+  string[] private positionIds; // list of all position IDs
+  string[] private accountIds; // list of all account IDs
+  mapping (string => string[]) private accountEquityPoints; // list of equity point IDs, keyed by account ID
+  mapping (string => string[]) private accountPositions; // list of position IDs, keyed by account ID
+  mapping (string => Account) private accounts; // map of accounts, keyed by ID
+  mapping (string => Position) private positions; // map of positions, keyed by ID
+  mapping (string => EquityPoint) private equityPoints; // map of equity points, keyed by ID
+  mapping (string => address) private accountOwners; // map of owners, keyed by account ID
+  mapping (string => address) private positionOwners; // map of owners, keyed by position ID 
 
   // Fields - END
 
@@ -29,6 +33,7 @@ contract TradeLedger is Owned {
   }
 
   struct EquityPoint {
+    string id;
     string date;
     uint256 balance;
     uint256 equity;
