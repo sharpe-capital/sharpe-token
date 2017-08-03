@@ -28,7 +28,7 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should add an account', async function() {
-        await tradeLedger.addAccount("12345");
+        await tradeLedger.addAccount("12345", 10000, 10000);
         const result = await tradeLedger.countAccounts.call();
         assert.equal(result.toNumber(), 1);
     });
@@ -36,8 +36,8 @@ contract("TradeLedger", function(accounts) {
     it('should get an account by ID', async function() {
         const result = await tradeLedger.getAccount.call("12345");
         assert.equal(result[0], "12345");
-        assert.equal(result[1].toNumber(), 0);
-        assert.equal(result[2].toNumber(), 0);
+        assert.equal(result[1].toNumber(), 10000);
+        assert.equal(result[2].toNumber(), 10000);
         assert.equal(result[3].toNumber(), 0);
         assert.equal(result[4].toNumber(), 0);
         assert.equal(result[5].toNumber(), 0);
@@ -45,7 +45,7 @@ contract("TradeLedger", function(accounts) {
 
     it('should not allow duplicate account IDs', async function(){
         await assertFail(async function() {
-            await tradeLedger.addAccount("12345");
+            await tradeLedger.addAccount("12345", 10000, 10000);
         });
     });
 
@@ -238,10 +238,38 @@ contract("TradeLedger", function(accounts) {
         }
     });
 
-    it('should update P/L for a position', async function() {});
+    it('should update P/L for a position', async function() {
+        await tradeLedger.updatePosition('101', -1);
+        const result = await tradeLedger.getPosition.call("101");
+        assert.equal(result[0], 'BASE64');
+        assert.equal(result[1], '');
+        assert.equal(result[2], 1);
+        assert.equal(result[3].toNumber(), -1);
+        assert.equal(result[4], '2017-01-01T11:00:00');
+        assert.equal(result[5], '');
+        assert.equal(result[6], 'BASE64');
+    });
+
+    it('should fail to update P/L for an invalid position ID', async function() {
+        await assertFail(async function() {
+            await tradeLedger.updatePosition('1', -1);
+        });
+    });
+
+    it('should fail to update P/L for a closed position', async function() {
+        await assertFail(async function() {
+            await tradeLedger.updatePosition('100', -1);
+        });
+    });
+
+    it('should fail to update P/L for a position owned by someone else', async function() {
+        await assertFail(async function() {
+            await tradeLedger.updatePosition('101', 0, {
+                from: address[1]
+            });
+        });
+    });
 
     it('should update account equity', async function() {});
-
     it('should fetch all equity points for account', async function() {});
-    
 });

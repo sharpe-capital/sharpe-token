@@ -85,7 +85,7 @@ contract TradeLedger is Owned {
     uint256 equity;
     uint256 deposit;
     uint256 leverage;
-    uint256 profitLoss;
+    int256 profitLoss;
     string accountId;
   }
 
@@ -95,7 +95,7 @@ contract TradeLedger is Owned {
     uint256 equity;
     uint256 deposit;
     uint256 leverage;
-    uint256 profitLoss;
+    int256 profitLoss;
     bool isPresent;
   }
 
@@ -107,7 +107,7 @@ contract TradeLedger is Owned {
     string limitPrice; // encrypted
     uint256 size;
     uint256 exposure;
-    uint256 profitLoss;
+    int256 profitLoss;
     string openDate;
     string closeDate;
     string ticker; // encrypted
@@ -161,7 +161,7 @@ contract TradeLedger is Owned {
     string id, 
     string closePrice, 
     string closeDate, 
-    uint256 profitLoss
+    int256 profitLoss
   ) 
     positionOwner(id)
     positionOpen(id)
@@ -175,7 +175,7 @@ contract TradeLedger is Owned {
 
   function updatePosition(
     string id, 
-    uint256 profitLoss
+    int256 profitLoss
   ) 
     positionOpen(id)
     positionOwner(id) 
@@ -241,18 +241,19 @@ contract TradeLedger is Owned {
     string id
   ) 
     accountPresent(id)
-    returns (string, uint256, uint256, uint256, uint256, uint256) 
+    returns (string, uint256, uint256, uint256, uint256, int256) 
   {
     Account account = accounts[id];
     return (account.id, account.balance, account.equity, account.deposit, account.leverage, account.profitLoss);
   }
 
   function addAccount(
-    string id
+    string id,
+    uint256 balance
   )
     accountNotPresent(id)
   {
-    saveAccount(id, 0, 0, 0, 0, 0);
+    saveAccount(id, balance, balance, 0, 0, 0);
   }
 
   function getPositionByIndex(
@@ -260,7 +261,7 @@ contract TradeLedger is Owned {
     uint256 idx
   ) 
     accountPresent(accountId)
-    returns (string, string, uint256, uint256, string, string, string) 
+    returns (string, string, uint256, int256, string, string, string) 
   {
     string posid = accountPositions[accountId][idx];
     require(posid.toSlice().len() > 0);
@@ -283,7 +284,7 @@ contract TradeLedger is Owned {
     string id
   ) 
     positionPresent(id)
-    returns (string, string, uint256, uint256, string, string, string) 
+    returns (string, string, uint256, int256, string, string, string) 
   {
     Position position = positions[id];
     return (
@@ -322,7 +323,7 @@ contract TradeLedger is Owned {
     uint256 equity, 
     uint256 deposit, 
     uint256 leverage, 
-    uint256 profitLoss) internal {
+    int256 profitLoss) internal {
 
     if(!accounts[id].isPresent) {
       accountOwners[id] = msg.sender;
