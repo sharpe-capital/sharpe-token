@@ -173,11 +173,15 @@ contract TradeLedger is Owned {
     positionOpen(id) // Only open positions can be closed
     positionPresent(id) // Only valid positions can be closed
   {
+    int256 previousProfitLoss = positions[id].profitLoss;
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
-    accounts[positions[id].accountId].balance += profitLoss;
+    accounts[positions[id].accountId].equity -= previousProfitLoss;
     accounts[positions[id].accountId].equity += profitLoss;
+    accounts[positions[id].accountId].balance += profitLoss;
+    // TODO - update account leverage
+    // TODO - register an equity point???
   }
 
   function updatePosition(
@@ -190,9 +194,7 @@ contract TradeLedger is Owned {
   {
     int256 previousProfitLoss = positions[id].profitLoss;
     positions[id].profitLoss = profitLoss;
-    accounts[positions[id].accountId].balance -= previousProfitLoss;
     accounts[positions[id].accountId].equity -= previousProfitLoss;
-    accounts[positions[id].accountId].balance += profitLoss;
     accounts[positions[id].accountId].equity += profitLoss;
   }
 
@@ -241,8 +243,7 @@ contract TradeLedger is Owned {
     positionIds.push(id);
     positionOwners[id] = msg.sender;
     positions[id] = position;
-    // TODO - we should update following info at account level:
-    // > leverage (derived from exposure)
+    // TODO - update account leverage
   }
 
   function countPositions() returns (uint256) {

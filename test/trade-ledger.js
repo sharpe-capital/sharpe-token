@@ -258,7 +258,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[6], 'BASE64');
         const result2 = await tradeLedger.getAccount.call('12345');
         assert.equal(result2[0], "12345");
-        assert.equal(result2[1].toNumber(), 9999);
+        assert.equal(result2[1].toNumber(), 10001);
         assert.equal(result2[2].toNumber(), 9999);
         assert.equal(result2[3].toNumber(), 0);
         assert.equal(result2[4].toNumber(), 0);
