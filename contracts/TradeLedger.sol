@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 import "./lib/Owned.sol";
 import "./lib/strings.sol";
 import "./lib/SafeMath.sol";
+import "./EquityPointFactory.sol";
 
 contract TradeLedger is Owned {
 
@@ -11,18 +12,30 @@ contract TradeLedger is Owned {
 
   // Fields - START
 
-  string[] private equityPointIds; // list of all equity point IDs
   string[] private positionIds; // list of all position IDs
   string[] private accountIds; // list of all account IDs
-  mapping (string => string[]) private accountEquityPoints; // list of equity point IDs, keyed by account ID
   mapping (string => string[]) private accountPositions; // list of position IDs, keyed by account ID
   mapping (string => Account) private accounts; // map of accounts, keyed by ID
   mapping (string => Position) private positions; // map of positions, keyed by ID
-  mapping (string => EquityPoint) private equityPoints; // map of equity points, keyed by ID
   mapping (string => address) private accountOwners; // map of owners, keyed by account ID
   mapping (string => address) private positionOwners; // map of owners, keyed by position ID 
+  EquityPointFactory equityPointFactory;
 
   // Fields - END
+
+
+
+  // Default functions - START
+
+  function () payable {
+    require(false);
+  }
+
+  function TradeLedger(address equityPointFactoryAddr) payable {
+    equityPointFactory = EquityPointFactory(equityPointFactoryAddr);
+  }
+
+  // Default functions - END
 
 
 
@@ -78,16 +91,6 @@ contract TradeLedger is Owned {
     string privateKey;
     string publicKey;
     bool released;
-  }
-
-  struct EquityPoint {
-    string id;
-    string date;
-    int256 balance;
-    int256 equity;
-    uint256 leverage;
-    int256 profitLoss;
-    string accountId;
   }
 
   struct Account {
@@ -167,35 +170,51 @@ contract TradeLedger is Owned {
     string id, 
     string closePrice, 
     string closeDate, 
-    int256 profitLoss
+    int256 profitLoss,
+    string currentDateTime
   ) 
     positionOwner(id) // Only the position owner can close positions
     positionOpen(id) // Only open positions can be closed
     positionPresent(id) // Only valid positions can be closed
   {
+    string accountId = positions[id].accountId;
+    Account memory account = accounts[accountId];
     int256 previousProfitLoss = positions[id].profitLoss;
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
-    accounts[positions[id].accountId].equity -= previousProfitLoss;
-    accounts[positions[id].accountId].equity += profitLoss;
-    accounts[positions[id].accountId].balance += profitLoss;
-    // TODO - update account leverage
-    // TODO - register an equity point???
+    accounts[accountId].equity -= previousProfitLoss;
+    accounts[accountId].equity += profitLoss;
+    accounts[accountId].balance += profitLoss;
+    // updateAccountLeverage(accountId);
+    // equityPointFactory.addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
   function updatePosition(
     string id, 
-    int256 profitLoss
+    int256 profitLoss,
+    string currentDateTime
   ) 
     positionOpen(id)
     positionOwner(id) 
     positionPresent(id)
   {
     int256 previousProfitLoss = positions[id].profitLoss;
+    string accountId = positions[id].accountId;
+    Account memory account = accounts[accountId];
     positions[id].profitLoss = profitLoss;
-    accounts[positions[id].accountId].equity -= previousProfitLoss;
-    accounts[positions[id].accountId].equity += profitLoss;
+    accounts[accountId].equity -= previousProfitLoss;
+    accounts[accountId].equity += profitLoss;
+    // equityPointFactory.addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
+  }
+
+  function updateAccountLeverage(
+    string accountId
+  ) 
+    accountOwner(accountId)
+    accountPresent(accountId)
+  {
+    // TODO - update the accounts leverage based on position data and deposited funds
   }
 
   function addPosition(
@@ -243,7 +262,7 @@ contract TradeLedger is Owned {
     positionIds.push(id);
     positionOwners[id] = msg.sender;
     positions[id] = position;
-    // TODO - update account leverage
+    updateAccountLeverage(accountId);
   }
 
   function countPositions() returns (uint256) {
@@ -351,20 +370,4 @@ contract TradeLedger is Owned {
   }
 
   // Internal functions - END
-
-
-
-  // Default functions - START
-
-  function () payable {
-    require(false);
-  }
-
-  function TradeLedger() payable {
-    // todo - initialise
-  }
-
-  // Default functions - END
-
-  
 }

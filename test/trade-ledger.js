@@ -2,18 +2,21 @@ const TradeLedger = artifacts.require("TradeLedger");
 const assertFail = require("./helpers/assertFail");
 
 let tradeLedger;
+let equityPointFactoryAddr;
 
 contract("TradeLedger", function(accounts) {
 
     console.log('Logging out all of the accounts for reference...');
-    accounts.forEach(acc => console.log(acc));
+    accounts.forEach(acc => console.log(acc + " -> " + web3.fromWei(web3.eth.getBalance(acc), "ether").toNumber() + " ETH"));
 
     before(async function() {
-        tradeLedger = await TradeLedger.new();
+        equityPointFactoryAddr = accounts[2];
+        tradeLedger = await TradeLedger.new(equityPointFactoryAddr);
     });
 
     after(async function() {
         tradeLedger = null;
+        equityPointFactoryAddr = null;
     });
 
     it('should not accept Ether payments', async function() {
@@ -176,14 +179,14 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail on close position when not owner', async function() {
         await assertFail(async function() {
-            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1, {
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1, '2017-02-01T11:00:00', {
                 from: accounts[1]
             });
         });
     });
 
     it('should close the position', async function() {
-        await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1);
+        await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1, '2017-02-01T11:00:00');
         const result = await tradeLedger.getPosition.call("100");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], 'BASE64');
@@ -202,7 +205,7 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail on close position when already closed', async function() {
         await assertFail(async function() {
-            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1);
+            await tradeLedger.closePosition('100', 'BASE64', '2017-02-01T11:00:00', 1, '2017-02-01T11:00:00');
         });
     });
 
@@ -247,7 +250,7 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should update P/L for a position', async function() {
-        await tradeLedger.updatePosition('101', -2);
+        await tradeLedger.updatePosition('101', -2, '2017-02-01T11:00:00');
         const result = await tradeLedger.getPosition.call("101");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], '');
@@ -266,19 +269,19 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail to update P/L for an invalid position ID', async function() {
         await assertFail(async function() {
-            await tradeLedger.updatePosition('1', -1);
+            await tradeLedger.updatePosition('1', -1, '2017-02-01T11:00:00');
         });
     });
 
     it('should fail to update P/L for a closed position', async function() {
         await assertFail(async function() {
-            await tradeLedger.updatePosition('100', -1);
+            await tradeLedger.updatePosition('100', -1, '2017-02-01T11:00:00');
         });
     });
 
     it('should fail to update P/L for a position owned by someone else', async function() {
         await assertFail(async function() {
-            await tradeLedger.updatePosition('101', 0, {
+            await tradeLedger.updatePosition('101', 0, '2017-02-01T11:00:00', {
                 from: address[1]
             });
         });
