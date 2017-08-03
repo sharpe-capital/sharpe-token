@@ -82,6 +82,16 @@ contract TradeLedger is Owned {
     _;
   }
 
+  modifier equityPointNotPresent(uint256 id) {
+    require(!equityPoints[id].isPresent);
+    _;
+  }
+
+  modifier equityPointPresent(uint256 id) {
+    require(equityPoints[id].isPresent);
+    _;
+  }
+
   // Modifiers - END
 
 
@@ -170,6 +180,18 @@ contract TradeLedger is Owned {
     returns (uint256) 
   {
     return accountPositions[accountId].length;
+  }
+
+  /// @dev Returns the number of equity points for an account
+  /// @param accountId Account ID - should be unique and provided by brokerage firm
+  /// @return Returns the number of equity points for an account
+  function countAccountEquityPoints(
+    string accountId
+  ) 
+    accountPresent(accountId) // Only allow for valid account IDs
+    returns (uint256) 
+  {
+    return accountEquityPoints[accountId].length;
   }
 
   /// @dev Closes a position and updates the account P/L
@@ -303,6 +325,10 @@ contract TradeLedger is Owned {
     return accountIds.length;
   }
 
+  function countEquityPoints() returns (uint256) {
+    return equityPointIds.length;
+  }
+
   function getAccount(
     string id
   ) 
@@ -334,6 +360,18 @@ contract TradeLedger is Owned {
     return getPosition(posid);
   }
 
+  function getEquityPointByIndex(
+    string accountId, 
+    uint256 idx
+  ) 
+    accountPresent(accountId)
+    returns (string, int256, int256, uint256, int256)
+  {
+    uint256 epid = accountEquityPoints[accountId][idx];
+    require(epid > 0);
+    return getEquityPoint(epid);
+  }
+
   function getPositionKeysByIndex(
     string accountId, 
     uint256 idx
@@ -361,6 +399,22 @@ contract TradeLedger is Owned {
       position.openDate,
       position.closeDate,
       position.ticker
+    );
+  }
+
+  function getEquityPoint(
+    uint256 id
+  ) 
+    equityPointPresent(id)
+    returns (string, int256, int256, uint256, int256) 
+  {
+    EquityPoint equityPoint = equityPoints[id];
+    return (
+      equityPoint.date, 
+      equityPoint.balance,
+      equityPoint.equity,
+      equityPoint.leverage,
+      equityPoint.profitLoss
     );
   }
 

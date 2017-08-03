@@ -285,8 +285,42 @@ contract("TradeLedger", function(accounts) {
         });
     });
 
-    it('should count equity points', async function() {});
-    it('should count equity points for account', async function() {});
-    it('should fetch equity point by ID', async function() {});
-    it('should fetch all equity points for account', async function() {});
+    it('should count equity points', async function() {
+        const result = await tradeLedger.countEquityPoints.call();
+        assert.equal(result.toNumber(), 2); 
+    });
+
+    it('should count equity points for account', async function() {
+        const result = await tradeLedger.countAccountEquityPoints.call('12345');
+        assert.equal(result.toNumber(), 2);
+    });
+
+    it('should fail to count equity points for account with invalid id', async function() {
+        await assertFail(async function() {
+            const result = await tradeLedger.countAccountEquityPoints.call('8888');
+        });
+    });
+
+    it('should fetch equity point by ID', async function() {
+        const result = await tradeLedger.getEquityPoint.call(1);
+        assert.equal(result[0], '2017-02-01T11:00:00');
+        assert.equal(result[1].toNumber(), 10000);
+        assert.equal(result[2].toNumber(), 10000);
+        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[4].toNumber(), 0);
+    });
+    
+    it('should fetch all equity points for account', async function() {
+        const result = await tradeLedger.countAccountEquityPoints.call('12345');
+        const count = result.toNumber();
+        assert.equal(count, 2);
+        for(let idx=0; idx<count; idx++) {
+            const result = await tradeLedger.getEquityPointByIndex.call('12345', idx);
+            assert.isDefined(result[0]);
+            assert.isDefined(result[1]);
+            assert.isDefined(result[2]);
+            assert.isDefined(result[3]);
+            assert.isDefined(result[4]);
+        }
+    });
 });
