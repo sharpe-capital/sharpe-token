@@ -285,6 +285,8 @@ contract("TradeLedger", function(accounts) {
         });
     });
 
-    it('should update account equity', async function() {});
+    it('should count equity points', async function() {});
+    it('should count equity points for account', async function() {});
+    it('should fetch equity point by ID', async function() {});
     it('should fetch all equity points for account', async function() {});
 });

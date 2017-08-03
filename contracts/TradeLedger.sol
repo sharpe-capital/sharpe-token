@@ -3,7 +3,6 @@ pragma solidity ^0.4.11;
 import "./lib/Owned.sol";
 import "./lib/strings.sol";
 import "./lib/SafeMath.sol";
-import "./EquityPointFactory.sol";
 
 contract TradeLedger is Owned {
 
@@ -389,14 +388,13 @@ contract TradeLedger is Owned {
     int256 balance, 
     int256 equity,  
     uint256 leverage, 
-    int256 profitLoss) internal {
-
-    if(!accounts[id].isPresent) {
-      accountOwners[id] = msg.sender;
-      accountIds.push(id);
-    } else {
-      require(accountOwners[id] == msg.sender);
-    }
+    int256 profitLoss
+  ) 
+    internal 
+    accountNotPresent(id)
+  {
+    accountOwners[id] = msg.sender;
+    accountIds.push(id);
     accounts[id] = Account(id, balance, equity, leverage, profitLoss, true);
   }
 
