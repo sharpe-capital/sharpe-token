@@ -81,9 +81,8 @@ contract TradeLedger is Owned {
   struct EquityPoint {
     string id;
     string date;
-    uint256 balance;
-    uint256 equity;
-    uint256 deposit;
+    int256 balance;
+    int256 equity;
     uint256 leverage;
     int256 profitLoss;
     string accountId;
@@ -91,9 +90,8 @@ contract TradeLedger is Owned {
 
   struct Account {
     string id;
-    uint256 balance;
-    uint256 equity;
-    uint256 deposit;
+    int256 balance;
+    int256 equity;
     uint256 leverage;
     int256 profitLoss;
     bool isPresent;
@@ -113,6 +111,7 @@ contract TradeLedger is Owned {
     string ticker; // encrypted
     KeyPair keyPair;
     bool isPresent;
+    string accountId;
   }
 
   // Data structures - END
@@ -127,49 +126,56 @@ contract TradeLedger is Owned {
 
   // Public functions - START
 
+  /// @dev Releases the public/privatey key pair that were used to encrypt sensitive Position information
+  /// @param id Position ID - should be unique and provided by brokerage firm
+  /// @param privateKey RSA private key used to decrypt position
+  /// @param publicKey RSA public key used to encrypt position
   function releaseKeyPair(
-    string accountId, 
+    string id, 
     string privateKey, 
     string publicKey
   ) 
-    accountOwner(accountId) 
+    positionOwner(id) // Only the position owner can release decryption keys
   {
-
-    string[] accountPos = accountPositions[accountId];
-
-    for(uint idx=0; idx<accountPos.length; idx++) {
-      
-      string posid = accountPos[idx];
-      Position position = positions[posid];
-
-      if(!position.keyPair.released && position.closeDate.toSlice().len() > 0) {
-        positions[posid].keyPair = KeyPair(privateKey, publicKey, true);
-      }
+    Position position = positions[id];
+    if(!position.keyPair.released && position.closeDate.toSlice().len() > 0) {
+      positions[id].keyPair = KeyPair(privateKey, publicKey, true);
     }
   }
 
+  /// @dev Returns the number of positions for an account
+  /// @param accountId Account ID - should be unique and provided by brokerage firm
+  /// @return Returns the number of positions for an account
   function countAccountPositions(
     string accountId
   ) 
-    accountPresent(accountId)
+    accountPresent(accountId) // Only allow for valid account IDs
     returns (uint256) 
   {
     return accountPositions[accountId].length;
   }
 
+  /// @dev Closes a position and updates the account P/L
+  /// @param id Position ID - should be unique and provided by brokerage firm
+  /// @param closePrice Closing price of the underlying asset
+  /// @param closeDate Closing date of the position
+  /// @param profitLoss Net profit/loss of the position
+  /// @return Returns the number of positions for an account
   function closePosition(
     string id, 
     string closePrice, 
     string closeDate, 
     int256 profitLoss
   ) 
-    positionOwner(id)
-    positionOpen(id)
-    positionPresent(id)
+    positionOwner(id) // Only the position owner can close positions
+    positionOpen(id) // Only open positions can be closed
+    positionPresent(id) // Only valid positions can be closed
   {
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
+    accounts[positions[id].accountId].balance += profitLoss;
+    accounts[positions[id].accountId].equity += profitLoss;
     // TODO - update account balance??
   }
 
@@ -205,6 +211,7 @@ contract TradeLedger is Owned {
     require(accountId.toSlice().len() > 0);
     require(openDate.toSlice().len() > 0);
     require(id.toSlice().len() > 0);
+    require(accountId.toSlice().len() > 0);
     require(size > 0);
     require(exposure > 0);
 
@@ -221,12 +228,15 @@ contract TradeLedger is Owned {
       '',
       ticker,
       KeyPair('TBC', 'TBC', false),
-      true
+      true,
+      accountId
     );
     accountPositions[accountId].push(id);
     positionIds.push(id);
     positionOwners[id] = msg.sender;
     positions[id] = position;
+    // TODO - we should update following info at account level:
+    // > leverage (derived from exposure)
   }
 
   function countPositions() returns (uint256) {
@@ -241,19 +251,19 @@ contract TradeLedger is Owned {
     string id
   ) 
     accountPresent(id)
-    returns (string, uint256, uint256, uint256, uint256, int256) 
+    returns (string, int256, int256, uint256, int256) 
   {
     Account account = accounts[id];
-    return (account.id, account.balance, account.equity, account.deposit, account.leverage, account.profitLoss);
+    return (account.id, account.balance, account.equity, account.leverage, account.profitLoss);
   }
 
   function addAccount(
     string id,
-    uint256 balance
+    int256 balance
   )
     accountNotPresent(id)
   {
-    saveAccount(id, balance, balance, 0, 0, 0);
+    saveAccount(id, balance, balance, 0, 0);
   }
 
   function getPositionByIndex(
@@ -319,9 +329,8 @@ contract TradeLedger is Owned {
 
   function saveAccount(
     string id, 
-    uint256 balance, 
-    uint256 equity, 
-    uint256 deposit, 
+    int256 balance, 
+    int256 equity,  
     uint256 leverage, 
     int256 profitLoss) internal {
 
@@ -331,7 +340,7 @@ contract TradeLedger is Owned {
     } else {
       require(accountOwners[id] == msg.sender);
     }
-    accounts[id] = Account(id, balance, equity, deposit, leverage, profitLoss, true);
+    accounts[id] = Account(id, balance, equity, leverage, profitLoss, true);
   }
 
   // Internal functions - END

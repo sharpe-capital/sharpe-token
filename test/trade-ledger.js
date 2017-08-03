@@ -40,7 +40,6 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[2].toNumber(), 10000);
         assert.equal(result[3].toNumber(), 0);
         assert.equal(result[4].toNumber(), 0);
-        assert.equal(result[5].toNumber(), 0);
     });
 
     it('should not allow duplicate account IDs', async function(){
@@ -112,6 +111,12 @@ contract("TradeLedger", function(accounts) {
         });
     });
 
+    it('should not add position with missing ticker', async function() {
+        await assertFail(async function() {
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
+        });
+    });
+
     it('should not add position with missing account ID', async function() {
         await assertFail(async function() {
             await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
@@ -163,7 +168,7 @@ contract("TradeLedger", function(accounts) {
 
     it('should only allow the account owner to release encryption keys', async function() {
         await assertFail(async function() {
-            await tradeLedger.releaseKeyPair('12345', 'PRIVKEY', 'PUBKEY', {
+            await tradeLedger.releaseKeyPair('101', 'PRIVKEY', 'PUBKEY', {
                 from: accounts[1]
             });
         });
@@ -187,6 +192,12 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '2017-02-01T11:00:00');
         assert.equal(result[6], 'BASE64');
+        const result2 = await tradeLedger.getAccount.call('12345');
+        assert.equal(result2[0], "12345");
+        assert.equal(result2[1].toNumber(), 10001);
+        assert.equal(result2[2].toNumber(), 10001);
+        assert.equal(result2[3].toNumber(), 0);
+        assert.equal(result2[4].toNumber(), 0);
     });
 
     it('should fail on close position when already closed', async function() {
@@ -196,17 +207,14 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should release the encryption keys for closed positions', async function() {
-        await tradeLedger.releaseKeyPair('12345', 'PRIVKEY', 'PUBKEY');
+        await tradeLedger.releaseKeyPair('100', 'PRIVKEY', 'PUBKEY');
         const result = await tradeLedger.getPositionKeys.call("100");
         assert.equal(result[0], 'PRIVKEY');
         assert.equal(result[1], 'PUBKEY');
-        const result2 = await tradeLedger.getPositionKeys.call("101");
-        assert.equal(result2[0], 'TBC');
-        assert.equal(result2[1], 'TBC');
     });
 
     it('should fail to release the keys once already released', async function() {
-        await tradeLedger.releaseKeyPair('12345', 'PRIVKEY2', 'PUBKEY2');
+        await tradeLedger.releaseKeyPair('100', 'PRIVKEY2', 'PUBKEY2');
         const result = await tradeLedger.getPositionKeys.call("100");
         assert.equal(result[0], 'PRIVKEY');
         assert.equal(result[1], 'PUBKEY');
