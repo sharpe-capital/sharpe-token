@@ -2,10 +2,12 @@ pragma solidity ^0.4.11;
 
 import "./lib/Owned.sol";
 import "./lib/strings.sol";
+import "./lib/SafeMath.sol";
 
 contract TradeLedger is Owned {
 
   using strings for *;
+  using SafeMath for uint256;
 
   // Fields - START
 
