@@ -176,7 +176,6 @@ contract TradeLedger is Owned {
     positions[id].profitLoss = profitLoss;
     accounts[positions[id].accountId].balance += profitLoss;
     accounts[positions[id].accountId].equity += profitLoss;
-    // TODO - update account balance??
   }
 
   function updatePosition(
@@ -187,7 +186,12 @@ contract TradeLedger is Owned {
     positionOwner(id) 
     positionPresent(id)
   {
+    int256 previousProfitLoss = positions[id].profitLoss;
     positions[id].profitLoss = profitLoss;
+    accounts[positions[id].accountId].balance -= previousProfitLoss;
+    accounts[positions[id].accountId].equity -= previousProfitLoss;
+    accounts[positions[id].accountId].balance += profitLoss;
+    accounts[positions[id].accountId].equity += profitLoss;
   }
 
   function addPosition(

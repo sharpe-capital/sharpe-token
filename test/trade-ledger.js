@@ -247,15 +247,21 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should update P/L for a position', async function() {
-        await tradeLedger.updatePosition('101', -1);
+        await tradeLedger.updatePosition('101', -2);
         const result = await tradeLedger.getPosition.call("101");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[1], '');
         assert.equal(result[2], 1);
-        assert.equal(result[3].toNumber(), -1);
+        assert.equal(result[3].toNumber(), -2);
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '');
         assert.equal(result[6], 'BASE64');
+        const result2 = await tradeLedger.getAccount.call('12345');
+        assert.equal(result2[0], "12345");
+        assert.equal(result2[1].toNumber(), 9999);
+        assert.equal(result2[2].toNumber(), 9999);
+        assert.equal(result2[3].toNumber(), 0);
+        assert.equal(result2[4].toNumber(), 0);
     });
 
     it('should fail to update P/L for an invalid position ID', async function() {
