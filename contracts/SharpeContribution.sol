@@ -3,6 +3,7 @@ pragma solidity ^0.4.11;
 import "./lib/SafeMath.sol";
 import "./lib/Owned.sol";
 import "./SHP.sol";
+import "./SCD.sol";
 
 
 contract SharpeContribution is Owned {
@@ -10,6 +11,7 @@ contract SharpeContribution is Owned {
     using SafeMath for uint256;
 
     SHP public shp;
+    SCD public scd;
     address public masterAddress;
     address public contributionAddress;
     address public etherEscrowAddress;
@@ -63,7 +65,8 @@ contract SharpeContribution is Owned {
         address _founderAddress, 
         address _contributionAddress,
         address _masterAddress,
-        address _shp) public onlyOwner
+        address _shp,
+        address _scd) public onlyOwner
     {
         masterAddress = _masterAddress;
         etherEscrowAddress = _etherEscrowAddress;
@@ -71,6 +74,7 @@ contract SharpeContribution is Owned {
         founderAddress = _founderAddress;
         contributionAddress = _contributionAddress;
         shp = SHP(_shp);
+        scd = SCD(_scd);
     }
 
     /// @notice This function fires when someone sends Ether to the address of this contract. 

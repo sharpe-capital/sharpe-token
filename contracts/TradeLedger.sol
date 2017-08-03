@@ -24,6 +24,52 @@ contract TradeLedger is Owned {
 
 
 
+  // Modifiers - START
+
+  modifier positionOwner(string id) {
+    require(positionOwners[id] == msg.sender);
+    _;
+  }
+
+  modifier accountOwner(string id) {
+    require(accountOwners[id] == msg.sender);
+    _;
+  }
+
+  modifier positionOpen(string id) {
+    require(positions[id].closePrice.toSlice().len() == 0);
+    _;
+  }
+
+  modifier positionClosed(string id) {
+    require(positions[id].closePrice.toSlice().len() > 0);
+    _;
+  }
+
+  modifier positionNotPresent(string id) {
+    require(!positions[id].isPresent);
+    _;
+  }
+
+  modifier positionPresent(string id) {
+    require(positions[id].isPresent);
+    _;
+  }
+
+  modifier accountNotPresent(string id) {
+    require(!accounts[id].isPresent);
+    _;
+  }
+
+  modifier accountPresent(string id) {
+    require(accounts[id].isPresent);
+    _;
+  }
+
+  // Modifiers - END
+
+
+
   // Data structures - START
 
   struct KeyPair {
@@ -81,9 +127,14 @@ contract TradeLedger is Owned {
 
   // Public functions - START
 
-  function releaseKeyPair(string accountId, string privateKey, string publicKey) {
+  function releaseKeyPair(
+    string accountId, 
+    string privateKey, 
+    string publicKey
+  ) 
+    accountOwner(accountId) 
+  {
 
-    require(accountOwners[accountId] == msg.sender);
     string[] accountPos = accountPositions[accountId];
 
     for(uint idx=0; idx<accountPos.length; idx++) {
@@ -97,17 +148,40 @@ contract TradeLedger is Owned {
     }
   }
 
-  function countAccountPositions(string accountId) returns (uint256) {
+  function countAccountPositions(
+    string accountId
+  ) 
+    accountPresent(accountId)
+    returns (uint256) 
+  {
     return accountPositions[accountId].length;
   }
 
-  function closePosition(string id, string closePrice, string closeDate, uint256 profitLoss) {
-    require(positionOwners[id] == msg.sender);
-    require(positions[id].closePrice.toSlice().len() == 0);
+  function closePosition(
+    string id, 
+    string closePrice, 
+    string closeDate, 
+    uint256 profitLoss
+  ) 
+    positionOwner(id)
+    positionOpen(id)
+    positionPresent(id)
+  {
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
     // TODO - update account balance??
+  }
+
+  function updatePosition(
+    string id, 
+    uint256 profitLoss
+  ) 
+    positionOpen(id)
+    positionOwner(id) 
+    positionPresent(id)
+  {
+    positions[id].profitLoss = profitLoss;
   }
 
   function addPosition(
@@ -120,10 +194,12 @@ contract TradeLedger is Owned {
     string openDate,
     string ticker,
     string accountId
-  ) {
+  ) 
+    accountOwner(accountId)
+    accountPresent(accountId)
+    positionNotPresent(id) 
+  {
     
-    require(accountOwners[accountId] == msg.sender);
-    require(!positions[id].isPresent);
     require(openPrice.toSlice().len() > 0);
     require(ticker.toSlice().len() > 0);
     require(accountId.toSlice().len() > 0);
@@ -161,31 +237,55 @@ contract TradeLedger is Owned {
     return accountIds.length;
   }
 
-  function getAccount(string id) returns (string, uint256, uint256, uint256, uint256, uint256) {
+  function getAccount(
+    string id
+  ) 
+    accountPresent(id)
+    returns (string, uint256, uint256, uint256, uint256, uint256) 
+  {
     Account account = accounts[id];
     return (account.id, account.balance, account.equity, account.deposit, account.leverage, account.profitLoss);
   }
 
-  function addAccount(string id) {
-    require(!accounts[id].isPresent);
+  function addAccount(
+    string id
+  )
+    accountNotPresent(id)
+  {
     saveAccount(id, 0, 0, 0, 0, 0);
   }
 
-  function getPositionByIndex(string accountId, uint256 idx) returns (string, string, uint256, uint256, string, string, string) {
+  function getPositionByIndex(
+    string accountId, 
+    uint256 idx
+  ) 
+    accountPresent(accountId)
+    returns (string, string, uint256, uint256, string, string, string) 
+  {
     string posid = accountPositions[accountId][idx];
     require(posid.toSlice().len() > 0);
     return getPosition(posid);
   }
 
-  function getPositionKeysByIndex(string accountId, uint256 idx) returns (string, string) {
+  function getPositionKeysByIndex(
+    string accountId, 
+    uint256 idx
+  ) 
+    accountPresent(accountId)
+    returns (string, string) 
+  {
     string posid = accountPositions[accountId][idx];
     require(posid.toSlice().len() > 0);
     return getPositionKeys(posid);
   }
 
-  function getPosition(string id) returns (string, string, uint256, uint256, string, string, string) {
+  function getPosition(
+    string id
+  ) 
+    positionPresent(id)
+    returns (string, string, uint256, uint256, string, string, string) 
+  {
     Position position = positions[id];
-    require(position.isPresent);
     return (
       position.openPrice, 
       position.closePrice,
@@ -197,9 +297,13 @@ contract TradeLedger is Owned {
     );
   }
 
-  function getPositionKeys(string id) returns (string, string) {
+  function getPositionKeys(
+    string id
+  ) 
+    positionPresent(id)
+    returns (string, string) 
+  {
     Position position = positions[id];
-    require(position.isPresent);
     return (
       position.keyPair.privateKey,
       position.keyPair.publicKey
