@@ -112,12 +112,6 @@ contract("TradeLedger", function(accounts) {
         });
     });
 
-    it('should not add position with missing ticker', async function() {
-        await assertFail(async function() {
-            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
-        });
-    });
-
     it('should not add position with missing account ID', async function() {
         await assertFail(async function() {
             await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
@@ -193,12 +187,15 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '2017-02-01T11:00:00');
         assert.equal(result[6], 'BASE64');
-        const result2 = await tradeLedger.getAccount.call('12345');
-        assert.equal(result2[0], "12345");
-        assert.equal(result2[1].toNumber(), 10001);
-        assert.equal(result2[2].toNumber(), 10001);
-        assert.equal(result2[3].toNumber(), 0);
-        assert.equal(result2[4].toNumber(), 0);
+    });
+
+    it('should have updated the account balance when closing position', async function() {
+        const result = await tradeLedger.getAccount.call('12345');
+        assert.equal(result[0], "12345");
+        assert.equal(result[1].toNumber(), 10001);
+        assert.equal(result[2].toNumber(), 10001);
+        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[4].toNumber(), 0);
     });
 
     it('should fail on close position when already closed', async function() {
@@ -214,7 +211,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[1], 'PUBKEY');
     });
 
-    it('should fail to release the keys once already released', async function() {
+    it('should not release the keys once already released', async function() {
         await tradeLedger.releaseKeyPair('100', 'PRIVKEY2', 'PUBKEY2');
         const result = await tradeLedger.getPositionKeys.call("100");
         assert.equal(result[0], 'PRIVKEY');
@@ -257,12 +254,15 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[4], '2017-01-01T11:00:00');
         assert.equal(result[5], '');
         assert.equal(result[6], 'BASE64');
-        const result2 = await tradeLedger.getAccount.call('12345');
-        assert.equal(result2[0], "12345");
-        assert.equal(result2[1].toNumber(), 10001);
-        assert.equal(result2[2].toNumber(), 9999);
-        assert.equal(result2[3].toNumber(), 0);
-        assert.equal(result2[4].toNumber(), 0);
+    });
+
+    it('should update the account balances when updating position P/L', async function() {
+        const result = await tradeLedger.getAccount.call('12345');
+        assert.equal(result[0], "12345");
+        assert.equal(result[1].toNumber(), 10001);
+        assert.equal(result[2].toNumber(), 9999);
+        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[4].toNumber(), 0);
     });
 
     it('should fail to update P/L for an invalid position ID', async function() {
