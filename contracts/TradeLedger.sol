@@ -12,14 +12,16 @@ contract TradeLedger is Owned {
 
   // Fields - START
 
+  uint256[] private equityPointIds; // list of all equity point IDs
   string[] private positionIds; // list of all position IDs
   string[] private accountIds; // list of all account IDs
+  mapping (string => uint256[]) private accountEquityPoints; // list of equity point IDs, keyed by account ID
   mapping (string => string[]) private accountPositions; // list of position IDs, keyed by account ID
   mapping (string => Account) private accounts; // map of accounts, keyed by ID
   mapping (string => Position) private positions; // map of positions, keyed by ID
+  mapping (uint256 => EquityPoint) private equityPoints; // map of equity points, keyed by ID
   mapping (string => address) private accountOwners; // map of owners, keyed by account ID
   mapping (string => address) private positionOwners; // map of owners, keyed by position ID 
-  EquityPointFactory equityPointFactory;
 
   // Fields - END
 
@@ -31,8 +33,8 @@ contract TradeLedger is Owned {
     require(false);
   }
 
-  function TradeLedger(address equityPointFactoryAddr) payable {
-    equityPointFactory = EquityPointFactory(equityPointFactoryAddr);
+  function TradeLedger() payable {
+    // no initialisation required
   }
 
   // Default functions - END
@@ -99,6 +101,17 @@ contract TradeLedger is Owned {
     int256 equity;
     uint256 leverage;
     int256 profitLoss;
+    bool isPresent;
+  }
+
+  struct EquityPoint {
+    uint256 id;
+    string date;
+    int256 balance;
+    int256 equity;
+    uint256 leverage;
+    int256 profitLoss;
+    string accountId;
     bool isPresent;
   }
 
@@ -186,8 +199,8 @@ contract TradeLedger is Owned {
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
     accounts[accountId].balance += profitLoss;
-    // updateAccountLeverage(accountId);
-    // equityPointFactory.addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
+    updateAccountLeverage(accountId);
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
   function updatePosition(
@@ -205,7 +218,7 @@ contract TradeLedger is Owned {
     positions[id].profitLoss = profitLoss;
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
-    // equityPointFactory.addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
   function updateAccountLeverage(
@@ -215,6 +228,24 @@ contract TradeLedger is Owned {
     accountPresent(accountId)
   {
     // TODO - update the accounts leverage based on position data and deposited funds
+  }
+
+  function addEquityPoint(
+    string accountId, 
+    int256 balance,
+    int256 equity,
+    uint256 leverage,
+    int256 profitLoss,
+    string currentDateTime
+  )
+    accountOwner(accountId)
+  {
+    uint256 id = equityPointIds.length + 1;
+    if(!equityPoints[id].isPresent) {
+      equityPoints[id] = EquityPoint(id, currentDateTime, balance, equity, leverage, profitLoss, accountId, true);
+      equityPointIds.push(id);
+      accountEquityPoints[accountId].push(id);
+    }
   }
 
   function addPosition(

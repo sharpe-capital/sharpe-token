@@ -10,13 +10,11 @@ contract("TradeLedger", function(accounts) {
     accounts.forEach(acc => console.log(acc + " -> " + web3.fromWei(web3.eth.getBalance(acc), "ether").toNumber() + " ETH"));
 
     before(async function() {
-        equityPointFactoryAddr = accounts[2];
-        tradeLedger = await TradeLedger.new(equityPointFactoryAddr);
+        tradeLedger = await TradeLedger.new();
     });
 
     after(async function() {
         tradeLedger = null;
-        equityPointFactoryAddr = null;
     });
 
     it('should not accept Ether payments', async function() {
