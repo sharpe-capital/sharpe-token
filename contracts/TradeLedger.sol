@@ -108,7 +108,7 @@ contract TradeLedger is Owned {
     string id;
     int256 balance;
     int256 equity;
-    uint256 leverage;
+    int256 leverage; // Stored as x100 to handle no floating points and 2 decimal place accuracy
     int256 profitLoss;
     bool isPresent;
   }
@@ -118,7 +118,7 @@ contract TradeLedger is Owned {
     string date;
     int256 balance;
     int256 equity;
-    uint256 leverage;
+    int256 leverage; // Stored as x100 to handle no floating points and 2 decimal place accuracy
     int256 profitLoss;
     string accountId;
     bool isPresent;
@@ -131,7 +131,7 @@ contract TradeLedger is Owned {
     string stopPrice; // encrypted
     string limitPrice; // encrypted
     uint256 size;
-    uint256 exposure;
+    int256 exposure;
     int256 profitLoss;
     string openDate;
     string closeDate;
@@ -248,14 +248,23 @@ contract TradeLedger is Owned {
     accountOwner(accountId)
     accountPresent(accountId)
   {
-    // TODO - update the accounts leverage based on position data and deposited funds
+    Account account = accounts[accountId];
+    int256 exposure = 0;
+    uint256 count = countAccountPositions(accountId);
+    for(uint256 i=0; i<count; i++) {
+      int256 positionExposure = getPositionExposureByIndex(accountId, i);
+      exposure = exposure + positionExposure;
+    }
+    exposure = exposure * 100;
+    int256 leverage = exposure / account.equity;
+    accounts[accountId].leverage = leverage;
   }
 
   function addEquityPoint(
     string accountId, 
     int256 balance,
     int256 equity,
-    uint256 leverage,
+    int256 leverage,
     int256 profitLoss,
     string currentDateTime
   )
@@ -275,7 +284,7 @@ contract TradeLedger is Owned {
     string stopPrice,
     string limitPrice,
     uint256 size,
-    uint256 exposure,
+    int256 exposure,
     string openDate,
     string ticker,
     string accountId
@@ -333,7 +342,7 @@ contract TradeLedger is Owned {
     string id
   ) 
     accountPresent(id)
-    returns (string, int256, int256, uint256, int256) 
+    returns (string, int256, int256, int256, int256) 
   {
     Account account = accounts[id];
     return (account.id, account.balance, account.equity, account.leverage, account.profitLoss);
@@ -365,7 +374,7 @@ contract TradeLedger is Owned {
     uint256 idx
   ) 
     accountPresent(accountId)
-    returns (string, int256, int256, uint256, int256)
+    returns (string, int256, int256, int256, int256)
   {
     uint256 epid = accountEquityPoints[accountId][idx];
     require(epid > 0);
@@ -406,7 +415,7 @@ contract TradeLedger is Owned {
     uint256 id
   ) 
     equityPointPresent(id)
-    returns (string, int256, int256, uint256, int256) 
+    returns (string, int256, int256, int256, int256) 
   {
     EquityPoint equityPoint = equityPoints[id];
     return (
@@ -437,11 +446,24 @@ contract TradeLedger is Owned {
 
   // Internal functions - START
 
+  function getPositionExposureByIndex(
+    string accountId, 
+    uint256 idx
+  ) 
+    accountPresent(accountId)
+    internal
+    returns (int256) 
+  {
+    string posid = accountPositions[accountId][idx];
+    require(posid.toSlice().len() > 0);
+    return positions[posid].exposure;
+  }
+
   function saveAccount(
     string id, 
     int256 balance, 
     int256 equity,  
-    uint256 leverage, 
+    int256 leverage, 
     int256 profitLoss
   ) 
     internal 

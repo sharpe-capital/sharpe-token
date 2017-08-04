@@ -50,10 +50,19 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should add a position', async function() {
-        await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
-        await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
+        await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         const result = await tradeLedger.countPositions.call();
         assert.equal(result.toNumber(), 2);
+    });
+
+    it('should have updated the leverage after adding position', async function() {
+        const result = await tradeLedger.getAccount.call('12345');
+        assert.equal(result[0], "12345");
+        assert.equal(result[1].toNumber(), 10000);
+        assert.equal(result[2].toNumber(), 10000);
+        assert.equal(result[3].toNumber(), 100);
+        assert.equal(result[4].toNumber(), 0);
     });
 
     it('should fail to get position with invalid ID', async function() {
@@ -70,7 +79,7 @@ contract("TradeLedger", function(accounts) {
 
     it('should fail to add position if not the account owner', async function(){
         await assertFail(async function() {
-            await tradeLedger.addPosition("102", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345', {
+            await tradeLedger.addPosition("102", 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345', {
                 from: address[1]
             });
         });
@@ -78,13 +87,13 @@ contract("TradeLedger", function(accounts) {
 
     it('should not add position with missing ID', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition('', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+            await tradeLedger.addPosition('', 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         });
     });
 
     it('should not add position with missing open price', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition('102', '', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+            await tradeLedger.addPosition('102', '', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         });
     });
 
@@ -102,31 +111,31 @@ contract("TradeLedger", function(accounts) {
 
     it('should not add position with missing open date', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '', 'BASE64', '12345');
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 5000, '', 'BASE64', '12345');
         });
     });
 
     it('should not add position with missing ticker', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', '', '12345');
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', '', '12345');
         });
     });
 
     it('should not add position with missing account ID', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '');
+            await tradeLedger.addPosition('102', 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '');
         });
     });
 
     it('should add position with missing stop price', async function() {
-        await tradeLedger.addPosition('102', 'BASE64', '', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        await tradeLedger.addPosition('102', 'BASE64', '', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         const result = await tradeLedger.getPosition.call("102");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[4], '2017-01-01T11:00:00');
     });
 
     it('should add position with missing limit price', async function() {
-        await tradeLedger.addPosition('103', 'BASE64', 'BASE64', '', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+        await tradeLedger.addPosition('103', 'BASE64', 'BASE64', '', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         const result = await tradeLedger.getPosition.call("103");
         assert.equal(result[0], 'BASE64');
         assert.equal(result[4], '2017-01-01T11:00:00');
@@ -134,13 +143,13 @@ contract("TradeLedger", function(accounts) {
 
     it('should not allow duplicate position IDs', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '12345');
+            await tradeLedger.addPosition("101", 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '12345');
         });
     });
 
     it('should fail to add a position with invalid account', async function() {
         await assertFail(async function() {
-            await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 1, '2017-01-01T11:00:00', 'BASE64', '88888');
+            await tradeLedger.addPosition("100", 'BASE64', 'BASE64', 'BASE64', 1, 5000, '2017-01-01T11:00:00', 'BASE64', '88888');
         });
     });
 
@@ -194,7 +203,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], "12345");
         assert.equal(result[1].toNumber(), 10001);
         assert.equal(result[2].toNumber(), 10001);
-        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[3].toNumber(), 199);
         assert.equal(result[4].toNumber(), 0);
     });
 
@@ -261,7 +270,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], "12345");
         assert.equal(result[1].toNumber(), 10001);
         assert.equal(result[2].toNumber(), 9999);
-        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[3].toNumber(), 199);
         assert.equal(result[4].toNumber(), 0);
     });
 
@@ -306,7 +315,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], '2017-02-01T11:00:00');
         assert.equal(result[1].toNumber(), 10000);
         assert.equal(result[2].toNumber(), 10000);
-        assert.equal(result[3].toNumber(), 0);
+        assert.equal(result[3].toNumber(), 200);
         assert.equal(result[4].toNumber(), 0);
     });
     
