@@ -4,106 +4,107 @@ import "./lib/Owned.sol";
 import "./lib/strings.sol";
 import "./lib/SafeMath.sol";
 
+/// @title Trading ledger - Stores a record of investment activity and fund performance over time
+/// @author Lewis Barber - <lewis@sharpe.capital>
 contract TradeLedger is Owned {
 
   using strings for *;
   using SafeMath for uint256;
 
-  // Fields - START
+  uint256[] private equityPointIds;                           // List of all equity point IDs
+  string[] private positionIds;                               // List of all position IDs
+  string[] private accountIds;                                // List of all account IDs
+  mapping (string => uint256[]) private accountEquityPoints;  // List of equity point IDs, keyed by account ID
+  mapping (string => string[]) private accountPositions;      // List of position IDs, keyed by account ID
+  mapping (string => Account) private accounts;               // Map of accounts, keyed by ID
+  mapping (string => Position) private positions;             // Map of positions, keyed by ID
+  mapping (uint256 => EquityPoint) private equityPoints;      // Map of equity points, keyed by ID
+  mapping (string => address) private accountOwners;          // Map of owners, keyed by account ID
+  mapping (string => address) private positionOwners;         // Map of owners, keyed by position ID 
 
-  uint256[] private equityPointIds; // list of all equity point IDs
-  string[] private positionIds; // list of all position IDs
-  string[] private accountIds; // list of all account IDs
-  mapping (string => uint256[]) private accountEquityPoints; // list of equity point IDs, keyed by account ID
-  mapping (string => string[]) private accountPositions; // list of position IDs, keyed by account ID
-  mapping (string => Account) private accounts; // map of accounts, keyed by ID
-  mapping (string => Position) private positions; // map of positions, keyed by ID
-  mapping (uint256 => EquityPoint) private equityPoints; // map of equity points, keyed by ID
-  mapping (string => address) private accountOwners; // map of owners, keyed by account ID
-  mapping (string => address) private positionOwners; // map of owners, keyed by position ID 
-
-  // Fields - END
-
-
-
-  // Default functions - START
-
+  /// @notice Rejects Ether payments and returns the funds to the sender
   function () payable {
     require(false);
   }
 
-  function TradeLedger() payable {
-    // no initialisation required
-  }
-
-  // Default functions - END
-
-
-
-  // Modifiers - START
-
+  /// @notice Ensures the specified position is owned by the caller of the function
+  /// @param id The position ID
   modifier positionOwner(string id) {
     require(positionOwners[id] == msg.sender);
     _;
   }
 
+  /// @notice Ensures the specified account is owned by the caller of the function
+  /// @param id The account ID
   modifier accountOwner(string id) {
     require(accountOwners[id] == msg.sender);
     _;
   }
 
+  /// @notice Ensures the specified position is open
+  /// @param id The position ID
   modifier positionOpen(string id) {
     require(positions[id].closePrice.toSlice().len() == 0);
     _;
   }
 
+  /// @notice Ensures the specified position is closed
+  /// @param id The position ID
   modifier positionClosed(string id) {
     require(positions[id].closePrice.toSlice().len() > 0);
     _;
   }
 
+  /// @notice Ensures the specified position does not exist
+  /// @param id The position ID
   modifier positionNotPresent(string id) {
     require(!positions[id].isPresent);
     _;
   }
 
+  /// @notice Ensures the specified position exists
+  /// @param id The position ID
   modifier positionPresent(string id) {
     require(positions[id].isPresent);
     _;
   }
 
+  /// @notice Ensures the specified account does not exist
+  /// @param id The account ID
   modifier accountNotPresent(string id) {
     require(!accounts[id].isPresent);
     _;
   }
 
+  /// @notice Ensures the specified account exists
+  /// @param id The account ID
   modifier accountPresent(string id) {
     require(accounts[id].isPresent);
     _;
   }
 
+  /// @notice Ensures the specified equity point does not exist
+  /// @param id The equity point ID
   modifier equityPointNotPresent(uint256 id) {
     require(!equityPoints[id].isPresent);
     _;
   }
 
+  /// @notice Ensures the specified equity point exists
+  /// @param id The equity point ID
   modifier equityPointPresent(uint256 id) {
     require(equityPoints[id].isPresent);
     _;
   }
 
-  // Modifiers - END
-
-
-
-  // Data structures - START
-
+  /// @notice Object structure for an RSA key pair
   struct KeyPair {
     string privateKey;
     string publicKey;
     bool released;
   }
 
+  /// @notice Object structure for a trading account
   struct Account {
     string id;
     int256 balance;
@@ -113,6 +114,7 @@ contract TradeLedger is Owned {
     bool isPresent;
   }
 
+  /// @notice Object structure representing a trading account at a given point in time
   struct EquityPoint {
     uint256 id;
     string date;
@@ -124,6 +126,7 @@ contract TradeLedger is Owned {
     bool isPresent;
   }
 
+  /// @notice Object structure for a position (trade) in a trading account
   struct Position {
     string id;
     string openPrice; // encrypted
@@ -140,18 +143,6 @@ contract TradeLedger is Owned {
     bool isPresent;
     string accountId;
   }
-
-  // Data structures - END
-
-
-
-  // Restricted functions - START
-  // ...
-  // Restricted functions - END
-
-
-
-  // Public functions - START
 
   /// @dev Releases the public/privatey key pair that were used to encrypt sensitive Position information
   /// @param id Position ID - should be unique and provided by brokerage firm
@@ -199,6 +190,7 @@ contract TradeLedger is Owned {
   /// @param closePrice Closing price of the underlying asset
   /// @param closeDate Closing date of the position
   /// @param profitLoss Net profit/loss of the position
+  /// @param currentDateTime The current date & time in ISO format
   /// @return Returns the number of positions for an account
   function closePosition(
     string id, 
@@ -207,8 +199,8 @@ contract TradeLedger is Owned {
     int256 profitLoss,
     string currentDateTime
   ) 
-    positionOwner(id) // Only the position owner can close positions
-    positionOpen(id) // Only open positions can be closed
+    positionOwner(id)   // Only the position owner can close positions
+    positionOpen(id)    // Only open positions can be closed
     positionPresent(id) // Only valid positions can be closed
   {
     string accountId = positions[id].accountId;
@@ -224,14 +216,18 @@ contract TradeLedger is Owned {
     addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
+  /// @dev Updates a positions P/L and adds a new equity point for the account
+  /// @param id Position ID - should be unique and provided by brokerage firm
+  /// @param profitLoss The current P/L of the position
+  /// @param currentDateTime The current date & time in ISO format
   function updatePosition(
     string id, 
     int256 profitLoss,
     string currentDateTime
   ) 
-    positionOpen(id)
-    positionOwner(id) 
-    positionPresent(id)
+    positionOpen(id)    // Only open positions can be updated
+    positionOwner(id)   // Only the position owner can update positions
+    positionPresent(id) // Only valid positions can be updated
   {
     int256 previousProfitLoss = positions[id].profitLoss;
     string accountId = positions[id].accountId;
@@ -242,11 +238,13 @@ contract TradeLedger is Owned {
     addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
+  /// @dev Updates a the current leverage on an account, across all open positions
+  /// @param accountId Account ID - should be unique and provided by brokerage firm
   function updateAccountLeverage(
     string accountId
   ) 
-    accountOwner(accountId)
-    accountPresent(accountId)
+    accountOwner(accountId)   // Only the account owner can update the leverage
+    accountPresent(accountId) // Only valid accounts can be updated
   {
     Account account = accounts[accountId];
     int256 exposure = 0;
@@ -260,6 +258,13 @@ contract TradeLedger is Owned {
     accounts[accountId].leverage = leverage;
   }
 
+  /// @dev Adds an equity point for the specified account at a specific point in time
+  /// @param accountId Account ID - should be unique and provided by brokerage firm
+  /// @param balance The account's cleared balance
+  /// @param equity The account's equity (balance + profitLoss)
+  /// @param leverage The total leverage across all open positions 
+  /// @param profitLoss The profit and loss at this point in time
+  /// @param currentDateTime The current date & time in ISO format
   function addEquityPoint(
     string accountId, 
     int256 balance,
@@ -268,7 +273,7 @@ contract TradeLedger is Owned {
     int256 profitLoss,
     string currentDateTime
   )
-    accountOwner(accountId)
+    accountOwner(accountId) // Only the account owner can add equity points
   {
     uint256 id = equityPointIds.length + 1;
     if(!equityPoints[id].isPresent) {
@@ -278,6 +283,17 @@ contract TradeLedger is Owned {
     }
   }
 
+  /// @dev Adds a new open position against the specified account, certain details will be RSA
+  //  encrypted and the private key will be released once the position has been closed (e.g. ticker, open price)
+  /// @param id ID - should be unique and provided by brokerage firm
+  /// @param openPrice The position open price, RSA encrypted & base64 encoded
+  /// @param stopPrice The position stop price, RSA encrypted & base64 encoded
+  /// @param limitPrice The position limit price, RSA encrypted & base64 encoded
+  /// @param size The position size
+  /// @param exposure The notional amount for the position (asset price x size)
+  /// @param openDate The date the position was opened
+  /// @param ticker The position ticker, RSA encrypted & base64 encoded
+  /// @param accountId Account ID - should be unique and provided by brokerage firm
   function addPosition(
     string id,
     string openPrice,
@@ -289,9 +305,9 @@ contract TradeLedger is Owned {
     string ticker,
     string accountId
   ) 
-    accountOwner(accountId)
-    accountPresent(accountId)
-    positionNotPresent(id) 
+    accountOwner(accountId)   // Only the account owner can add positions
+    accountPresent(accountId) // Only valid accounts can store positions
+    positionNotPresent(id)    // Stops duplicate position IDs
   {
     
     require(openPrice.toSlice().len() > 0);
@@ -326,42 +342,60 @@ contract TradeLedger is Owned {
     updateAccountLeverage(accountId);
   }
 
+  /// @dev Counts all positions
+  /// @return Returns the number of positions
   function countPositions() returns (uint256) {
     return positionIds.length;
   }
 
+  /// @dev Counts all accounts
+  /// @return Returns the number of accounts
   function countAccounts() returns (uint256) {
     return accountIds.length;
   }
 
+  /// @dev Counts all equity points
+  /// @return Returns the number of equity points
   function countEquityPoints() returns (uint256) {
     return equityPointIds.length;
   }
 
+  /// @dev Gets an account by ID
+  /// @param id Account ID - should be unique and provided by the brokerage
+  /// @return Returns the account fields as an array of values
   function getAccount(
     string id
   ) 
-    accountPresent(id)
+    accountPresent(id)  // Only valid accounts can be retreived
     returns (string, int256, int256, int256, int256) 
   {
     Account account = accounts[id];
     return (account.id, account.balance, account.equity, account.leverage, account.profitLoss);
   }
 
+  /// @dev Adds a new account
+  /// @param id Account ID - should be unique and provided by the brokerage
+  /// @param balance The starting balance of the account
   function addAccount(
     string id,
     int256 balance
   )
-    accountNotPresent(id)
+    accountNotPresent(id) // Prevents duplicate account IDs
   {
-    saveAccount(id, balance, balance, 0, 0);
+    accountOwners[id] = msg.sender;
+    accountIds.push(id);
+    accounts[id] = Account(id, balance, balance, 0, 0, true);
   }
 
+  /// @dev Gets an account position by index
+  /// @param accountId Account ID - should be unique and provided by the brokerage
+  /// @param idx The position index
+  /// @return Returns the position fields as an array of values
   function getPositionByIndex(
     string accountId, 
     uint256 idx
   ) 
-    accountPresent(accountId)
+    accountPresent(accountId) // Only valid accounts can be provided
     returns (string, string, uint256, int256, string, string, string) 
   {
     string posid = accountPositions[accountId][idx];
@@ -369,11 +403,15 @@ contract TradeLedger is Owned {
     return getPosition(posid);
   }
 
+  /// @dev Gets an account equity point by index
+  /// @param accountId Account ID - should be unique and provided by the brokerage
+  /// @param idx The position index
+  /// @return Returns the equity point fields as an array of values
   function getEquityPointByIndex(
     string accountId, 
     uint256 idx
   ) 
-    accountPresent(accountId)
+    accountPresent(accountId) // Only valid accounts can be provided
     returns (string, int256, int256, int256, int256)
   {
     uint256 epid = accountEquityPoints[accountId][idx];
@@ -381,11 +419,15 @@ contract TradeLedger is Owned {
     return getEquityPoint(epid);
   }
 
+  /// @dev Gets an account position key pair by index
+  /// @param accountId Account ID - should be unique and provided by the brokerage
+  /// @param idx The position index
+  /// @return Returns the key pair fields as an array of values
   function getPositionKeysByIndex(
     string accountId, 
     uint256 idx
   ) 
-    accountPresent(accountId)
+    accountPresent(accountId) // Only valid accounts can be provided
     returns (string, string) 
   {
     string posid = accountPositions[accountId][idx];
@@ -393,10 +435,13 @@ contract TradeLedger is Owned {
     return getPositionKeys(posid);
   }
 
+  /// @dev Gets an position by ID
+  /// @param id Position ID - should be unique and provided by the brokerage
+  /// @return Returns the position fields as an array of values
   function getPosition(
     string id
   ) 
-    positionPresent(id)
+    positionPresent(id) // Only valid positions can be provided
     returns (string, string, uint256, int256, string, string, string) 
   {
     Position position = positions[id];
@@ -411,10 +456,13 @@ contract TradeLedger is Owned {
     );
   }
 
+  /// @dev Gets an equity point by ID
+  /// @param id Equity Point ID
+  /// @return Returns the equity point fields as an array of values
   function getEquityPoint(
     uint256 id
   ) 
-    equityPointPresent(id)
+    equityPointPresent(id)  // Only valid equity points can be provided
     returns (string, int256, int256, int256, int256) 
   {
     EquityPoint equityPoint = equityPoints[id];
@@ -427,10 +475,13 @@ contract TradeLedger is Owned {
     );
   }
 
+  /// @dev Gets an position key by ID
+  /// @param id Key Pair ID
+  /// @return Returns the key pair fields as an array of values
   function getPositionKeys(
     string id
   ) 
-    positionPresent(id)
+    positionPresent(id) // Only valid positions can be provided
     returns (string, string) 
   {
     Position position = positions[id];
@@ -440,17 +491,18 @@ contract TradeLedger is Owned {
     );
   }
 
-  // Public functions - END
-
-
-
-  // Internal functions - START
-
+  /*
+   * Internal functions
+   */
+  /// @dev Gets an position exposure by account and index
+  /// @param accountId Account ID - should be unique and provided by the brokerage
+  /// @param idx The index of the position
+  /// @return Returns the exposure of the position
   function getPositionExposureByIndex(
     string accountId, 
     uint256 idx
   ) 
-    accountPresent(accountId)
+    accountPresent(accountId) // Only valid accounts can be provided
     internal
     returns (int256) 
   {
@@ -458,21 +510,4 @@ contract TradeLedger is Owned {
     require(posid.toSlice().len() > 0);
     return positions[posid].exposure;
   }
-
-  function saveAccount(
-    string id, 
-    int256 balance, 
-    int256 equity,  
-    int256 leverage, 
-    int256 profitLoss
-  ) 
-    internal 
-    accountNotPresent(id)
-  {
-    accountOwners[id] = msg.sender;
-    accountIds.push(id);
-    accounts[id] = Account(id, balance, equity, leverage, profitLoss, true);
-  }
-
-  // Internal functions - END
 }
