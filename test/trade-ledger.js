@@ -2,7 +2,6 @@ const TradeLedger = artifacts.require("TradeLedger");
 const assertFail = require("./helpers/assertFail");
 
 let tradeLedger;
-let equityPointFactoryAddr;
 
 contract("TradeLedger", function(accounts) {
 
