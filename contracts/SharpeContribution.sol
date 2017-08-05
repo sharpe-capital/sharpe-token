@@ -28,6 +28,7 @@ contract SharpeContribution is Owned {
     uint256 constant public MAX_CALL_FREQUENCY = 100;
 
     mapping (address => uint256) public lastCallBlock;
+    mapping (address => bool) private affiliates;
 
     bool public paused = true;
     bool public masterAddressUsed = false;
@@ -141,6 +142,17 @@ contract SharpeContribution is Owned {
         finalizedBlock = getBlockNumber();
         finalizedTime = now;
     }
+
+
+
+    /// @notice This adds an affiliate Ethereum address to our whitelist
+    /// @param affiliateAddr The Ethereum address of the affiliate
+    function whitelistAffiliate(address affiliateAddr) onlyOwner {
+        affiliates[affiliateAddr] = true;
+    }
+
+
+
 
     /// @notice This is an antispam mechanism
     /// @param callerAddress the caller's address
