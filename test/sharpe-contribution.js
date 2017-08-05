@@ -1,5 +1,6 @@
 const SharpeContribution = artifacts.require("SharpeContribution");
 const SHP = artifacts.require("SHP");
+const SCD = artifacts.require("SCD");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const FoundersWallet = artifacts.require("FoundersWalletMock");
 const ReserveWallet = artifacts.require("ReserveWalletMock");
@@ -24,6 +25,7 @@ contract("SharpeContribution", function(accounts) {
     let sharpeContribution;
     let miniMeTokenFactory;
     let shp;
+    let scd;
     let contributionAddress;
     let etherEscrowAddress;
     let foundersAddress;
@@ -42,6 +44,7 @@ contract("SharpeContribution", function(accounts) {
 
         sharpeContribution = await SharpeContribution.new();
         shp = await SHP.new("SHP");
+        scd = await SCD.new("SCD");
         
         await shp.changeOwner(sharpeContribution.address);
 
@@ -69,7 +72,8 @@ contract("SharpeContribution", function(accounts) {
             foundersWallet.address, 
             sharpeContribution.address,
             masterAddress,
-            shp.address);
+            shp.address,
+            scd.address);
     });
 
     it('should have correct addresses and balances', async function() {
@@ -164,7 +168,8 @@ contract("SharpeContribution", function(accounts) {
             value: web3.toWei(10),
             gas: 300000, 
             gasPrice: "20000000000", 
-            from: contributorOneAddress
+            from: contributorOneAddress,
+            data: accounts[7]
         });
         assertBalances.ether(11, 0, 90, 100, 0, 0, 94);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);

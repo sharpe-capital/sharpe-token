@@ -99,6 +99,19 @@ contract SharpeContribution is Owned {
         return doBuy(callerAddress, msg.value);
     }
 
+    /// @notice If an affiliate is specified and valid add 1% extra SHP tokens
+    /// @param tokens The initial amount of tokens to mint
+    /// @return Returns the new amount of tokens (1% more if affiliate valid)
+    function checkAffiliate(uint256 tokens) returns (uint256) {
+        if(msg.data.length > 0) {
+            address affiliateAddr = bytesToAddress(msg.data);
+            if(affiliates[affiliateAddr]) {
+                tokens = tokens + tokens.div(100);
+            }
+        }
+        return tokens;
+    }
+
     /// @notice This method sends the Ether received to the Ether escrow address
     /// and generates the calculated number of SHP tokens, sending them to the caller's address.
     /// It also generates the founder's tokens and the reserve tokens at the same time.
@@ -112,6 +125,8 @@ contract SharpeContribution is Owned {
             uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
             uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
             uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
+
+            callerTokens = checkAffiliate(callerTokens);
 
             assert(shp.mintTokens(callerTokens, callerAddress));
             assert(shp.mintTokens(reserveTokens, reserveAddress));
@@ -143,16 +158,11 @@ contract SharpeContribution is Owned {
         finalizedTime = now;
     }
 
-
-
     /// @notice This adds an affiliate Ethereum address to our whitelist
     /// @param affiliateAddr The Ethereum address of the affiliate
     function whitelistAffiliate(address affiliateAddr) onlyOwner {
         affiliates[affiliateAddr] = true;
     }
-
-
-
 
     /// @notice This is an antispam mechanism
     /// @param callerAddress the caller's address
@@ -194,5 +204,22 @@ contract SharpeContribution is Owned {
     /// @notice Resumes the contribution
     function resumeContribution() onlyOwner {
         paused = false;
+    }
+
+    function bytesToAddress (bytes b) internal constant returns (address) {
+        uint result = 0;
+        for (uint i = 0; i < b.length; i++) {
+            uint c = uint(b[i]);
+            if (c >= 48 && c <= 57) {
+                result = result * 16 + (c - 48);
+            }
+            if(c >= 65 && c<= 90) {
+                result = result * 16 + (c - 55);
+            }
+            if(c >= 97 && c<= 122) {
+                result = result * 16 + (c - 87);
+            }
+        }
+        return address(result);
     }
 }
