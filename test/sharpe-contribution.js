@@ -169,7 +169,7 @@ contract("SharpeContribution", function(accounts) {
             gas: 300000, 
             gasPrice: "20000000000", 
             from: contributorOneAddress,
-            data: accounts[7]
+            // data: accounts[7]
         });
         assertBalances.ether(11, 0, 90, 100, 0, 0, 94);
         await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);

@@ -26,6 +26,8 @@ contract SharpeContribution is Owned {
     uint256 constant public FOUNDER_EXCHANGE_RATE = 1000;
     uint256 constant public MAX_GAS_PRICE = 50000000000;
     uint256 constant public MAX_CALL_FREQUENCY = 100;
+    uint256 constant public AFFILIATE_TIER2 = 80 ether;
+    uint256 constant public AFFILIATE_TIER3 = 200 ether;
 
     mapping (address => uint256) public lastCallBlock;
     mapping (address => bool) private affiliates;
@@ -99,17 +101,52 @@ contract SharpeContribution is Owned {
         return doBuy(callerAddress, msg.value);
     }
 
-    /// @notice If an affiliate is specified and valid add 1% extra SHP tokens
-    /// @param tokens The initial amount of tokens to mint
-    /// @return Returns the new amount of tokens (1% more if affiliate valid)
-    function checkAffiliate(uint256 tokens) returns (uint256) {
+    function isAffiliateValid() internal returns (bool) {
         if(msg.data.length > 0) {
             address affiliateAddr = bytesToAddress(msg.data);
             if(affiliates[affiliateAddr]) {
-                tokens = tokens + tokens.div(100);
+                return true;
             }
         }
+        return false;
+    }
+
+    function getAffiliate() internal returns (address) {
+        return bytesToAddress(msg.data);
+    }
+
+    /// @notice If an affiliate is specified and valid add 1% extra SHP tokens
+    /// @param tokens The initial amount of tokens to mint
+    /// @return Returns the new amount of tokens (1% more if affiliate valid)
+    function applyAffiliate(uint256 tokens) internal returns (uint256) {
+        if(isAffiliateValid()) {
+            return tokens.add(tokens.div(100));
+        }
         return tokens;
+    }
+
+    /// @notice Calculates the affilate payment based on the number of Ether deposited
+    /// @param tokens The tokens used to calculate affiliate payment
+    /// @return Returns the affilate payment amount
+    function getAffiliateAmount(uint256 tokens) internal returns (uint256) {
+        if(msg.value <= AFFILIATE_TIER2) {
+            return tokens.div(100);
+        } else if(msg.value > AFFILIATE_TIER2 && msg.value <= AFFILIATE_TIER3) {
+            return tokens.div(100).mul(2);
+        } else {
+            return tokens.div(100).mul(3);
+        }
+    }
+
+    /// @notice Pays an affiliate if they are valid and present in the transaction data
+    /// @param tokens The deposit tokens used to calculate affiliate payment amount
+    function payAffiliate(uint256 tokens) internal {
+        if(isAffiliateValid()) {
+            address affiliate = getAffiliate();
+            uint256 affiliateTokens = getAffiliateAmount(tokens);
+            assert(shp.mintTokens(affiliateTokens, affiliate));
+            NewSale(affiliate, 0, affiliateTokens);
+        }
     }
 
     /// @notice This method sends the Ether received to the Ether escrow address
@@ -126,15 +163,17 @@ contract SharpeContribution is Owned {
             uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
             uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
 
-            callerTokens = checkAffiliate(callerTokens);
+            uint256 newCallerTokens = applyAffiliate(callerTokens);
 
-            assert(shp.mintTokens(callerTokens, callerAddress));
+            assert(shp.mintTokens(newCallerTokens, callerAddress));
             assert(shp.mintTokens(reserveTokens, reserveAddress));
             assert(shp.mintTokens(founderTokens, founderAddress));
 
-            NewSale(callerAddress, etherAmount, callerTokens);
-            NewSale(reserveAddress, etherAmount, reserveTokens);
-            NewSale(founderAddress, etherAmount, founderTokens);
+            payAffiliate(callerTokens);
+
+            NewSale(callerAddress, 0, callerTokens);
+            NewSale(reserveAddress, 0, reserveTokens);
+            NewSale(founderAddress, 0, founderTokens);
 
             etherEscrowAddress.transfer(etherAmount);
 

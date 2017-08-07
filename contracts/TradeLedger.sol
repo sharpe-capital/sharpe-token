@@ -144,7 +144,7 @@ contract TradeLedger is Owned {
     string accountId;
   }
 
-  /// @dev Releases the public/privatey key pair that were used to encrypt sensitive Position information
+  /// @dev Releases the RSA key pair that were used to encrypt Position information
   /// @param id Position ID - should be unique and provided by brokerage firm
   /// @param privateKey RSA private key used to decrypt position
   /// @param publicKey RSA public key used to encrypt position
@@ -213,7 +213,8 @@ contract TradeLedger is Owned {
     accounts[accountId].equity += profitLoss;
     accounts[accountId].balance += profitLoss;
     updateAccountLeverage(accountId);
-    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, 
+      account.profitLoss, currentDateTime);
   }
 
   /// @dev Updates a positions P/L and adds a new equity point for the account
@@ -235,7 +236,8 @@ contract TradeLedger is Owned {
     positions[id].profitLoss = profitLoss;
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
-    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, 
+      account.profitLoss, currentDateTime);
   }
 
   /// @dev Updates a the current leverage on an account, across all open positions
@@ -273,18 +275,20 @@ contract TradeLedger is Owned {
     int256 profitLoss,
     string currentDateTime
   )
+    internal
     accountOwner(accountId) // Only the account owner can add equity points
   {
     uint256 id = equityPointIds.length + 1;
     if(!equityPoints[id].isPresent) {
-      equityPoints[id] = EquityPoint(id, currentDateTime, balance, equity, leverage, profitLoss, accountId, true);
+      equityPoints[id] = EquityPoint(id, currentDateTime, balance, equity, 
+        leverage, profitLoss, accountId, true);
       equityPointIds.push(id);
       accountEquityPoints[accountId].push(id);
     }
   }
 
   /// @dev Adds a new open position against the specified account, certain details will be RSA
-  //  encrypted and the private key will be released once the position has been closed (e.g. ticker, open price)
+  //  encrypted and the private key will be released once the position has been closed
   /// @param id ID - should be unique and provided by brokerage firm
   /// @param openPrice The position open price, RSA encrypted & base64 encoded
   /// @param stopPrice The position stop price, RSA encrypted & base64 encoded
@@ -295,46 +299,23 @@ contract TradeLedger is Owned {
   /// @param ticker The position ticker, RSA encrypted & base64 encoded
   /// @param accountId Account ID - should be unique and provided by brokerage firm
   function addPosition(
-    string id,
-    string openPrice,
-    string stopPrice,
-    string limitPrice,
-    uint256 size,
-    int256 exposure,
-    string openDate,
-    string ticker,
-    string accountId
+    string id, string openPrice, string stopPrice, string limitPrice,
+    uint256 size, int256 exposure, string openDate, string ticker, string accountId
   ) 
     accountOwner(accountId)   // Only the account owner can add positions
     accountPresent(accountId) // Only valid accounts can store positions
     positionNotPresent(id)    // Stops duplicate position IDs
   {
     
-    require(openPrice.toSlice().len() > 0);
-    require(ticker.toSlice().len() > 0);
-    require(accountId.toSlice().len() > 0);
-    require(openDate.toSlice().len() > 0);
-    require(id.toSlice().len() > 0);
-    require(accountId.toSlice().len() > 0);
-    require(size > 0);
-    require(exposure > 0);
+    require(openPrice.toSlice().len() > 0 && ticker.toSlice().len() > 0 && accountId.toSlice().len() > 0);
+    require(openDate.toSlice().len() > 0 && id.toSlice().len() > 0 && accountId.toSlice().len() > 0);
+    require(size > 0 && exposure > 0);
 
-    Position memory position = Position(
-      id,
-      openPrice,
-      '',
-      stopPrice,
-      limitPrice,
-      size,
-      exposure,
-      0,
-      openDate,
-      '',
-      ticker,
-      KeyPair('TBC', 'TBC', false),
-      true,
-      accountId
+    Position memory position = Position(id, openPrice, '', stopPrice, 
+      limitPrice, size, exposure, 0, openDate, '', ticker, 
+      KeyPair('TBC', 'TBC', false), true, accountId
     );
+
     accountPositions[accountId].push(id);
     positionIds.push(id);
     positionOwners[id] = msg.sender;
@@ -476,7 +457,7 @@ contract TradeLedger is Owned {
   }
 
   /// @dev Gets an position key by ID
-  /// @param id Key Pair ID
+  /// @param id Position ID
   /// @return Returns the key pair fields as an array of values
   function getPositionKeys(
     string id
