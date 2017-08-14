@@ -21,7 +21,7 @@ TBC
 
 For more information about when our ICO launches you can visit our website:
 
-[https://sharpecapital.co.uk](https://sharpecapital.co.uk)
+[https://sharpe.capital](https://sharpe.capital)
 
 ## Project Contributions
 
@@ -42,12 +42,6 @@ You need to install the Solidity and NPM dependencies to start this project:
 Our tests are implemented using Truffle's JS testing Framework. You can execute the following NPM script to run our tests:
 
 `npm test`
-
-#### Generating Coverage Report
-
-`npm run coverage`
-
-_Note:_ You can view the coverage report by opening {{PROJECT_ROOT}}/coverage/lcov-report/index.html
 
 ### More Information
 
