@@ -221,8 +221,9 @@ contract TradeLedger is Owned {
     positions[id].profitLoss = profitLoss;
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
-    addEquityPoint(accountId, account.balance, account.equity, account.leverage, 
-      account.profitLoss, currentDateTime);
+    updateAccountLeverage(accountId);
+    account = accounts[accountId];
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, currentDateTime);
   }
 
   /// @dev Updates a the current leverage on an account, across all open positions

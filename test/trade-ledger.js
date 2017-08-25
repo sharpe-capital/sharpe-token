@@ -269,7 +269,7 @@ contract("TradeLedger", function(accounts) {
         assert.equal(result[0], "12345");
         assert.equal(result[1].toNumber(), 10001);
         assert.equal(result[2].toNumber(), 9999);
-        assert.equal(result[3].toNumber(), 199);
+        assert.equal(result[3].toNumber(), 200);
         assert.equal(result[4].toNumber(), 0);
     });
 
