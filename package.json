@@ -12,17 +12,19 @@
     },
     "homepage": "https://github.com/sharpe-capital/sharpe-token",
     "devDependencies": {
-        "async": "^2.4.0",
+        "async": "^2.5.0",
         "bignumber.js": "^4.0.2",
         "ethereumjs-testrpc": "^3.0.5",
         "random-bytes": "^1.0.0",
-        "solc": "^0.4.9",
+        "solc": "^0.4.15",
         "solidity-coverage": "^0.1.10",
         "truffle": "3.2.4",
         "truffle-hdwallet-provider": "0.0.3",
-        "web3": "^0.18.4"
+        "web3": "^0.19.1"
     },
-    "dependencies": {},
+    "dependencies": {
+        "jsonfile": "^3.0.1"
+    },
     "main": "truffle.js",
     "directories": {
         "test": "test"

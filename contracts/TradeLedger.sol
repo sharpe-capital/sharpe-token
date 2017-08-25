@@ -44,14 +44,14 @@ contract TradeLedger is Owned {
   /// @notice Ensures the specified position is open
   /// @param id The position ID
   modifier positionOpen(string id) {
-    require(positions[id].closePrice.toSlice().len() == 0);
+    require(positions[id].closePrice == 0);
     _;
   }
 
   /// @notice Ensures the specified position is closed
   /// @param id The position ID
   modifier positionClosed(string id) {
-    require(positions[id].closePrice.toSlice().len() > 0);
+    require(positions[id].closePrice > 0);
     _;
   }
 
@@ -130,35 +130,18 @@ contract TradeLedger is Owned {
   struct Position {
     string id;
     string openPrice; // encrypted
-    string closePrice; // encrypted
+    uint256 closePrice;
     string stopPrice; // encrypted
     string limitPrice; // encrypted
-    uint256 size;
+    string size; // encrypted
     int256 exposure;
     int256 profitLoss;
-    string openDate;
+    string openDate; // encrypted
     string closeDate;
     string ticker; // encrypted
     KeyPair keyPair;
     bool isPresent;
     string accountId;
-  }
-
-  /// @dev Releases the RSA key pair that were used to encrypt Position information
-  /// @param id Position ID - should be unique and provided by brokerage firm
-  /// @param privateKey RSA private key used to decrypt position
-  /// @param publicKey RSA public key used to encrypt position
-  function releaseKeyPair(
-    string id, 
-    string privateKey, 
-    string publicKey
-  ) 
-    positionOwner(id) // Only the position owner can release decryption keys
-  {
-    Position position = positions[id];
-    if(!position.keyPair.released && position.closeDate.toSlice().len() > 0) {
-      positions[id].keyPair = KeyPair(privateKey, publicKey, true);
-    }
   }
 
   /// @dev Returns the number of positions for an account
@@ -190,14 +173,16 @@ contract TradeLedger is Owned {
   /// @param closePrice Closing price of the underlying asset
   /// @param closeDate Closing date of the position
   /// @param profitLoss Net profit/loss of the position
-  /// @param currentDateTime The current date & time in ISO format
+  /// @param privateKey RSA private key used to decrypt position
+  /// @param publicKey RSA public key used to encrypt position
   /// @return Returns the number of positions for an account
   function closePosition(
     string id, 
-    string closePrice, 
+    uint256 closePrice, 
     string closeDate, 
     int256 profitLoss,
-    string currentDateTime
+    string privateKey, 
+    string publicKey
   ) 
     positionOwner(id)   // Only the position owner can close positions
     positionOpen(id)    // Only open positions can be closed
@@ -209,12 +194,14 @@ contract TradeLedger is Owned {
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
+    if (!positions[id].keyPair.released) {
+      positions[id].keyPair = KeyPair(privateKey, publicKey, true);
+    }
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
     accounts[accountId].balance += profitLoss;
     updateAccountLeverage(accountId);
-    addEquityPoint(accountId, account.balance, account.equity, account.leverage, 
-      account.profitLoss, currentDateTime);
+    addEquityPoint(accountId, account.balance, account.equity, account.leverage, account.profitLoss, closeDate);
   }
 
   /// @dev Updates a positions P/L and adds a new equity point for the account
@@ -300,20 +287,20 @@ contract TradeLedger is Owned {
   /// @param accountId Account ID - should be unique and provided by brokerage firm
   function addPosition(
     string id, string openPrice, string stopPrice, string limitPrice,
-    uint256 size, int256 exposure, string openDate, string ticker, string accountId
+    string size, int256 exposure, string openDate, string ticker, string accountId
   ) 
     accountOwner(accountId)   // Only the account owner can add positions
     accountPresent(accountId) // Only valid accounts can store positions
     positionNotPresent(id)    // Stops duplicate position IDs
   {
-    
+
     require(openPrice.toSlice().len() > 0 && ticker.toSlice().len() > 0 && accountId.toSlice().len() > 0);
     require(openDate.toSlice().len() > 0 && id.toSlice().len() > 0 && accountId.toSlice().len() > 0);
-    require(size > 0 && exposure > 0);
+    require(size.toSlice().len() > 0 && exposure > 0);
 
-    Position memory position = Position(id, openPrice, '', stopPrice, 
-      limitPrice, size, exposure, 0, openDate, '', ticker, 
-      KeyPair('TBC', 'TBC', false), true, accountId
+    Position memory position = Position(id, openPrice, 0, stopPrice, 
+      limitPrice, size, exposure, 0, openDate, "", ticker, 
+      KeyPair("TBC", "TBC", false), true, accountId
     );
 
     accountPositions[accountId].push(id);
@@ -368,6 +355,19 @@ contract TradeLedger is Owned {
     accounts[id] = Account(id, balance, balance, 0, 0, true);
   }
 
+  /// @dev Gets an account by index
+  /// @param idx The account index
+  /// @return Returns the account fields as an array of values
+  function getAccountByIndex(
+    uint256 idx
+  )
+    returns (string, int256, int256, int256, int256) 
+  {
+    string accid = accountIds[idx];
+    require(accid.toSlice().len() > 0);
+    return getAccount(accid);
+  }
+
   /// @dev Gets an account position by index
   /// @param accountId Account ID - should be unique and provided by the brokerage
   /// @param idx The position index
@@ -377,7 +377,7 @@ contract TradeLedger is Owned {
     uint256 idx
   ) 
     accountPresent(accountId) // Only valid accounts can be provided
-    returns (string, string, uint256, int256, string, string, string) 
+    returns (string, uint256, string, int256, string, string, string) 
   {
     string posid = accountPositions[accountId][idx];
     require(posid.toSlice().len() > 0);
@@ -423,7 +423,7 @@ contract TradeLedger is Owned {
     string id
   ) 
     positionPresent(id) // Only valid positions can be provided
-    returns (string, string, uint256, int256, string, string, string) 
+    returns (string, uint256, string, int256, string, string, string) 
   {
     Position position = positions[id];
     return (

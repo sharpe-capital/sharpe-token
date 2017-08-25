@@ -5,3 +5,4 @@ coverage.json
 coverage
 coverageEnv
 .node*
+.DS_Store
