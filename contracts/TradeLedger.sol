@@ -194,9 +194,7 @@ contract TradeLedger is Owned {
     positions[id].closePrice = closePrice;
     positions[id].closeDate = closeDate;
     positions[id].profitLoss = profitLoss;
-    if (!positions[id].keyPair.released) {
-      positions[id].keyPair = KeyPair(privateKey, publicKey, true);
-    }
+    positions[id].keyPair = KeyPair(privateKey, publicKey, true);
     accounts[accountId].equity -= previousProfitLoss;
     accounts[accountId].equity += profitLoss;
     accounts[accountId].balance += profitLoss;
