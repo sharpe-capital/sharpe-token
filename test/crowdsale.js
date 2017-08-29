@@ -98,13 +98,48 @@ contract("Crowdsale", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     });
 
-    it('should open the crowdsale with the master address', async function() {
+    // TODO - in here we need to test the following
+    // 1. That the presale works as expected (before going on to test proper crowdsale)
+    // 2. That affiliate payments work as expected during pre-sale
+
+    it('should set the block to crowdsale', async function() {
         await crowdsale.setMockedBlockNumber(4567501);
+        assertBalances.ether(0, 0, 100, 100, 0, 0, 100);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
+    it('should not open the crowdsale without master address', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(1),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(0, 0, 100, 100, 0, 0, 100);
+        await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
+    });
+
+    it('should open the crowdsale with the master address', async function() {
         await crowdsale.sendTransaction({
             value: web3.toWei(1),
             gas: 300000, 
             gasPrice: "20000000000", 
             from: masterAddress
+        });
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
+
+    it('should not allow any more contributions from master address after used to start contribution phase', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(1),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: masterAddress
+            });
         });
         assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
         await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
@@ -187,6 +222,8 @@ contract("Crowdsale", function(accounts) {
         await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
     });
 
+    // TODO - here we should test affiliate payments
+
     it('should not allow calling of isContract externally', async function() {
         await assertFail(async function() {
             await crowdsale.isContract(contributionAddress);
@@ -266,55 +303,60 @@ contract("Crowdsale", function(accounts) {
     //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     // });
 
-    // it('should not allow any more contributions from master address after used to start contribution phase', async function() {
-    //     await openContributions();
-    //     await assertFail(async function() {
-    //         await openContributions();
-    //     });
-    //     assertBalances.ether(1, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
-    // });
+    it('should not allow pausing when not owner of contract', async function() {
+        await assertFail(async function() {
+            await crowdsale.pauseContribution({
+                value: web3.toWei(0),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
-    // it('should not allow pausing when not owner of contract', async function() {
-    //     await crowdsale.changeOwner(etherEscrowAddress);
-    //     await assertFail(async function() {
-    //         await crowdsale.pauseContribution();
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
+    it('should not allow resuming when not owner of contract', async function() {
+        await assertFail(async function() {
+            await crowdsale.resumeContribution({
+                value: web3.toWei(0),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
-    // it('should not allow resuming when not owner of contract', async function() {
-    //     await crowdsale.changeOwner(etherEscrowAddress);
-    //     await assertFail(async function() {
-    //         await crowdsale.resumeContribution();
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
+    it('should only allow the controller of the SHP contract to mint tokens', async function() {
+        await assertFail(async function() {
+            await shp.generateTokens(1000, contributorOneAddress);
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
-    // it('should only allow the owner of the SHP contract to mint SHP tokens', async function() {
-    //     await assertFail(async function() {
-    //         await shp.mintTokens(1000, contributorOneAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
-
-    // it('should only allow the owner to initialize', async function() {
-    //     await crowdsale.changeOwner(etherEscrowAddress);
-    //     await assertFail(async function() {
-    //         await crowdsale.initialize(
-    //             etherEscrowWallet.address, 
-    //             reserveWallet.address, 
-    //             foundersWallet.address, 
-    //             crowdsale.address,
-    //             masterAddress,
-    //             shp.address);
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
+    it('should only allow the owner to initialize', async function() {
+        await assertFail(async function() {
+            await crowdsale.initialize(
+                etherEscrowWallet.address, 
+                reserveWallet.address, 
+                foundersWallet.address, 
+                crowdsale.address,
+                masterAddress,
+                shp.address,
+                scd.address, 
+            {
+                value: web3.toWei(0),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
     // // Limits
     // // TODO - this will be linked to the dynamic ceiling
