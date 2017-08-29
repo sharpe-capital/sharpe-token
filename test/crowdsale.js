@@ -264,6 +264,14 @@ contract("Crowdsale", function(accounts) {
         await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
     });
 
+    it('should not allow calling of processPreSale externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.processPreSale(contributorOneAddress);
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
+
     it('should pause contributions', async function() {
         await crowdsale.pauseContribution();
         await assertFail(async function() {
