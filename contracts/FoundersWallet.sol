@@ -1,63 +1,56 @@
+pragma solidity ^0.4.11;
+
 import "./lib/Owned.sol";
 import "./lib/SafeMath.sol";
 import "./SHP.sol";
-import "./SharpeContribution.sol";
-
-pragma solidity ^0.4.11;
+import "./Crowdsale.sol";
 
 contract FoundersWallet is Owned {
 
     using SafeMath for uint256;
 
     SHP public shp;
-    SharpeContribution public contribution;
+    Crowdsale public crowdsale;
+    uint256 collectedTokens;
 
     /// @notice This returns any Ether sent to the address
     function () {
-        throw;
+        require(false);
     }
 
     /// @notice Creates a new ReserveWallet contract
-    function FoundersWallet(address _shp, SharpeContribution _contribution) {
+    function FoundersWallet(address _shp, Crowdsale _crowdsale) {
         shp = SHP(_shp);
-        contribution = SharpeContribution(_contribution);
+        crowdsale = Crowdsale(_crowdsale);
     }
 
-    function transfer(uint256 amount, address toAddress) {
+    function getExtractableTokens() public onlyOwner returns (uint256) {
 
-        // TODO - do we want to prevent transfers to contracts? Seems sensible since tokens could get 'stuck'
-        
         uint256 balance = shp.balanceOf(address(this));
-        uint256 totalMinted = shp.mintedAt(address(this));
-        uint256 finalizedTime = contribution.finalizedTime();
+        uint256 total = collectedTokens.add(balance);
 
-        require(finalizedTime > 0 && getTime() >= finalizedTime.add(months(6)));
+        uint256 finalizedTime = crowdsale.finalizedTime();
 
-        bool vestingPeriod1 = getTime() > finalizedTime.add(months(6)) && getTime() <= finalizedTime.add(months(12));
-        bool vestingPeriod2 = getTime() > finalizedTime.add(months(12)) && getTime() <= finalizedTime.add(months(24));
-        bool vestingOver = getTime() > finalizedTime.add(months(24));
+        require(finalizedTime > 0);
 
-        require(vestingPeriod1 || vestingPeriod2 || vestingOver);
+        uint256 canExtract = total.mul(getTime().sub(finalizedTime)).div(months(24));
 
-        uint256 multiplier = 100;
-        if(vestingPeriod1) {
-            multiplier = 25;
-        } else if (vestingPeriod2) {
-            multiplier = 75;
+        return canExtract.sub(collectedTokens);
+    }
+
+    function collectTokens(address recipient) public onlyOwner {
+
+        uint256 balance = shp.balanceOf(address(this));
+        uint256 canExtract = getExtractableTokens();
+
+        if (canExtract > balance) {
+            canExtract = balance;
         }
 
-        uint256 totalPermitted = totalMinted.mul(percent(multiplier)).div(percent(100));
-        uint256 totalSpent = totalMinted.sub(balance);
-        uint256 permitted = totalPermitted.sub(totalSpent);
+        collectedTokens = collectedTokens.add(canExtract);
+        assert(shp.transfer(recipient, canExtract));
 
-        require(amount <= permitted);
-        require(shp.transfer(toAddress, amount));
-    }
-
-    event Permitted(uint256 totalPermitted, uint256 totalSpent, uint256 totalMinted, uint256 balance, uint256 permitted);
-
-    function percent(uint256 p) internal returns (uint256) {
-        return p.mul(10**16);
+        TokensWithdrawn(recipient, canExtract);
     }
 
     function months(uint256 m) internal returns (uint256) {
@@ -67,4 +60,6 @@ contract FoundersWallet is Owned {
     function getTime() internal returns (uint256) {
         return now;
     }
+
+    event TokensWithdrawn(address indexed _holder, uint256 _amount);
 }

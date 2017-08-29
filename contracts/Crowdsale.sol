@@ -38,7 +38,7 @@ contract Crowdsale is Owned {
 
     uint256 public preSaleBegin = 4475000;
     uint256 public preSaleEnd = 4567500;
-    uint256 public icoBegin = 4567500;
+    uint256 public icoBegin = 4567501;
     uint256 public icoEnd = 4697500;
     uint256 public finalizedBlock;
     uint256 public finalizedTime;
@@ -127,7 +127,7 @@ contract Crowdsale is Owned {
 
       address caller = safeCaller(msg.sender);
 
-      if(preSaleOpen) {
+      if (preSaleOpen) {
         require(processPreSale(caller));
       } else {
         require(processIcoSale(caller));
@@ -161,9 +161,9 @@ contract Crowdsale is Owned {
       internal
       returns (bool)
     {
-        if(msg.data.length > 0) {
+        if (msg.data.length > 0) {
             address affiliateAddr = bytesToAddress(msg.data);
-            if(affiliates[affiliateAddr]) {
+            if (affiliates[affiliateAddr]) {
                 return true;
             }
         }
@@ -186,7 +186,7 @@ contract Crowdsale is Owned {
       internal
       returns (uint256)
     {
-      if(isAffiliateValid()) {
+      if (isAffiliateValid()) {
         return tokens.add(tokens.div(100));
       }
       return tokens;
@@ -201,9 +201,9 @@ contract Crowdsale is Owned {
       internal
       returns (uint256)
     {
-      if(msg.value <= AFFILIATE_TIER2) {
+      if (msg.value <= AFFILIATE_TIER2) {
         return tokens.div(100);
-      } else if(msg.value > AFFILIATE_TIER2 && msg.value <= AFFILIATE_TIER3) {
+      } else if (msg.value > AFFILIATE_TIER2 && msg.value <= AFFILIATE_TIER3) {
         return tokens.div(100).mul(2);
       }
       return tokens.div(100).mul(3);
@@ -216,7 +216,7 @@ contract Crowdsale is Owned {
     )
       internal
     {
-      if(isAffiliateValid()) {
+      if (isAffiliateValid()) {
         address affiliate = getAffiliate();
         uint256 affiliateTokens = getAffiliateAmount(tokens);
         assert(shp.generateTokens(affiliate, affiliateTokens));
@@ -259,7 +259,7 @@ contract Crowdsale is Owned {
         totalEtherPaid = totalEtherPaid.add(etherAmount);
         totalContributions = totalContributions.add(1);
 
-        if(!masterAddressUsed) {
+        if (!masterAddressUsed) {
           masterAddressUsed = true;
         }
 

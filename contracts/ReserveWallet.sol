@@ -1,16 +1,16 @@
-import "./lib/Owned.sol";
+pragma solidity ^0.4.11;
+
 import "./lib/SafeMath.sol";
 import "./SHP.sol";
-import "./SharpeContribution.sol";
-
-pragma solidity ^0.4.11;
+import "./Crowdsale.sol";
+import "./lib/Owned.sol";
 
 contract ReserveWallet is Owned {
 
     using SafeMath for uint256;
 
     SHP public shp;
-    SharpeContribution public contribution;
+    Crowdsale public crowdsale;
 
     /// @notice This returns any Ether sent to the address
     function () {
@@ -18,14 +18,14 @@ contract ReserveWallet is Owned {
     }
 
     /// @notice Creates a new ReserveWallet contract
-    function ReserveWallet(address _shp, SharpeContribution _contribution) {
+    function ReserveWallet(address _shp, Crowdsale _crowdsale) {
         shp = SHP(_shp);
-        contribution = SharpeContribution(_contribution);
+        crowdsale = Crowdsale(_crowdsale);
     }
 
     function transfer(uint256 amount, address toAddress) {
         // TODO - do we want to prevent transfers to contracts? Seems sensible since tokens could get 'stuck'
-        uint256 finalizedTime = contribution.finalizedTime();
+        uint256 finalizedTime = crowdsale.finalizedTime();
         require(finalizedTime > 0 && getTime() > finalizedTime.add(months(12)));
         require(shp.transfer(toAddress, amount));
     }

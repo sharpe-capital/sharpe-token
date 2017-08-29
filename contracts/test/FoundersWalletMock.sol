@@ -8,8 +8,8 @@ contract FoundersWalletMock is FoundersWallet {
 
     uint mock_time;
 
-    function FoundersWalletMock(address _shp, SharpeContribution _contribution)
-    FoundersWallet(_shp, _contribution) {
+    function FoundersWalletMock(address _shp, Crowdsale _crowdsale)
+    FoundersWallet(_shp, _crowdsale) {
         mock_time = now;
     }
 

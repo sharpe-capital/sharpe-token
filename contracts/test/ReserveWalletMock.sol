@@ -8,8 +8,8 @@ contract ReserveWalletMock is ReserveWallet {
 
     uint mock_time;
 
-    function ReserveWalletMock(address _shp, SharpeContribution _contribution)
-    ReserveWallet(_shp, _contribution) {
+    function ReserveWalletMock(address _shp, Crowdsale _crowdsale)
+    ReserveWallet(_shp, _crowdsale) {
         mock_time = now;
     }
 
