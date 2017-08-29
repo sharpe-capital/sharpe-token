@@ -256,9 +256,9 @@ contract("Crowdsale", function(accounts) {
         await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
     });
 
-    it('should not allow calling of proxyPayment externally', async function() {
+    it('should not allow calling of processIcoSale externally', async function() {
         await assertFail(async function() {
-            await crowdsale.proxyPayment(contributorOneAddress);
+            await crowdsale.processIcoSale(contributorOneAddress);
         });
         assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
         await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
@@ -289,19 +289,6 @@ contract("Crowdsale", function(accounts) {
         assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
         await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
     });
-
-    // it('should only allow master address to start contribution phase', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: web3.toWei(10),
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: contributorOneAddress
-    //         });
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 93);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
 
     it('should not allow pausing when not owner of contract', async function() {
         await assertFail(async function() {
@@ -363,67 +350,56 @@ contract("Crowdsale", function(accounts) {
     // it('should reject contributions greater than the maximum ETH deposit', async function() {});
     // it('should reject contributions if SHP would exceed max supply limit', async function() {});
 
-    // it('should reject attempt to transfer reserve funds before contributions finalized', async function() {
-    //     await assertFail(async function() {
-    //         await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 80, 100, 0, 0, 92);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
-    // });
+    it('should reject attempt to transfer reserve funds before contributions finalized', async function() {
+        await assertFail(async function() {
+            await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
-    // it('should reject transfer of SHP from reserve account before 12 month vesting period', async function() {
-    //     openContributions();
-    //     await crowdsale.sendTransaction({
-    //         value: web3.toWei(10),
-    //         gas: 300000, 
-    //         gasPrice: "20000000000", 
-    //         from: contributorOneAddress
-    //     });
-    //     assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
-    //     await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
-    //     await crowdsale.finalize();
-    //     await assertFail(async function() {
-    //         await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
-    //     });
-    //     assertBalances.ether(11, 0, 70, 100, 0, 0, 91);
-    //     await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
-    // });
+    it('should reject transfer of founders SHP tokens before finalized', async function() {
+        await assertFail(async function() {
+            await foundersWallet.collectTokens(contributorTwoAddress);
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
+
+    it('should finalize crowdsale', async function() {
+        await crowdsale.finalize();
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
+
+    // TODO - should test that deposits are rejected once crowdsale is finalized
+
+    it('should reject transfer of SHP from reserve account before 12 month vesting period', async function() {
+        await assertFail(async function() {
+            await reserveWallet.transfer(web3.toWei(10), contributorTwoAddress);
+        });
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
     // it('should reject transfer of SHP reserve tokens to another contract address', async function() {
     //     // TODO
     // });
 
-    // it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
-    //     const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
-    //     await reserveWallet.setMockedTime(t);
-    //     openContributions();
-    //     await crowdsale.sendTransaction({
-    //         value: web3.toWei(10),
-    //         gas: 300000, 
-    //         gasPrice: "20000000000", 
-    //         from: contributorOneAddress
-    //     });
-    //     assertBalances.ether(11, 0, 60, 100, 0, 0, 90);
-    //     await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
-    //     await crowdsale.finalize();
-    //     await reserveWallet.transfer(web3.toWei(1000), contributorTwoAddress);
-    //     assertBalances.ether(11, 0, 60, 100, 0, 0, 90);
-    //     await assertBalances.SHP(0, 0, 20000, 1000, 21000, 11000, 2000);
-    // });
+    it('should allow transfer of SHP from reserve account after 12 month vesting period', async function() {
+        const t = Math.floor(new Date().getTime() / 1000) + (86400 * 365) + 20000;
+        await crowdsale.setMockedTime(t);
+        await reserveWallet.setMockedTime(t);
+        await reserveWallet.transfer(contributorTwoAddress, web3.toWei(1000));
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 1000, 5000, 3000, 2000);
+    });
 
     // it('should allow reserve SHP to be transferred with multiple signatures', async function() {
     //     // TODO
     // });
     // it('should reject reserve SHP transfer without multiple signatures', async function() {
     //     // TODO
-    // });
-
-    // it('should reject transfer of founders SHP tokens before finalized', async function() {
-    //     await assertFail(async function() {
-    //         await foundersWallet.collectTokens(contributorTwoAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 60, 100, 0, 0, 90);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 0);
     // });
 
     // it('should reject transfer of founders SHP tokens before 6 month vesting period', async function() {

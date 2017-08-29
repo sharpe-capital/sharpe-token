@@ -6,7 +6,9 @@ import '../Crowdsale.sol';
 
 contract CrowdsaleMock is Crowdsale {
 
-    function CrowdsaleMock() Crowdsale() {}
+    function CrowdsaleMock() Crowdsale() {
+        mock_time = now;
+    }
 
     function getBlockNumber() internal constant returns (uint) {
         return mock_blockNumber;
@@ -16,5 +18,14 @@ contract CrowdsaleMock is Crowdsale {
         mock_blockNumber = _b;
     }
 
+    function getTime() internal returns (uint) {
+        return mock_time;
+    }
+
+    function setMockedTime(uint _t) public {
+        mock_time = _t;
+    }
+
+    uint mock_time;
     uint mock_blockNumber = 1;
 }

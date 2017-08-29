@@ -14,7 +14,7 @@ contract ReserveWallet is Owned {
 
     /// @notice This returns any Ether sent to the address
     function () {
-        throw;
+        require(false);
     }
 
     /// @notice Creates a new ReserveWallet contract
@@ -23,7 +23,7 @@ contract ReserveWallet is Owned {
         crowdsale = Crowdsale(_crowdsale);
     }
 
-    function transfer(uint256 amount, address toAddress) {
+    function transfer(address toAddress, uint256 amount) {
         // TODO - do we want to prevent transfers to contracts? Seems sensible since tokens could get 'stuck'
         uint256 finalizedTime = crowdsale.finalizedTime();
         require(finalizedTime > 0 && getTime() > finalizedTime.add(months(12)));

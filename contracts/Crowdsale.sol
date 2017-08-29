@@ -339,4 +339,30 @@ contract Crowdsale is Owned {
         }
         return address(result);
     }
+
+    //////////
+    // MiniMe Controller Interface functions
+    //////////
+
+    // In between the offering and the network. Default settings for allowing token transfers.
+    function proxyPayment(address) public payable returns (bool) {
+        return false;
+    }
+
+    function onTransfer(address, address, uint256) public returns (bool) {
+        return finalizedBlock > 0;
+    }
+
+    function onApprove(address, address, uint256) public returns (bool) {
+        return finalizedBlock > 0;
+    }
+
+    //////////
+    // Testing specific methods
+    //////////
+
+    /// @notice This function is overrided by the test Mocks.
+    function getTime() internal returns (uint256) {
+        return now;
+    }
 }
