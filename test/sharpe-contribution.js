@@ -123,133 +123,135 @@ contract("Crowdsale", function(accounts) {
         await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
     });
 
-    // it('should not accept contributions from ether escrow address', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: etherEscrowWallet.address
-    //         });
-    //     });
-    //     assertBalances.ether(0, 0, 100, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 2000);
-    // });
+    it('should not accept contributions from ether escrow address', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: etherEscrowWallet.address
+            });
+        });
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
 
-    // it('should not accept contributions from founder address', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: foundersWallet.address
-    //         });
-    //     });
-    //     assertBalances.ether(0, 0, 100, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 2000);
-    // });
+    it('should not accept contributions from founder address', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: foundersWallet.address
+            });
+        });
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
 
-    // it('should not accept contributions from reserve address', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: web3.toWei(1), 
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: reserveWallet.address
-    //         });
-    //     });
-    //     assertBalances.ether(0, 0, 100, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 2000);
-    // });
+    it('should not accept contributions from reserve address', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(1), 
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: reserveWallet.address
+            });
+        });
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
 
-    // it('should prevent 0 ETH contributions', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: 0,
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: contributorOneAddress
-    //         });
-    //     });
-    //     assertBalances.ether(0, 0, 100, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 0, 0, 0, 0, 2000);
-    // });
+    it('should prevent 0 ETH contributions', async function() {
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: 0,
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(1, 0, 100, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
+    });
 
-    // it('should accept Ether from contributor account and generate SHP', async function() {
-    //     await crowdsale.sendTransaction({
-    //         value: web3.toWei(10),
-    //         gas: 300000, 
-    //         gasPrice: "20000000000", 
-    //         from: contributorOneAddress,
-    //         // data: accounts[7]
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should accept Ether from contributor account and generate SHP', async function() {
+        await crowdsale.sendTransaction({
+            value: web3.toWei(1),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress,
+            // data: accounts[7]
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should not allow calling of isContract externally', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.isContract(contributionAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should not allow calling of isContract externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.isContract(contributionAddress);
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should not allow calling of safeCaller externally', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.safeCaller(contributionAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should not allow calling of safeCaller externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.safeCaller(contributionAddress);
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should not allow calling of getBlockNumber externally', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.getBlockNumber();
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should not allow calling of getBlockNumber externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.getBlockNumber();
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should not allow calling of doBuy externally', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.doBuy(contributorOneAddress, 1);
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should not allow calling of doBuy externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.doBuy(contributorOneAddress, 1);
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should not allow calling of proxyPayment externally', async function() {
-    //     await assertFail(async function() {
-    //         await crowdsale.proxyPayment(contributorOneAddress);
-    //     });
-    //     assertBalances.ether(0, 0, 99, 100, 0, 0, 99);
-    //     await assertBalances.SHP(0, 0, 2000, 0, 0, 0, 2000);
-    // });
+    it('should not allow calling of proxyPayment externally', async function() {
+        await assertFail(async function() {
+            await crowdsale.proxyPayment(contributorOneAddress);
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
 
-    // it('should block contributions when paused & accept when resumed', async function() {
-    //     await openContributions();
-    //     await crowdsale.pauseContribution();
-    //     await assertFail(async function() {
-    //         await crowdsale.sendTransaction({
-    //             value: web3.toWei(10),
-    //             gas: 300000, 
-    //             gasPrice: "20000000000", 
-    //             from: contributorOneAddress
-    //         });
-    //     });
-    //     assertBalances.ether(1, 0, 90, 100, 0, 0, 93);
-    //     await assertBalances.SHP(0, 0, 0, 0, 2000, 1000, 2000);
-    //     await crowdsale.resumeContribution();
-    //     await crowdsale.sendTransaction({
-    //         value: web3.toWei(10),
-    //         gas: 300000, 
-    //         gasPrice: "20000000000", 
-    //         from: contributorOneAddress
-    //     });
-    //     assertBalances.ether(11, 0, 80, 100, 0, 0, 93);
-    //     await assertBalances.SHP(0, 0, 20000, 0, 22000, 11000, 2000);
-    // });
+    it('should pause contributions', async function() {
+        await crowdsale.pauseContribution();
+        await assertFail(async function() {
+            await crowdsale.sendTransaction({
+                value: web3.toWei(10),
+                gas: 300000, 
+                gasPrice: "20000000000", 
+                from: contributorOneAddress
+            });
+        });
+        assertBalances.ether(2, 0, 99, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 2000, 0, 4000, 2000, 2000);
+    });
+
+    it('should resume contributions', async function() {
+        await crowdsale.resumeContribution();
+        await crowdsale.sendTransaction({
+            value: web3.toWei(1),
+            gas: 300000, 
+            gasPrice: "20000000000", 
+            from: contributorOneAddress
+        }); 
+        assertBalances.ether(3, 0, 98, 100, 0, 0, 99);
+        await assertBalances.SHP(0, 0, 4000, 0, 6000, 3000, 2000);
+    });
 
     // it('should only allow master address to start contribution phase', async function() {
     //     await assertFail(async function() {
