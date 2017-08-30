@@ -28,7 +28,7 @@ contract("TradeLedger", function(accounts) {
     });
 
     it('should add an account', async function() {
-        await tradeLedger.addAccount("12345", 10000, 10000);
+        await tradeLedger.addAccount("12345", 10000);
         const result = await tradeLedger.countAccounts.call();
         assert.equal(result.toNumber(), 1);
     });
