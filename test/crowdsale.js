@@ -89,7 +89,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -112,7 +112,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -124,7 +124,7 @@ contract("Crowdsale", function(accounts) {
     it('should open the crowdsale with the master address', async function() {
         await crowdsale.sendTransaction({
             value: web3.toWei(1),
-            gas: 300000, 
+            gas: 3000000,
             gasPrice: "20000000000", 
             from: masterAddress
         });
@@ -136,7 +136,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: masterAddress
             });
@@ -149,7 +149,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1), 
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: crowdsale.address
             });
@@ -162,7 +162,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1), 
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: etherEscrowWallet.address
             });
@@ -175,7 +175,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1), 
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: foundersWallet.address
             });
@@ -188,7 +188,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(1), 
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: reserveWallet.address
             });
@@ -201,7 +201,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: 0,
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -213,7 +213,7 @@ contract("Crowdsale", function(accounts) {
     it('should accept Ether from contributor account and generate SHP', async function() {
         await crowdsale.sendTransaction({
             value: web3.toWei(1),
-            gas: 300000, 
+            gas: 3000000,
             gasPrice: "20000000000", 
             from: contributorOneAddress,
             // data: accounts[7]
@@ -277,7 +277,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.sendTransaction({
                 value: web3.toWei(10),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -290,7 +290,7 @@ contract("Crowdsale", function(accounts) {
         await crowdsale.resumeContribution();
         await crowdsale.sendTransaction({
             value: web3.toWei(1),
-            gas: 300000, 
+            gas: 3000000,
             gasPrice: "20000000000", 
             from: contributorOneAddress
         }); 
@@ -302,7 +302,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.pauseContribution({
                 value: web3.toWei(0),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -315,7 +315,7 @@ contract("Crowdsale", function(accounts) {
         await assertFail(async function() {
             await crowdsale.resumeContribution({
                 value: web3.toWei(0),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -344,7 +344,7 @@ contract("Crowdsale", function(accounts) {
                 scd.address, 
             {
                 value: web3.toWei(0),
-                gas: 300000, 
+                gas: 3000000,
                 gasPrice: "20000000000", 
                 from: contributorOneAddress
             });
@@ -414,7 +414,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorOneAddress
     //     });
@@ -438,7 +438,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorOneAddress
     //     });
@@ -456,7 +456,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorTwoAddress
     //     });
@@ -476,7 +476,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorTwoAddress
     //     });
@@ -494,7 +494,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorTwoAddress
     //     });
@@ -514,7 +514,7 @@ contract("Crowdsale", function(accounts) {
     //     openContributions();
     //     await crowdsale.sendTransaction({
     //         value: web3.toWei(10),
-    //         gas: 300000, 
+    //         gas: 3000000,
     //         gasPrice: "20000000000", 
     //         from: contributorTwoAddress
     //     });

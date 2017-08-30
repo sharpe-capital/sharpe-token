@@ -20,7 +20,7 @@ contract("TradeLedger", function(accounts) {
         await assertFail(async function() {
             await tradeLedger.sendTransaction({
                 value: web3.toWei(1), 
-                gas: 300000, 
+                gas: 3000000, 
                 gasPrice: "20000000000", 
                 from: accounts[1]
             });
