@@ -1,14 +1,12 @@
 pragma solidity ^0.4.11;
 
 import "./lib/Owned.sol";
-import "./lib/strings.sol";
 import "./lib/SafeMath.sol";
 
 /// @title Trading ledger - Stores a record of investment activity and fund performance over time
 /// @author Lewis Barber - <lewis@sharpe.capital>
 contract TradeLedger is Owned {
 
-  using strings for *;
   using SafeMath for uint256;
 
   uint256[] private equityPointIds;                           // List of all equity point IDs
@@ -294,9 +292,9 @@ contract TradeLedger is Owned {
     positionNotPresent(id)    // Stops duplicate position IDs
   {
 
-    require(openPrice.toSlice().len() > 0 && ticker.toSlice().len() > 0 && accountId.toSlice().len() > 0);
-    require(openDate.toSlice().len() > 0 && id.toSlice().len() > 0 && accountId.toSlice().len() > 0);
-    require(size.toSlice().len() > 0 && exposure > 0);
+    require(bytes(openPrice).length > 0 && bytes(ticker).length > 0 && bytes(accountId).length > 0);
+    require(bytes(openDate).length > 0 && bytes(id).length > 0);
+    require(bytes(size).length > 0 && exposure > 0);
 
     Position memory position = Position(id, openPrice, 0, stopPrice, 
       limitPrice, size, exposure, 0, openDate, "", ticker, 
@@ -364,7 +362,7 @@ contract TradeLedger is Owned {
     returns (string, int256, int256, int256, int256) 
   {
     string accid = accountIds[idx];
-    require(accid.toSlice().len() > 0);
+    require(bytes(accid).length > 0);
     return getAccount(accid);
   }
 
@@ -380,7 +378,7 @@ contract TradeLedger is Owned {
     returns (string, uint256, string, int256, string, string, string) 
   {
     string posid = accountPositions[accountId][idx];
-    require(posid.toSlice().len() > 0);
+    require(bytes(posid).length > 0);
     return getPosition(posid);
   }
 
@@ -412,7 +410,7 @@ contract TradeLedger is Owned {
     returns (string, string) 
   {
     string posid = accountPositions[accountId][idx];
-    require(posid.toSlice().len() > 0);
+    require(bytes(posid).length > 0);
     return getPositionKeys(posid);
   }
 
@@ -488,7 +486,7 @@ contract TradeLedger is Owned {
     returns (int256) 
   {
     string posid = accountPositions[accountId][idx];
-    require(posid.toSlice().len() > 0);
+    require(bytes(posid).length > 0);
     return positions[posid].exposure;
   }
 }
