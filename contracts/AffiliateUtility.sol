@@ -7,27 +7,25 @@ import "./lib/SafeMath.sol";
 contract AffiliateUtility is Owned {
     using SafeMath for uint256;
     
-    uint256 public constant TIER2_MIN_DOLLARS = 20000;
-    uint256 public constant TIER3_MIN_DOLLARS = 50000;
+    uint256 public tierTwoMin;
+    uint256 public tierThreeMin;
 
     uint256 public constant TIER1_PERCENT = 3;
     uint256 public constant TIER2_PERCENT = 4;
     uint256 public constant TIER3_PERCENT = 5;
-
-    uint256 public etherToUSDExchangeRate = 300;
-    uint256 public etherToSHPExchangeRate = 2000;
     
     mapping (address => bool) private affiliates;
 
-    function AffiliateUtility() {
-
+    function AffiliateUtility(uint256 _tierTwoMin, uint256 _tierThreeMin) {
+        setTiers(_tierTwoMin, _tierThreeMin);
     }
 
     /// @notice sets the Ether to Dollar exhchange rate
-    /// @param _newValue the new exchange rate to be applied
-    function pegValue(uint256 _newValue) onlyOwner {
-
-        etherToUSDExchangeRate = _newValue;
+    /// @param _tierTwoMin the tier 2 min (in WEI)
+    /// @param _tierThreeMin the tier 3 min (in WEI)
+    function setTiers(uint256 _tierTwoMin, uint256 _tierThreeMin) onlyOwner {
+        tierTwoMin = _tierTwoMin;
+        tierThreeMin = _tierThreeMin;
     }
 
     /// @notice This adds an affiliate Ethereum address to our whitelist
@@ -40,28 +38,26 @@ contract AffiliateUtility is Owned {
     /// @param _affiliate address of the proposed affiliate
     /// @param _contributorTokens amount of SHP tokens minted for contributor
     /// @param _contributionValue amount of ETH cotributed
-    /// @return tuple of three values (success, affiliatebonus, contributor bounse)
+    /// @return tuple of three values (success, affiliateBonus, contributorBouns)
     function applyAffiliate(
         address _affiliate, 
         uint256 _contributorTokens, 
-        uint256 _contributionValue)
+        uint256 _contributionValue
+    )
         public 
         returns(bool, uint256, uint256) 
     {
         if (!isAffiliateValid(_affiliate)) {
             return (false, 0, 0);
         }
+
         uint256 contributorBonus = _contributorTokens.div(100);
-        uint256 etherValue = _contributionValue.div(1 ether);
-        
-        uint256 contributionInDollars = etherValue * etherToUSDExchangeRate;
-        var affiliateBonus = uint256(0);
-        if (contributionInDollars < TIER2_MIN_DOLLARS ) {
+        uint256 affiliateBonus = 0;
+
+        if (_contributionValue < tierTwoMin) {
             affiliateBonus = _contributorTokens.mul(TIER1_PERCENT).div(100);
-
-        } else if (contributionInDollars >= TIER2_MIN_DOLLARS && contributionInDollars < TIER3_MIN_DOLLARS) {
+        } else if (_contributionValue >= tierTwoMin && _contributionValue < tierThreeMin) {
             affiliateBonus = _contributorTokens.mul(TIER2_PERCENT).div(100);
-
         } else {
             affiliateBonus = _contributorTokens.mul(TIER3_PERCENT).div(100);
         }
@@ -69,11 +65,7 @@ contract AffiliateUtility is Owned {
         return(true, affiliateBonus, contributorBonus);
     }
 
-    function isAffiliateValid(address _affiliate) onlyOwner returns(bool) {
-        if (affiliates[_affiliate]) {
-            return true;
-        }
-        return false;
+    function isAffiliateValid(address _affiliate) returns(bool) {
+        return affiliates[_affiliate];
     }
-
 }
