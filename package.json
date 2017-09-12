@@ -14,11 +14,12 @@
     "devDependencies": {
         "async": "^2.5.0",
         "bignumber.js": "^4.0.2",
-        "ethereumjs-testrpc": "^3.0.5",
+        "ethereumjs-testrpc": "^4.1.1",
+        "ethereumjs-testrpc-sc": "https://github.com/sc-forks/testrpc-sc.git",
         "random-bytes": "^1.0.0",
         "solc": "^0.4.15",
-        "solidity-coverage": "^0.1.10",
-        "truffle": "3.2.4",
+        "solidity-coverage": "^0.2.2",
+        "truffle": "^3.4.9",
         "truffle-hdwallet-provider": "0.0.3",
         "web3": "^0.19.1"
     },

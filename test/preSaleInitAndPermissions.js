@@ -1,342 +1,208 @@
-const Presale = artifacts.require("PresaleMock");
-const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
-const SHP = artifacts.require("SHP");
-const SCD = artifacts.require("SCD");
-const MultiSigWallet = artifacts.require("MultiSigWallet");
-const FoundersWallet = artifacts.require("FoundersWalletMock");
-const ReserveWallet = artifacts.require("ReserveWalletMock");
 const assertFail = require("./helpers/assertFail");
 const assertions = require("./helpers/assertions");
 const eventsUtil = require("./helpers/eventsUtil");
+const testConfig = require("./helpers/testConfig");
 
-contract("Presale", function(accounts) {
+contract("Presale initialization and permissions", function(accounts) {
 
-    console.log('Logging out all of the accounts for reference...');
-    accounts.forEach(acc => console.log(acc));
-
-    const contributorOneAddress = accounts[1];
-    const contributorTwoAddress = accounts[2];
-    const escrowSignAddress = accounts[3];
-    const reserveSignAddress = accounts[4];
-    const foundersSignAddress = accounts[5];
-
-    const MIN_PRESALE_CONTRIBUTION = 10000;
-    const MAX_PRESALE_CONTRIBUTION = 1000000;
-
-    const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
-    const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
-    const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
-    const PRESALE_CAP = 10000000;
-
-    let etherEscrowWallet;
-    let foundersWallet;
-    let reserveWallet;
-    let preSale;
-    let miniMeTokenFactory;
-    let shp;
-    let scd;
-
-    let preSaleAddress;
-    let etherEscrowAddress;
-    let foundersAddress;
-    let reserveAddress;
-    let ownerAddress;
-
-    let etherPeggedValue = 400;
-    let minPresaleContributionEther;
-    let maxPresaleContributionEther;
-        
-    let firstTierDiscountUpperLimitEther;
-    let secondTierDiscountUpperLimitEther;
-    let thirdTierDiscountUpperLimitEther;
-    
-    let preSaleCap;
-    
     before(async function() {
-
-        miniMeTokenFactory = await MiniMeTokenFactory.new();
-        preSale = await Presale.new();
-        ownerAddress = accounts[0];
-
-        shp = await SHP.new(miniMeTokenFactory.address);
-        scd = await SCD.new(miniMeTokenFactory.address);
-
-        etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-        foundersWallet = await FoundersWallet.new(shp.address, preSale.address); // TODO - could apply multisign to this wallet
-        reserveWallet = await ReserveWallet.new(shp.address, preSale.address); // TODO - could apply multisign to this wallet
-        
-        preSaleAddress = preSale.address;
-        etherEscrowAddress = etherEscrowWallet.address;
-        foundersAddress = foundersWallet.address;
-        reserveAddress = reserveWallet.address;
-        
-        minPresaleContributionEther = web3.toWei(MIN_PRESALE_CONTRIBUTION/etherPeggedValue);
-        maxPresaleContributionEther = web3.toWei(MAX_PRESALE_CONTRIBUTION/etherPeggedValue);
-        
-        firstTierDiscountUpperLimitEther = web3.toWei(FIRST_TIER_DISCOUNT_UPPER_LIMIT/etherPeggedValue);
-        secondTierDiscountUpperLimitEther = web3.toWei(SECOND_TIER_DISCOUNT_UPPER_LIMIT/etherPeggedValue);
-        thirdTierDiscountUpperLimitEther = web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT/etherPeggedValue);
-
-        preSaleCap = web3.toWei(PRESALE_CAP/etherPeggedValue);
-
-        await shp.changeController(preSale.address);
-
-        assertions.initialize(
-            etherEscrowAddress, 
-            preSaleAddress, 
-            contributorOneAddress, 
-            contributorTwoAddress, 
-            reserveAddress, 
-            foundersAddress,
-            shp);
-
-        await preSale.initialize(
-            etherEscrowWallet.address, 
-            reserveWallet.address, 
-            foundersWallet.address, 
-            shp.address,
-            scd.address,
-            firstTierDiscountUpperLimitEther,
-            secondTierDiscountUpperLimitEther,
-            thirdTierDiscountUpperLimitEther,
-            minPresaleContributionEther,
-            maxPresaleContributionEther,
-            preSaleCap);
-        
-        console.log("ownerAddress: " + ownerAddress);
-        console.log("contributorOneAddress: " + contributorOneAddress);
-        console.log("contributorTwoAddress: " + contributorTwoAddress);
-        console.log("preSaleAddress: " + preSaleAddress);
-        
-        console.log("minPresaleContributionEther: " + minPresaleContributionEther);
-        console.log("maxPresaleContributionEther: " + maxPresaleContributionEther);
-        console.log("firstTierDiscountUpperLimitEther: " + firstTierDiscountUpperLimitEther);
-        console.log("secondTierDiscountUpperLimitEther: " + secondTierDiscountUpperLimitEther);
-        console.log("thirdTierDiscountUpperLimitEther: " + thirdTierDiscountUpperLimitEther);
-        console.log("preSaleCap: " + preSaleCap);
+        await testConfig.setup(accounts);
     });
 
     it('should initialize contract with expected values', async function() {
-        assertions.expectedInitialisation(
-            preSale, 
+        await assertions.expectedInitialisation(
+            testConfig.preSale, 
             {
-                etherEscrowWallet: etherEscrowWallet,
-                reserveWallet: reserveWallet,
-                foundersWallet: foundersWallet
+                etherEscrowWallet: testConfig.etherEscrowWallet,
+                reserveWallet: testConfig.reserveWallet,
+                foundersWallet: testConfig.foundersWallet
             },
             {
-                preSaleCap: preSaleCap,
-                minPresaleContributionEther: minPresaleContributionEther,
-                maxPresaleContributionEther: maxPresaleContributionEther,
-                firstTierDiscountUpperLimitEther: firstTierDiscountUpperLimitEther,
-                secondTierDiscountUpperLimitEther: secondTierDiscountUpperLimitEther,
-                thirdTierDiscountUpperLimitEther: thirdTierDiscountUpperLimitEther,
+                preSaleCap: testConfig.preSaleCap,
+                minPresaleContributionEther: testConfig.minPresaleContributionEther,
+                maxPresaleContributionEther: testConfig.maxPresaleContributionEther,
+                firstTierDiscountUpperLimitEther: testConfig.firstTierDiscountUpperLimitEther,
+                secondTierDiscountUpperLimitEther: testConfig.secondTierDiscountUpperLimitEther,
+                thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther,
             }
         );
     });
 
-    it('should only allow contribution range to be set by owner', async function() {
+    it('should not allow contribution range to be set if not owner', async function() {
         await assertFail(async function() {
-            await preSale.setContributionRange(
-                minPresaleContributionEther,
-                maxPresaleContributionEther,
+            await testConfig.preSale.setContributionRange(
+                testConfig.minPresaleContributionEther,
+                testConfig.maxPresaleContributionEther,
                 {
-                    from: contributorTwoAddress
+                    from: testConfig.contributorTwoAddress
                 }
             )
         });
+    });
 
-        await preSale.setContributionRange(
-            minPresaleContributionEther,
-            maxPresaleContributionEther,
+    it('should allow contribution range to be set by owner', async function() {
+
+        await testConfig.preSale.setContributionRange(
+            testConfig.minPresaleContributionEther,
+            testConfig.maxPresaleContributionEther,
             {
-                from: ownerAddress
+                from: testConfig.ownerAddress
             }
         );
 
-        let actualMinPresaleContributionEther = (await preSale.minPresaleContributionEther()).toNumber();
-        assert.equal(minPresaleContributionEther, actualMinPresaleContributionEther);
+        let actualMinPresaleContributionEther = (await testConfig.preSale.minPresaleContributionEther()).toNumber();
+        assert.equal(testConfig.minPresaleContributionEther, actualMinPresaleContributionEther);
     
-        let actualMaxPresaleContributionEther = (await preSale.maxPresaleContributionEther()).toNumber();
-        assert.equal(maxPresaleContributionEther, actualMaxPresaleContributionEther);
+        let actualMaxPresaleContributionEther = (await testConfig.preSale.maxPresaleContributionEther()).toNumber();
+        assert.equal(testConfig.maxPresaleContributionEther, actualMaxPresaleContributionEther);
         
-        assertions.cleanState(preSale);
+        assertions.cleanState(testConfig.preSale);
     });
 
-    it('should only allow discount limits to be set by owner', async function() {
+    it('should not allow discount limits to be set if not owner', async function() {
         await assertFail(async function() {
-            await preSale.setDiscountLimits(
-                firstTierDiscountUpperLimitEther,
-                secondTierDiscountUpperLimitEther,
-                thirdTierDiscountUpperLimitEther,
+            await testConfig.preSale.setDiscountLimits(
+                testConfig.firstTierDiscountUpperLimitEther,
+                testConfig.secondTierDiscountUpperLimitEther,
+                testConfig.thirdTierDiscountUpperLimitEther,
                 {
-                    from: contributorTwoAddress
+                    from: testConfig.contributorTwoAddress
                 }
             )
         });
+    });
 
-        await preSale.setDiscountLimits(
-            firstTierDiscountUpperLimitEther,
-            secondTierDiscountUpperLimitEther,
-            thirdTierDiscountUpperLimitEther,
+    it('should allow discount limits to be set by owner', async function() {
+
+        await testConfig.preSale.setDiscountLimits(
+            testConfig.firstTierDiscountUpperLimitEther,
+            testConfig.secondTierDiscountUpperLimitEther,
+            testConfig.thirdTierDiscountUpperLimitEther,
             {
-                from: ownerAddress
+                from: testConfig.ownerAddress
             }
         );
 
-        let actualFirstTierDiscountUpperLimitEther = (await preSale.firstTierDiscountUpperLimitEther()).toNumber();
-        assert.equal(firstTierDiscountUpperLimitEther, actualFirstTierDiscountUpperLimitEther);
+        let actualFirstTierDiscountUpperLimitEther = (await testConfig.preSale.firstTierDiscountUpperLimitEther()).toNumber();
+        assert.equal(testConfig.firstTierDiscountUpperLimitEther, actualFirstTierDiscountUpperLimitEther);
     
-        let actualSecondTierDiscountUpperLimitEther = (await preSale.secondTierDiscountUpperLimitEther()).toNumber();
-        assert.equal(secondTierDiscountUpperLimitEther, actualSecondTierDiscountUpperLimitEther);
+        let actualSecondTierDiscountUpperLimitEther = (await testConfig.preSale.secondTierDiscountUpperLimitEther()).toNumber();
+        assert.equal(testConfig.secondTierDiscountUpperLimitEther, actualSecondTierDiscountUpperLimitEther);
 
-        let actualThirdTierDiscountUpperLimitEther = (await preSale.thirdTierDiscountUpperLimitEther()).toNumber();
-        assert.equal(thirdTierDiscountUpperLimitEther, actualThirdTierDiscountUpperLimitEther);
+        let actualThirdTierDiscountUpperLimitEther = (await testConfig.preSale.thirdTierDiscountUpperLimitEther()).toNumber();
+        assert.equal(testConfig.thirdTierDiscountUpperLimitEther, actualThirdTierDiscountUpperLimitEther);
 
-        assertions.cleanState(preSale);
+        assertions.cleanState(testConfig.preSale);
     });
 
-    it('should only allow grace period to be enabled by owner', async function() {
+    it('should not allow grace period to be enabled if not owner', async function() {
         await assertFail(async function() {
-            await preSale.enableGracePeriod(
-                true,
+            await testConfig.preSale.enableGracePeriod(
                 {
-                    from: contributorTwoAddress
+                    from: testConfig.contributorTwoAddress
                 }
             )
         });
-
-        await preSale.enableGracePeriod(
-            true,
-            {
-                from: ownerAddress
-            }
-        );
-
-        assert.equal(true, await preSale.gracePeriod());
-
-        // restore to init value
-        await preSale.enableGracePeriod(
-            false,
-            {
-                from: ownerAddress
-            }
-        );
-        assert.equal(false, await preSale.gracePeriod());
-
-        assertions.cleanState(preSale);
     });
 
-    it('should only allow preSale cap to be enabled by owner', async function() {
-        await assertFail(async function() {
-            await preSale.setPresaleCap(
-                1000,
-                {
-                    from: contributorTwoAddress
-                }
-            )
+    it('should allow grace period to be enabled by owner', async function() {
+        await testConfig.preSale.enableGracePeriod({
+            from: testConfig.ownerAddress
         });
-        assert.equal(preSaleCap, (await preSale.preSaleCap()).toNumber());
+        assert.equal(true, await testConfig.preSale.gracePeriod());
+        assertions.cleanState(testConfig.preSale);
+    });
 
-        await preSale.setPresaleCap(
-            preSaleCap,
-            {
-                from: ownerAddress
-            }
-        );
-        assert.equal(preSaleCap, (await preSale.preSaleCap()).toNumber());
-        assertions.cleanState(preSale);
+    it('should disable grace period', async function() {
+        await testConfig.preSale.disableGracePeriod({
+            from: testConfig.ownerAddress
+        });
+        assert.equal(false, await testConfig.preSale.gracePeriod());
+        assertions.cleanState(testConfig.preSale);
+    })
+
+    it('shoud not allow presale cap to be enabled if not owner', async function() {
+        await assertFail(async function() {
+            await testConfig.preSale.setPresaleCap(1000, {
+                from: testConfig.contributorTwoAddress
+            })
+        });
+        assert.equal(testConfig.preSaleCap, (await testConfig.preSale.preSaleCap()).toNumber());
+        assertions.cleanState(testConfig.preSale);
+    });
+
+    it('should allow presale cap to be set by owner', async function() {
+        await testConfig.preSale.setPresaleCap(testConfig.preSaleCap, {
+            from: testConfig.ownerAddress
+        });
+        assert.equal(testConfig.preSaleCap, (await testConfig.preSale.preSaleCap()).toNumber());
+        assertions.cleanState(testConfig.preSale);
     });
 
     it('should not accept contributions below minimum threshold', async function() {
         let wei = web3.toWei('24', 'ether');
-
         await assertFail(async function() {
-            await preSale.sendTransaction({
+            await testConfig.preSale.sendTransaction({
                 value: wei,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: contributorTwoAddress
+                from: testConfig.contributorTwoAddress
             })
         });
-        
-        assertions.cleanState(preSale);
     });
 
     it('should not accept contributions above maximum threshold', async function() {
         let wei = web3.toWei('2501', 'ether');
-        
         await assertFail(async function() {
-            await preSale.sendTransaction({
+            await testConfig.preSale.sendTransaction({
                 value: maxPresaleContributionEther + 1,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: contributorTwoAddress
+                from: testConfig.contributorTwoAddress
             })
         });
-        
-        assertions.cleanState(preSale);
-
+        assertions.cleanState(testConfig.preSale);
     });
     
     it('should prevent 0 ETH contributions', async function() {
         await assertFail(async function() {
-            await preSale.sendTransaction({
+            await testConfig.preSale.sendTransaction({
                 value: 0, 
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: contributorOneAddress
+                from: testConfig.contributorOneAddress
             }).then(result => eventsUtil.eventLogger(result));
         });
+        assertions.cleanState(testConfig.preSale);
+    });
+
+    it('should not accept contributions from a contract address', async function() {
         
-        assertions.cleanState(preSale);
-    });
-
-    it('should not accept contributions from contribution address', async function() {
+        let contribution = web3.toWei('25', 'ether');
         await assertFail(async function() {
-            await preSale.sendTransaction({
-                value: minPresaleContributionEther,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: contributionAddress
+            await testConfig.maliciousContract.sendTransaction({
+                value: contribution,
+                from: testConfig.contributorOneAddress
             });
         });
-        assertions.cleanState(preSale);
+
+        let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
+        assert.equal(preSaleEtherPaid, web3.toWei(0));
     });
 
-    it('should not accept contributions from ether escrow address', async function() {
+    it('should only allow owner to add to whitelist', async function() {
+        let plannedContribution = web3.toWei('25', 'ether');
         await assertFail(async function() {
-            await preSale.sendTransaction({
-                value: minPresaleContributionEther,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: etherEscrowAddress
-            });
+            await testConfig.preSale.addToWhitelist(
+                testConfig.contributorTwoAddress,
+                plannedContribution,
+                {
+                    from: testConfig.contributorTwoAddress
+                }
+            )
         });
-        assertions.cleanState(preSale);
-    });
 
-    it('should not accept contributions from founder address', async function() {
-        await assertFail(async function() {
-            await preSale.sendTransaction({
-                value: minPresaleContributionEther,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: foundersAddress
-            });
-        });
-        assertions.cleanState(preSale);
-    });
-
-    it('should not accept contributions from reserve address', async function() {
-        await assertFail(async function() {
-            await preSale.sendTransaction({
-                value: minPresaleContributionEther,
-                gas: 3000000,
-                gasPrice: "20000000000", 
-                from: reserveAddress
-            });
-        });
-        assertions.cleanState(preSale);
+        plannedContribution = web3.toWei('25', 'ether');
+        await testConfig.preSale.addToWhitelist(
+            testConfig.contributorTwoAddress,
+            plannedContribution,
+            {
+                from: testConfig.ownerAddress
+            }
+        );
     });
 });

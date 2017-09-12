@@ -2,39 +2,48 @@ pragma solidity ^0.4.11;
 
 import "./lib/SafeMath.sol";
 import "./lib/Owned.sol";
+import "./lib/Trustee.sol";
 import "./SHP.sol";
 import "./SCD.sol";
 import "./AffiliateUtility.sol";
 
 
-contract TokenSale is Owned {
+contract TokenSale is Owned, TokenController {
     using SafeMath for uint256;
     
     SHP public shp;
     AffiliateUtility public affiliateUtility;
+    Trustee public trustee;
 
     address public etherEscrowAddress;
-    address public reserveAddress;
-    address public founderAddress;
+    address public bountyAddress;
+    address public trusteeAddress;
+
+    uint256 public founderTokenCount = 0;
+    uint256 public reserveTokenCount = 0;
 
     uint256 constant public CALLER_EXCHANGE_RATE = 2000;
+    uint256 constant public RESERVE_EXCHANGE_RATE = 1500;
     uint256 constant public FOUNDER_EXCHANGE_RATE = 1000;
-    uint256 constant public RESERVE_EXCHANGE_RATE = 2000;
+    uint256 constant public BOUNTY_EXCHANGE_RATE = 500;
     uint256 constant public MAX_GAS_PRICE = 50000000000;
 
-    bool public isSaleOpen;
+    bool public paused;
+    bool public closed;
 
-    event NewTokenSale(address indexed _caller, uint256 etherAmount, uint256 tokensGenerated);
+    event NewSale(address indexed caller, uint256 etherAmount, uint256 tokensGenerated);
 
-    modifier openToControbution() {
-        require(isSaleOpen);
+    modifier notPaused() {
+        require(!paused);
+        _;
+    }
+
+    modifier notClosed() {
+        require(!closed);
         _;
     }
 
     modifier isValidated() {
-        require(msg.sender != etherEscrowAddress);
-        require(msg.sender != reserveAddress);
-        require(msg.sender != founderAddress);
         require(msg.sender != 0x0);
         require(msg.value > 0);
         require(!isContract(msg.sender)); 
@@ -44,28 +53,51 @@ contract TokenSale is Owned {
     
     /// @notice Parent constructor. This needs to be extended from the child contracts
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
-    /// @param _reserveAddress the address that will hold the reserve SHP
-    /// @param _founderAddress the address that will hold the founder's SHP
+    /// @param _bountyAddress the address that will hold the bounty scheme SHP
+    /// @param _trusteeAddress the address that will hold the vesting SHP
     /// @param _affiliateUtilityAddress address of the deployed AffiliateUtility contract.
-    /// @param _shpAddress address of the deployed SHP contract 
     function TokenSale (
         address _etherEscrowAddress,
-        address _reserveAddress,
-        address _founderAddress,
-        address _affiliateUtilityAddress,
-        address _shpAddress
+        address _bountyAddress,
+        address _trusteeAddress,
+        address _affiliateUtilityAddress
     ) {
         etherEscrowAddress = _etherEscrowAddress;
-        reserveAddress = _reserveAddress;
-        founderAddress = _founderAddress;
+        bountyAddress = _bountyAddress;
+        trusteeAddress = _trusteeAddress;
         affiliateUtility = AffiliateUtility(_affiliateUtilityAddress);
-        shp = SHP(_shpAddress);
+        trustee = Trustee(_trusteeAddress);
+        paused = false;
+        closed = false;
     }
 
-    /// @notice Returns the current block number
-    /// @return The current block number
-    function getBlockNumber() internal constant returns (uint256) {
-        return block.number;
+    /// @notice Pays an affiliate if they are valid and present in the transaction data
+    /// @param _tokens The contribution tokens used to calculate affiliate payment amount
+    /// @param _etherValue The Ether value sent
+    /// @param _data The txn payload data
+    /// @param _caller The address of the caller
+    function payAffiliate(uint256 _tokens, uint256 _etherValue, bytes _data, address _caller) internal {
+        if (affiliateUtility.isAffiliateValid(_data, _caller)) {
+            address affiliate = affiliateUtility.getAffiliate(_data);
+            var (affiliateBonus, contributorBonus) = affiliateUtility.applyAffiliate(_data, _tokens, _etherValue);
+            shp.generateTokens(affiliate, affiliateBonus);
+            shp.generateTokens(_caller, contributorBonus);
+        }
+    }
+
+    /// @notice Sets the SHP token smart contract
+    /// @param _shp the SHP token contract address
+    function setShp(address _shp) public onlyOwner {
+        shp = SHP(_shp);
+    }
+
+    /// @notice Transfers ownership of the token smart contract and trustee
+    /// @param _tokenController the address of the new token controller
+    /// @param _trusteeOwner the address of the new trustee owner
+    function transferOwnership(address _tokenController, address _trusteeOwner) public onlyOwner {
+        require(closed);
+        shp.changeController(_tokenController);
+        trustee.changeOwner(_trusteeOwner);
     }
 
     /// @notice Internal function to determine if an address is a contract
@@ -85,29 +117,12 @@ contract TokenSale is Owned {
 
     /// @notice Pauses the contribution if there is any issue
     function pauseContribution() public payable onlyOwner {
-        isSaleOpen = false;
+        paused = true;
     }
 
     /// @notice Resumes the contribution
     function resumeContribution() public payable onlyOwner {
-        isSaleOpen = true;
-    }
-
-    function bytesToAddress (bytes b) internal returns (address) {
-        uint result = 0;
-        for (uint i = 0; i < b.length; i++) {
-            uint c = uint(b[i]);
-            if (c >= 48 && c <= 57) {
-                result = result * 16 + (c - 48);
-            } 
-            if (c >= 65 && c <= 90) {
-                result = result * 16 + (c - 55);
-            }
-            if (c >= 97 && c <= 122) {
-                result = result * 16 + (c - 87);
-            }
-        }
-        return address(result);
+        paused = false;
     }
 
     //////////
@@ -127,12 +142,6 @@ contract TokenSale is Owned {
         return false;
     }
 
-    /// @notice this will be used to transfer the TokenController contract
-    /// @param _newController address of the new contract that will act as TokenController
-    function changeController(address _newController) onlyOwner public {
-        shp.changeController(_newController);
-    }
-
     //////////
     // Testing specific methods
     //////////
@@ -141,5 +150,4 @@ contract TokenSale is Owned {
     function getTime() public returns (uint256) {
         return now;
     }
-
 }
