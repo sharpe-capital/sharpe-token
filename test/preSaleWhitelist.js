@@ -30,6 +30,17 @@ contract("Presale whitelist", function(accounts) {
         );
     });
 
+    it('should set honour whitelist to true', async function() {
+        await testConfig.preSale.setHonourWhitelist(
+            true,
+            {
+                from: testConfig.ownerAddress
+            }
+        );
+        let honourWhitelist = await testConfig.preSale.honourWhitelist();
+        assert.equal(honourWhitelist, true);
+    });
+
     it('should allow valid contribution from not whitelisted contributor if below cap', async function() {
         let newPresaleCap = web3.toWei('75', 'ether');
         await testConfig.preSale.setPresaleCap(newPresaleCap, {
@@ -81,7 +92,7 @@ contract("Presale whitelist", function(accounts) {
         await testConfig.preSale.sendTransaction({
             value: plannedContribution,
             from: testConfig.contributorTwoAddress
-        }).then(result => eventsUtil.eventLogger(result));
+        });
        
         assertions.ether({
             etherEscrowBalance: 50,
@@ -101,7 +112,7 @@ contract("Presale whitelist", function(accounts) {
             trusteeBalance: 125000,
             bountyBalance: 25000
         });
-
+        
         preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
         assert.equal(preSaleEtherPaid, web3.toWei(50));
     });
@@ -120,7 +131,7 @@ contract("Presale whitelist", function(accounts) {
         await testConfig.preSale.sendTransaction({
             value: excessContribution,
             from: testConfig.contributorOneAddress
-        }).then(result => eventsUtil.eventLogger(result));
+        });
        
         assertions.ether({
             etherEscrowBalance: 75,
@@ -178,45 +189,60 @@ contract("Presale whitelist", function(accounts) {
         assert.equal(preSaleEtherPaid, web3.toWei(75));
     });
 
-    // it('should only allow expected contribution from whitelisted contributor if cap is 0', async function() {
-    //     let plannedContribution = web3.toWei('25', 'ether');
-    //     await assertFail(async function() {
-    //         await testConfig.preSale.addToWhitelist(
-    //             contributorOneAddress,
-    //             plannedContribution,
-    //             {
-    //                 from: ownerAddress
-    //             }
-    //         )
-    //     });
+    it('should allow contributions from whitelisted contributor and disallow excess if there is no cap available', async function() {
+        let newPresaleCap = web3.toWei('100', 'ether');
+        await testConfig.preSale.setPresaleCap(newPresaleCap, {
+            from: testConfig.ownerAddress
+        });
 
-    //     let contribution = web3.toWei('50', 'ether');
-    //     await testConfig.preSale.sendTransaction({
-    //             value: contribution,
-    //             gas: 3000000,
-    //             gasPrice: "1000000",
-    //             from: contributorOneAddress
-    //     });
+        let plannedContribution = web3.toWei('25', 'ether');
+        await testConfig.preSale.addToWhitelist(
+            testConfig.contributorOneAddress,
+            plannedContribution,
+            {
+                from: testConfig.ownerAddress
+            }
+        );
 
+        
+        let contribution = web3.toWei('50', 'ether');
+        await testConfig.preSale.sendTransaction({
+            value: contribution,
+            from: testConfig.contributorOneAddress
+        })
+        .then(result => {
+            eventsUtil.eventValidator(
+                result, 
+                {
+                    name: "AllowedContributionCheck",
+                    args: {
+                        contribution: plannedContribution,
+                        allowedContributionState: 2
+                    }
+                }
+            );
+        });;
+        
+        assertions.ether({
+            etherEscrowBalance: 100,
+            presaleBalance: 0,
+            contributorOneBalance: 50,
+            contributorTwoBalance: 50,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 110000,
+            contributorTwoBalance: 110000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 250000,
+            bountyBalance: 50000
+        });
 
-    //     assertions.ether({
-    //         etherEscrowBalance: 25,
-    //         contributionBalance: 0,
-    //         contributorOneBalance: 100,
-    //         contributorTwoBalance: 75,
-    //         reserveBalance: 0,
-    //         foundersBalance: 0
-    //     });
-    //     await assertions.SHP({
-    //         etherEscrowBalance: 0,
-    //         contributionBalance: 0,
-    //         contributorOneBalance: 0,
-    //         contributorTwoBalance: 55000,
-    //         reserveBalance: 50000,
-    //         foundersBalance: 25000
-    //     });
-
-    //     let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
-    //     assert.equal(preSaleEtherPaid, web3.toWei(25));
-    // });
+        preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
+        assert.equal(preSaleEtherPaid, web3.toWei(100));
+    });
 });

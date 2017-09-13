@@ -10,17 +10,20 @@ contract PreSale is TokenSale {
 
     using SafeMath for uint256;
  
-    mapping(address => uint) whitelist;
+    mapping(address => Whitelisted) public whitelist;
     
     uint256 public preSaleEtherPaid = 0;
     uint256 public gracePeriodEtherPaid = 0;
     uint256 public totalContributions = 0;
-    
+    uint256 public whitelistedPlannedContributions = 0;
+
     uint256 constant public FIRST_TIER_DISCOUNT = 10;
     uint256 constant public SECOND_TIER_DISCOUNT = 20;
     uint256 constant public THIRD_TIER_DISCOUNT = 30;
 
     bool public gracePeriod;
+    bool public honourWhitelist;
+
     uint256 public minPresaleContributionEther;
     uint256 public maxPresaleContributionEther;
 
@@ -33,9 +36,8 @@ contract PreSale is TokenSale {
     address public presaleAddress;
     
     enum ContributionState {Paused, Resumed}
-
-    event ContributionStateChanged(address _caller, ContributionState contributionState);
-    enum AllowedContributionState {Whitelisted, NotWhitelisted, ExcessWhitelisted}
+    event ContributionStateChanged(address caller, ContributionState contributionState);
+    enum AllowedContributionState {Whitelisted, NotWhitelisted, AboveWhitelisted, BelowWhitelisted, WhitelistClosed}
     event AllowedContributionCheck(uint256 contribution, AllowedContributionState allowedContributionState);
     event ValidContributionCheck(uint256 contribution, bool isContributionValid);
     event DiscountApplied(uint256 etherAmount, uint256 tokens, uint256 discount);
@@ -43,6 +45,13 @@ contract PreSale is TokenSale {
     event ContributionRefund(uint256 etherAmount, address _caller);
     event CountersUpdated(uint256 preSaleEtherPaid, uint256 gracePeriodEtherPaid, uint256 totalContributions);
     event PresaleClosed(uint256 when);
+    event WhitelistedUpdated(uint256 plannedContribution, bool contributed);
+    event WhitelistedCounterUpdated(uint256 whitelistedPlannedContributions, uint256 usedContributions);
+
+    struct Whitelisted {
+        uint256 plannedContribution;
+        bool contributed; 
+    }
 
     modifier isValidContribution() {
         require(validContribution());
@@ -78,6 +87,7 @@ contract PreSale is TokenSale {
         )
     {
         gracePeriod = false;
+        honourWhitelist = false;
         presaleAddress = address(this);
         setDiscountLimits(_firstTierDiscountUpperLimitEther, _secondTierDiscountUpperLimitEther, _thirdTierDiscountUpperLimitEther);
         setContributionRange(_minPresaleContributionEther, _maxPresaleContributionEther);
@@ -135,7 +145,19 @@ contract PreSale is TokenSale {
     /// @param _sender The address to whitelist
     /// @param _plannedContribution The planned contribution (WEI)
     function addToWhitelist(address _sender, uint256 _plannedContribution) public onlyOwner {
-        whitelist[_sender] = _plannedContribution;
+        whitelist[_sender] = Whitelisted(_plannedContribution, false);
+        whitelistedPlannedContributions = whitelistedPlannedContributions.add(_plannedContribution);
+    }
+
+    /// @notice Sets whether or not to honour the whitelist  
+    /// @param _honourWhitelist Honour whitelist flag
+    function setHonourWhitelist(bool _honourWhitelist) public onlyOwner {
+        honourWhitelist = _honourWhitelist;
+        if (!_honourWhitelist) {
+            preSaleCap = preSaleCap.add(whitelistedPlannedContributions);
+            whitelistedPlannedContributions = 0;
+            WhitelistedCounterUpdated(whitelistedPlannedContributions, 0);
+        }
     }
 
     /// @notice This function fires when someone sends Ether to the address of this contract.
@@ -148,7 +170,6 @@ contract PreSale is TokenSale {
         notPaused
     {
         address caller = msg.sender;
-        Contribution(msg.value, caller);
         processPreSale(caller);
     }
 
@@ -167,21 +188,62 @@ contract PreSale is TokenSale {
     }
 
     function processContribution() internal isValidContribution returns (uint256, uint256) {
-        uint256 plannedContribution = whitelist[msg.sender];
         var (allowedContribution, refundAmount) = getAllowedContribution();
-        if (plannedContribution > 0) {
-            if (msg.value > plannedContribution) {
-                AllowedContributionCheck(allowedContribution, AllowedContributionState.ExcessWhitelisted);
-                return (allowedContribution, refundAmount);
-            }
-            // TODO - if msg.value is less than plannedContribution 
-            // the remainder should be allocated back to the pre-sale
-            AllowedContributionCheck(allowedContribution, AllowedContributionState.Whitelisted);
-            return (plannedContribution, 0);
-        } else {
-            AllowedContributionCheck(allowedContribution, AllowedContributionState.NotWhitelisted);
+        
+        if (!honourWhitelist) {
+            AllowedContributionCheck(allowedContribution, AllowedContributionState.WhitelistClosed);
             return (allowedContribution, refundAmount);
         }
+        
+        if (!whitelist[msg.sender].contributed) {
+            return processWhitelistedContribution(allowedContribution, refundAmount);
+        } 
+
+        AllowedContributionCheck(allowedContribution, AllowedContributionState.NotWhitelisted);
+        return (allowedContribution, refundAmount);
+    }
+
+    function processWhitelistedContribution(uint256 allowedContribution, uint256 refundAmount) internal returns (uint256, uint256) {
+        uint256 plannedContribution = whitelist[msg.sender].plannedContribution;
+        
+        whitelist[msg.sender].contributed = true;
+        WhitelistedUpdated(plannedContribution, whitelist[msg.sender].contributed);
+        
+        if (msg.value > plannedContribution) {
+            return handleAbovePlannedWhitelistedContribution(allowedContribution, plannedContribution, refundAmount);
+        }
+        
+        if (msg.value < plannedContribution) {
+            return handleBelowPlannedWhitelistedContribution(plannedContribution);
+        }
+        
+        return handlePlannedWhitelistedContribution(plannedContribution);
+    }
+
+    function handlePlannedWhitelistedContribution(uint256 plannedContribution) internal returns (uint256, uint256) {
+        updateWhitelistedContribution(plannedContribution);
+        AllowedContributionCheck(plannedContribution, AllowedContributionState.Whitelisted);
+        return (plannedContribution, 0);
+    }
+    
+    function handleAbovePlannedWhitelistedContribution(uint256 allowedContribution, uint256 plannedContribution, uint256 refundAmount) internal returns (uint256, uint256) {
+        updateWhitelistedContribution(plannedContribution);
+        AllowedContributionCheck(allowedContribution, AllowedContributionState.AboveWhitelisted);
+        return (allowedContribution, refundAmount);
+    }
+
+    function handleBelowPlannedWhitelistedContribution(uint256 plannedContribution) internal returns (uint256, uint256) {
+        uint256 belowPlanned = plannedContribution.sub(msg.value);
+        preSaleCap = preSaleCap.add(belowPlanned);
+        
+        updateWhitelistedContribution(msg.value);
+        AllowedContributionCheck(msg.value, AllowedContributionState.BelowWhitelisted);
+        return (msg.value, 0);
+    }
+
+    function updateWhitelistedContribution(uint256 plannedContribution) internal {
+        whitelistedPlannedContributions = whitelistedPlannedContributions.sub(plannedContribution);
+        WhitelistedCounterUpdated(whitelistedPlannedContributions, plannedContribution);
     }
 
     function getAllowedContribution() internal returns (uint256, uint256) {
@@ -203,7 +265,6 @@ contract PreSale is TokenSale {
     /// @notice Returns the Ether amount remaining until the hard-cap
     /// @return the remaining cap in WEI
     function remainingCap() internal returns (uint256) {
-        // TODO - this should subtract the sum of whitelist values
         return preSaleCap.sub(preSaleEtherPaid);
     }
 
@@ -260,6 +321,8 @@ contract PreSale is TokenSale {
     )
         internal
     {
+
+        Contribution(etherAmount, _caller);
 
         uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
         uint256 callerTokensWithDiscount = applyDiscount(etherAmount, callerTokens);

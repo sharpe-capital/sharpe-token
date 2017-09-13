@@ -130,7 +130,7 @@ contract("Presale cap/limits", function(accounts) {
                     name: "ContributionRefund",
                     args: {
                         etherAmount: web3.toWei('1', 'ether'),
-                        caller: testConfig.contributorTwoAddress
+                        _caller: testConfig.contributorTwoAddress
                     }
                 }
             );

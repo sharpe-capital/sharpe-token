@@ -165,7 +165,7 @@ contract("Presale initialization and permissions", function(accounts) {
             await testConfig.preSale.sendTransaction({
                 value: 0, 
                 from: testConfig.contributorOneAddress
-            }).then(result => eventsUtil.eventLogger(result));
+            });
         });
         assertions.cleanState(testConfig.preSale);
     });
@@ -204,5 +204,29 @@ contract("Presale initialization and permissions", function(accounts) {
                 from: testConfig.ownerAddress
             }
         );
+    });
+
+    it('should not allow honour whitelist flag to be set if not owner', async function() {
+        await assertFail(async function() {
+            await testConfig.preSale.setHonourWhitelist(
+                true,
+                {
+                    from: testConfig.contributorTwoAddress
+                }
+            )
+        });
+        let honourWhitelist = await testConfig.preSale.honourWhitelist();
+        assert.equal(honourWhitelist, false);
+    });
+
+    it('should  allow honour whitelist flag to be set if owner', async function() {
+        await testConfig.preSale.setHonourWhitelist(
+            true,
+            {
+                from: testConfig.ownerAddress
+            }
+        );
+        let honourWhitelist = await testConfig.preSale.honourWhitelist();
+        assert.equal(honourWhitelist, true);
     });
 });

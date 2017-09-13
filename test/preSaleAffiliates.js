@@ -46,8 +46,7 @@ contract("Presale affiliate bonuses", function(accounts) {
             value: contribution,
             from: testConfig.contributorOneAddress,
             data: testConfig.contributorTwoAddress
-        })
-        .then(result => eventsUtil.eventLogger(result));
+        });
 
         assertions.ether({
             etherEscrowBalance: 50,
@@ -77,8 +76,7 @@ contract("Presale affiliate bonuses", function(accounts) {
             value: contribution,
             from: testConfig.contributorOneAddress,
             data: testConfig.bountySignAddress
-        })
-        .then(result => eventsUtil.eventLogger(result));
+        });
 
         assertions.ether({
             etherEscrowBalance: 75,
@@ -109,8 +107,7 @@ contract("Presale affiliate bonuses", function(accounts) {
                 value: contribution,
                 from: testConfig.contributorTwoAddress,
                 data: testConfig.contributorTwoAddress
-            })
-            .then(result => eventsUtil.eventLogger(result));
+            });
         });
 
         assertions.ether({

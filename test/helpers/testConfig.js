@@ -76,7 +76,12 @@ class TestConfig {
 
         this.preSaleCap = web3.toWei(this.PRESALE_CAP/this.etherPeggedValue);
 
-        this.shpController = await SHPController.new(this.shp.address);
+        this.shpController = await SHPController.new(
+            this.reserveAddress, 
+            this.foundersAddress
+        );
+
+        await this.shpController.setContracts(this.shp.address, this.trusteeAddress);
 
         this.preSale = await Presale.new(
             this.etherEscrowWallet.address, 
@@ -92,10 +97,12 @@ class TestConfig {
         );
         
         this.preSaleAddress = this.preSale.address;
+        this.honourWhitelist = false;
 
         await this.trusteeWallet.changeOwner(this.preSale.address);
         await this.shp.changeController(this.preSale.address);
         await this.preSale.setShp(this.shp.address);
+        await this.preSale.setHonourWhitelist(this.honourWhitelist);
 
         this.maliciousContract = await MaliciousContract.new(this.preSaleAddress);
 
@@ -112,17 +119,17 @@ class TestConfig {
             this.shp);
 
         
-        console.log("ownerAddress: " + this.ownerAddress);
-        console.log("contributorOneAddress: " + this.contributorOneAddress);
-        console.log("contributorTwoAddress: " + this.contributorTwoAddress);
-        console.log("preSaleAddress: " + this.preSaleAddress);
+        // console.log("ownerAddress: " + this.ownerAddress);
+        // console.log("contributorOneAddress: " + this.contributorOneAddress);
+        // console.log("contributorTwoAddress: " + this.contributorTwoAddress);
+        // console.log("preSaleAddress: " + this.preSaleAddress);
         
-        console.log("minPresaleContributionEther: " + this.minPresaleContributionEther);
-        console.log("maxPresaleContributionEther: " + this.maxPresaleContributionEther);
-        console.log("firstTierDiscountUpperLimitEther: " + this.firstTierDiscountUpperLimitEther);
-        console.log("secondTierDiscountUpperLimitEther: " + this.secondTierDiscountUpperLimitEther);
-        console.log("thirdTierDiscountUpperLimitEther: " + this.thirdTierDiscountUpperLimitEther);
-        console.log("preSaleCap: " + this.preSaleCap);
+        // console.log("minPresaleContributionEther: " + this.minPresaleContributionEther);
+        // console.log("maxPresaleContributionEther: " + this.maxPresaleContributionEther);
+        // console.log("firstTierDiscountUpperLimitEther: " + this.firstTierDiscountUpperLimitEther);
+        // console.log("secondTierDiscountUpperLimitEther: " + this.secondTierDiscountUpperLimitEther);
+        // console.log("thirdTierDiscountUpperLimitEther: " + this.thirdTierDiscountUpperLimitEther);
+        // console.log("preSaleCap: " + this.preSaleCap);
     }
 }
 

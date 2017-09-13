@@ -13,8 +13,8 @@ contract SHPController is Owned {
 
     address public reserveAddress;
     address public foundersAddress;
-    uint256 public reserveTokens;
-    uint256 public foundersTokens;
+    uint256 public reserveTokens = 0;
+    uint256 public foundersTokens = 0;
 
     modifier grantsNotCreated() {
         require(!grantsCreated);
@@ -23,21 +23,24 @@ contract SHPController is Owned {
 
     function SHPController(
         address _reserveAddress, 
-        address _foundersAddress,
-        uint256 _reserveTokens,
-        uint256 _foundersTokens
+        address _foundersAddress
     ) {
         reserveAddress = _reserveAddress;
         foundersAddress = _foundersAddress;
-        reserveTokens = _reserveTokens;
-        foundersTokens = _foundersTokens;
     }
 
     function () public payable {
         revert();
     }
 
-    function setShp(address _shpAddress, address _trusteeAddress) public onlyOwner {
+    function setTokenCounts(uint256 _reserveTokens, uint256 _foundersTokens) public onlyOwner {
+        require(reserveTokens == 0);
+        require(foundersTokens == 0);
+        reserveTokens = _reserveTokens;
+        foundersTokens = _foundersTokens;
+    }
+
+    function setContracts(address _shpAddress, address _trusteeAddress) public onlyOwner {
         shp = SHP(_shpAddress);
         trustee = Trustee(_trusteeAddress);
     }

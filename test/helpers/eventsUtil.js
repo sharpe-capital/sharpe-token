@@ -1,5 +1,13 @@
 module.exports = {
     eventLogger: async function(result) {
+        if (!result) {
+            console.log("No result to check events on");
+            return;
+        }
+        if (!result.logs) {
+            console.log("No logs to check events on");
+            return;
+        }
         for (var i = 0; i < result.logs.length; i++) {
             var log = result.logs[i];
             if (log.event !== 'undefined') {
@@ -9,6 +17,14 @@ module.exports = {
         }
     },
     eventValidator: function(result, expectedEvent, occurrences) {
+        if (!result) {
+            console.log("No result to check events on");
+            return;
+        }
+        if (!result.logs) {
+            console.log("No logs to check events on");
+            return;
+        }
         let foundEventTypes = 0;
         // console.log("expectedEvent: " + JSON.stringify(expectedEvent));
         for (var i = 0; i < result.logs.length; i++) {
@@ -16,20 +32,20 @@ module.exports = {
                 assert.ok(false, "Transaction should fail");
             }
             var log = result.logs[i];
-            if (log.event !== 'undefined') {
+            if (log && log.event !== 'undefined') {
                 // console.log("log.event: " + JSON.stringify(log.event));
                 if (log.event === expectedEvent.name) {
                     foundEventTypes++;
                     if (expectedEvent.args) {
                         for(arg in expectedEvent.args) {
-                            // console.log("arg: " + arg)
-                            if (!log.args[arg]) {                            
-                                continue;
+                            if (log.args[arg] != expectedEvent.args[arg]) {                            
+                                console.log("ACTUAL arg: " + arg + " value " + log.args[arg])
+                                console.log("EXPECTED arg: " + arg + " value " + expectedEvent.args[arg])
+                                assert.ok(false, "Could not validate args");
                             }
                         }
                     }
-                    // console.log("Found expected event: " + log.event);
-                    assert.ok(true, "Found expected event:");
+                    assert.ok(true, "Found expected event");
                 }
             }
         }
