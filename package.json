@@ -18,7 +18,7 @@
         "ethereumjs-testrpc-sc": "https://github.com/sc-forks/testrpc-sc.git",
         "random-bytes": "^1.0.0",
         "solc": "^0.4.15",
-        "solidity-coverage": "^0.2.2",
+        "solidity-coverage": "^0.2.3",
         "truffle": "^3.4.9",
         "truffle-hdwallet-provider": "0.0.3",
         "web3": "^0.19.1"

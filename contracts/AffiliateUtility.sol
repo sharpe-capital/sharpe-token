@@ -45,8 +45,8 @@ contract AffiliateUtility is Owned {
     /// @notice calculates and returns the amount to token minted for affilliate
     /// @param _key address of the proposed affiliate
     /// @param _contributorTokens amount of SHP tokens minted for contributor
-    /// @param _contributionValue amount of ETH cotributed
-    /// @return tuple of three values (success, affiliateBonus, contributorBouns)
+    /// @param _contributionValue amount of ETH contributed
+    /// @return tuple of two values (affiliateBonus, contributorBouns)
     function applyAffiliate(
         bytes _key, 
         uint256 _contributorTokens, 
@@ -73,10 +73,17 @@ contract AffiliateUtility is Owned {
         return(affiliateBonus, contributorBonus);
     }
 
+    /// @notice Fetches the Ethereum address of a valid affiliate
+    /// @param _key The Ethereum address in bytes format
+    /// @return The Ethereum address as an address type
     function getAffiliate(bytes _key) returns(address) {
         return affiliates[_key].etherAddress;
     }
 
+    /// @notice Checks if an affiliate is valid
+    /// @param _key The Ethereum address in bytes format
+    /// @param _contributor The contributing Ethereum address
+    /// @return True or False
     function isAffiliateValid(bytes _key, address _contributor) public returns(bool) {
         if (_key.length == 0) {
             return false;

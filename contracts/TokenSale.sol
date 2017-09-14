@@ -141,13 +141,4 @@ contract TokenSale is Owned, TokenController {
     function onApprove(address, address, uint256) public returns (bool) {
         return false;
     }
-
-    //////////
-    // Testing specific methods
-    //////////
-
-    /// @notice This function is overrided by the test Mocks.
-    function getTime() public returns (uint256) {
-        return now;
-    }
 }

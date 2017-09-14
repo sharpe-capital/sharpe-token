@@ -7,7 +7,6 @@ import "./SCD.sol";
 
 
 contract PreSale is TokenSale {
-
     using SafeMath for uint256;
  
     mapping(address => Whitelisted) public whitelist;
