@@ -160,5 +160,40 @@ module.exports = {
         // console.log("gracePeriod: " + gracePeriod);
         assert.equal(false, gracePeriod);
     },
+
+    cleanStateGeneral: async function(generalSale) {
+        ether({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 0,
+            contributorTwoBalance: 0,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 0,
+            contributorTwoBalance: 0,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+
+        let totalEtherPaid = (await presale.totalEtherPaid()).toNumber();
+        assert.equal(totalEtherPaid, web3.toWei(0));
+    },
+    expectedInitialisationGeneral: async function(generalSale, wallets, initValues) {
+        const saleAddr = await generalSale.saleAddress();
+        const etherEscrowAddr = await generalSale.etherEscrowAddress();
+        
+        const contributionPaused = await generalSale.paused();
+
+        assert.equal(saleAddr, generalSale.address);
+        assert.equal(etherEscrowAddr, wallets.etherEscrowWallet.address);
+
+        let actualMinContributionInWei = (await generalSale.minContributionInWei()).toNumber();
+        assert.equal(initValues.minContributionInWei, actualMinContributionInWei);
+        assert.equal(false, contributionPaused);
+    },
     roundFromWei: roundFromWei
 };

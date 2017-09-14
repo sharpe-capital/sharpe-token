@@ -1,4 +1,5 @@
 const Presale = artifacts.require("PreSale");
+const GeneralSale = artifacts.require("GeneralSale");
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const SHP = artifacts.require("SHP");
 const SCD = artifacts.require("SCD");
@@ -13,22 +14,12 @@ const assertions = require("./assertions");
 class TestConfig {
 
     constructor() {
-
-        this.etherPeggedValue = 400;
-
-        this.MIN_PRESALE_CONTRIBUTION = 10000;
-        this.MAX_PRESALE_CONTRIBUTION = 1000000;
-        this.FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
-        this.SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
-        this.THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
-        this.PRESALE_CAP = 10000000;
     }
 
-    async setup(accounts, tweakLimits) {
-
+    async generalSetup(accounts){
         console.log('Logging out all of the accounts for reference...');
         accounts.forEach(acc => console.log(acc + ' -> ' + web3.fromWei(web3.eth.getBalance(acc).toNumber())));
-
+        this.etherPeggedValue = 400;
         this.contributorOneAddress = accounts[1];
         this.contributorTwoAddress = accounts[2];
         this.escrowSignAddress = accounts[3];
@@ -39,7 +30,7 @@ class TestConfig {
 
         this.miniMeTokenFactory = await MiniMeTokenFactory.new();
         this.ownerAddress = accounts[0];
-
+        
         this.shp = await SHP.new(this.miniMeTokenFactory.address);
         this.scd = await SCD.new(this.miniMeTokenFactory.address);
 
@@ -58,6 +49,57 @@ class TestConfig {
         this.reserveAddress = this.reserveWallet.address;
         this.bountyAddress = this.bountyWallet.address;
         this.trusteeAddress = this.trusteeWallet.address;
+
+        this.shpController = await SHPController.new(
+            this.reserveAddress, 
+            this.foundersAddress
+        );
+
+        await this.shpController.setContracts(this.shp.address, this.trusteeAddress);
+        
+        console.log("ownerAddress: " + this.ownerAddress);
+        console.log("contributorOneAddress: " + this.contributorOneAddress);
+        console.log("contributorTwoAddress: " + this.contributorTwoAddress);
+    }
+    async setUpForGeneralSale(accounts) {
+        await this.generalSetup(accounts);
+        this.MIN_GENERAL_SALE_CONTRIBUTION = 100;
+        this.minContributionInWei = web3.toWei(this.MIN_GENERAL_SALE_CONTRIBUTION/this.etherPeggedValue);
+        this.generalSale = await GeneralSale.new( 
+            this.etherEscrowWallet.address, 
+            this.bountyWallet.address,
+            this.trusteeWallet.address,
+            this.affiliateUtility.address,
+            this.minContributionInWei);
+
+        await this.trusteeWallet.changeOwner(this.generalSale.address);
+        await this.shp.changeController(this.generalSale.address);
+        await this.generalSale.setShp(this.shp.address);
+        this.maliciousContract = await MaliciousContract.new(this.generalSale.address);
+        
+        assertions.initialize(
+            this.etherEscrowAddress, 
+            this.generalSale.address, 
+            this.contributorOneAddress, 
+            this.contributorTwoAddress, 
+            this.reserveAddress, 
+            this.foundersAddress,
+            this.trusteeAddress,
+            this.bountyAddress,
+            this.masterAddress,
+            this.shp);
+
+    }
+    async setupForPreSale(accounts, tweakLimits) {
+
+        await this.generalSetup(accounts);
+
+        this.MIN_PRESALE_CONTRIBUTION = 10000;
+        this.MAX_PRESALE_CONTRIBUTION = 1000000;
+        this.FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
+        this.SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
+        this.THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
+        this.PRESALE_CAP = 10000000;
         
         if(tweakLimits) {
             // Tweak values because test accounts only have 100 ETH
@@ -75,13 +117,6 @@ class TestConfig {
         }
 
         this.preSaleCap = web3.toWei(this.PRESALE_CAP/this.etherPeggedValue);
-
-        this.shpController = await SHPController.new(
-            this.reserveAddress, 
-            this.foundersAddress
-        );
-
-        await this.shpController.setContracts(this.shp.address, this.trusteeAddress);
 
         this.preSale = await Presale.new(
             this.etherEscrowWallet.address, 
@@ -118,11 +153,7 @@ class TestConfig {
             this.masterAddress,
             this.shp);
 
-        
-        // console.log("ownerAddress: " + this.ownerAddress);
-        // console.log("contributorOneAddress: " + this.contributorOneAddress);
-        // console.log("contributorTwoAddress: " + this.contributorTwoAddress);
-        // console.log("preSaleAddress: " + this.preSaleAddress);
+        console.log("preSaleAddress: " + this.preSaleAddress);
         
         // console.log("minPresaleContributionEther: " + this.minPresaleContributionEther);
         // console.log("maxPresaleContributionEther: " + this.maxPresaleContributionEther);

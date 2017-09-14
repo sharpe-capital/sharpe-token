@@ -10,7 +10,7 @@ contract("Presale whitelist extended", function(accounts) {
     let contributorFiveAddress = accounts[10];
 
     before(async function() {
-        await testConfig.setup(accounts);
+        await testConfig.setupForPreSale(accounts);
         console.log("contributorThreeAddress "  + contributorThreeAddress);
         console.log("contributorFourAddress "  + contributorFourAddress);
         console.log("contributorFiveAddress "  + contributorFiveAddress);

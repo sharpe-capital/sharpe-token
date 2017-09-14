@@ -10,6 +10,14 @@ contract GeneralSale is TokenSale {
     
     uint256 public minContributionInWei;
 
+    address public saleAddress;
+
+    modifier amountValidated() {
+        require(msg.value >= minContributionInWei);
+        _;
+    }
+
+
     /// @notice Constructs the contract with the following arguments
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
     /// @param _bountyAddress the address that will hold the bounty SHP
@@ -29,6 +37,7 @@ contract GeneralSale is TokenSale {
         _affiliateUtilityAddress) 
     {
         minContributionInWei = _minContributionInWei;
+        saleAddress = address(this);
     }
 
     function () 
@@ -37,9 +46,9 @@ contract GeneralSale is TokenSale {
     notPaused
     notClosed
     isValidated 
+    amountValidated
     {
         uint256 etherAmount = msg.value;
-        require(etherAmount >= minContributionInWei);
 
         uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
         uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);

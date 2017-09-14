@@ -7,7 +7,7 @@ const time = require("./helpers/time");
 contract("Presale move tokens", function(accounts) {
 
     before(async function() {
-        await testConfig.setup(accounts);
+        await testConfig.setupForPreSale(accounts);
     });
 
     it('should initialize contract with expected values', async function() {
