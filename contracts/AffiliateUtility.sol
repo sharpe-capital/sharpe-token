@@ -14,7 +14,14 @@ contract AffiliateUtility is Owned {
     uint256 public constant TIER2_PERCENT = 4;
     uint256 public constant TIER3_PERCENT = 5;
     
-    mapping (address => bool) private affiliates;
+    mapping (bytes => Affiliate) private affiliates;
+
+    event AffiliateReceived(address affiliateAddress, bytes messageData, bool valid);
+
+    struct Affiliate {
+        address etherAddress;
+        bool isPresent;
+    }
 
     function AffiliateUtility(uint256 _tierTwoMin, uint256 _tierThreeMin) {
         setTiers(_tierTwoMin, _tierThreeMin);
@@ -29,26 +36,27 @@ contract AffiliateUtility is Owned {
     }
 
     /// @notice This adds an affiliate Ethereum address to our whitelist
+    /// @param _key The lookup key (in bytes)
     /// @param _affiliate The Ethereum address of the affiliate
-    function addToWhiteList(address _affiliate) onlyOwner {
-        affiliates[_affiliate] = true; 
+    function addAffiliate(bytes _key, address _affiliate) onlyOwner {
+        affiliates[_key] = Affiliate(_affiliate, true);
     }
 
     /// @notice calculates and returns the amount to token minted for affilliate
-    /// @param _affiliate address of the proposed affiliate
+    /// @param _key address of the proposed affiliate
     /// @param _contributorTokens amount of SHP tokens minted for contributor
     /// @param _contributionValue amount of ETH cotributed
     /// @return tuple of three values (success, affiliateBonus, contributorBouns)
     function applyAffiliate(
-        address _affiliate, 
+        bytes _key, 
         uint256 _contributorTokens, 
         uint256 _contributionValue
     )
         public 
-        returns(bool, uint256, uint256) 
+        returns(uint256, uint256) 
     {
-        if (!isAffiliateValid(_affiliate)) {
-            return (false, 0, 0);
+        if (getAffiliate(_key) == address(0)) {
+            return (0, 0);
         }
 
         uint256 contributorBonus = _contributorTokens.div(100);
@@ -62,10 +70,20 @@ contract AffiliateUtility is Owned {
             affiliateBonus = _contributorTokens.mul(TIER3_PERCENT).div(100);
         }
 
-        return(true, affiliateBonus, contributorBonus);
+        return(affiliateBonus, contributorBonus);
     }
 
-    function isAffiliateValid(address _affiliate) returns(bool) {
-        return affiliates[_affiliate];
+    function getAffiliate(bytes _key) returns(address) {
+        return affiliates[_key].etherAddress;
+    }
+
+    function isAffiliateValid(bytes _key, address _contributor) public returns(bool) {
+        if (_key.length == 0) {
+            return false;
+        }
+        Affiliate memory affiliate = affiliates[_key];
+        AffiliateReceived(affiliate.etherAddress, _key, affiliate.isPresent);
+        require(affiliate.etherAddress != _contributor);
+        return affiliate.isPresent;
     }
 }
