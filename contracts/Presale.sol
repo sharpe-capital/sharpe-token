@@ -74,7 +74,8 @@ contract PreSale is TokenSale {
             _etherEscrowAddress,
             _bountyAddress,
             _trusteeAddress,
-            _affiliateUtilityAddress)
+            _affiliateUtilityAddress
+        )
     {
         gracePeriod = false;
         presaleAddress = address(this);
@@ -185,6 +186,9 @@ contract PreSale is TokenSale {
 
     function getAllowedContribution() internal returns (uint256, uint256) {
         uint256 allowedContribution = msg.value;
+        if (gracePeriod) {
+            return (allowedContribution, 0);
+        }
         uint256 tillCap = remainingCap();
         uint256 refundAmount = 0;
         if (msg.value > tillCap) {
@@ -217,9 +221,6 @@ contract PreSale is TokenSale {
     /// @notice Ensure the contribution is valid
     /// @return Returns whether the contribution is valid or not
     function validContribution() internal returns (bool) {
-        if (gracePeriod) {
-            return true;
-        }
         bool isContributionValid = msg.value >= minPresaleContributionEther && msg.value <= maxPresaleContributionEther;
         ValidContributionCheck(msg.value, isContributionValid);
         return isContributionValid;
