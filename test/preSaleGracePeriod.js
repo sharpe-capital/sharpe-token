@@ -58,19 +58,22 @@ contract("Presale grace period transaction", function(accounts) {
         assert.equal(closed, false);
     });
 
-    it('should allow a transaction over cap during grace period', async function() {
-
-        let contribution = web3.toWei('26', 'ether');
-
-        await testConfig.preSale.sendTransaction({
-            value: contribution,
-            from: testConfig.contributorOneAddress
+    it('should not allow transaction under minimum', async function() {
+        let wei = web3.toWei('1', 'ether');
+        let min = web3.fromWei((await testConfig.preSale.minPresaleContributionEther()).toNumber());
+        let max = web3.fromWei((await testConfig.preSale.maxPresaleContributionEther()).toNumber());
+        assert.equal(min, 1.25);
+        assert.equal(max, 12.5);
+        await assertFail(async function() {
+            await testConfig.preSale.sendTransaction({
+                value: wei,
+                from: testConfig.contributorTwoAddress
+            })
         });
-
         assertions.ether({
-            etherEscrowBalance: 25,
+            etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 75,
+            contributorOneBalance: 100,
             contributorTwoBalance: 100,
             reserveBalance: 0,
             foundersBalance: 0
@@ -78,18 +81,100 @@ contract("Presale grace period transaction", function(accounts) {
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 65000,
+            contributorOneBalance: 0,
             contributorTwoBalance: 0,
             reserveBalance: 0,
             foundersBalance: 0,
-            trusteeBalance: 62500,
-            bountyBalance: 12500
+            trusteeBalance: 0,
+            bountyBalance: 0
         });
+        let cap = web3.fromWei((await testConfig.preSale.preSaleCap()).toNumber());
+        assert.equal(cap, 25);
+    });
 
-        let gracePeriodEtherPaid = (await testConfig.preSale.gracePeriodEtherPaid()).toNumber();
-        assert.equal(gracePeriodEtherPaid, web3.toWei(25));
+    it('should not allow transaction over maximum', async function() {
+        let wei = web3.toWei('13', 'ether');
+        await assertFail(async function() {
+            await testConfig.preSale.sendTransaction({
+                value: wei,
+                from: testConfig.contributorTwoAddress
+            })
+        });
+        assertions.ether({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 100,
+            contributorTwoBalance: 100,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 0,
+            contributorTwoBalance: 0,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 0,
+            bountyBalance: 0
+        });
+        let cap = web3.fromWei((await testConfig.preSale.preSaleCap()).toNumber());
+        assert.equal(cap, 25);
+    });
 
-        let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
-        assert.equal(preSaleEtherPaid, web3.toWei(0));
+    it('should allow transaction between min and max', async function() {
+        let wei = web3.toWei('10', 'ether');
+        await testConfig.preSale.sendTransaction({
+            value: wei,
+            from: testConfig.contributorTwoAddress
+        });
+        assertions.ether({
+            etherEscrowBalance: 10,
+            presaleBalance: 0,
+            contributorOneBalance: 100,
+            contributorTwoBalance: 90,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 0,
+            contributorTwoBalance: 26000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 25000,
+            bountyBalance: 5000
+        });
+        let cap = web3.fromWei((await testConfig.preSale.preSaleCap()).toNumber());
+        assert.equal(cap, 25);
+    });
+
+    it('should allow multiple transactions to exceed the cap', async function() {
+        let wei = web3.toWei('10', 'ether');
+        await testConfig.preSale.sendTransaction({
+            value: wei,
+            from: testConfig.contributorTwoAddress
+        });
+        assertions.ether({
+            etherEscrowBalance: 20,
+            presaleBalance: 0,
+            contributorOneBalance: 100,
+            contributorTwoBalance: 80,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 0,
+            contributorTwoBalance: 52000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 50000,
+            bountyBalance: 10000
+        });
+        let cap = web3.fromWei((await testConfig.preSale.preSaleCap()).toNumber());
+        assert.equal(cap, 25);
     });
 });
