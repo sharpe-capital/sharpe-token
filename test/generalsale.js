@@ -48,70 +48,181 @@ contract("General Sale",function(accounts){
             });
         });
     });
+
     it('should allow contribution above the minimum amount without affiliate data', async function() {
-        const contributionValue = web3.toWei(25);
+        let contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
             from: testConfig.contributorOneAddress
         });
-
         assertions.ether({
-            etherEscrowBalance: 25,
+            etherEscrowBalance: 2,
             presaleBalance: 0,
-            contributorOneBalance: 75,
+            contributorOneBalance: 98,
             contributorTwoBalance: 100,
             reserveBalance: 0,
             foundersBalance: 0
         });
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 50000,
+            contributorOneBalance: 4000,
             contributorTwoBalance: 0,
             reserveBalance: 0,
             foundersBalance: 0,
-            trusteeBalance: 62500,
-            bountyBalance: 12500
+            trusteeBalance: 5000,
+            bountyBalance: 1000
         });
-    });    
+    });
+
+    it('should not allow contribution above the maximum amount', async function() {
+        await assertFail(async function() {
+            let contribution = web3.toWei(1001/testConfig.etherPeggedValue);
+            await testConfig.generalSale.sendTransaction({
+                value: contribution,
+                from: testConfig.contributorOneAddress
+            });
+        });
+    });
+
+    it('should allow owner to pause the sale', async function(){
+        await testConfig.generalSale.pauseContribution({
+            from: testConfig.ownerAddress
+        });
+        const generalPaused = await testConfig.generalSale.paused();
+        assert.equal(true, generalPaused);
+    });
+
+    it('should not allow contributions whilst paused', async function() {
+        const contributionValue = web3.toWei(2);
+        await assertFail(async function() {
+            await testConfig.generalSale.sendTransaction({
+                value: contributionValue,
+                from: testConfig.contributorOneAddress
+            });
+        });
+        assertions.ether({
+            etherEscrowBalance: 2,
+            presaleBalance: 0,
+            contributorOneBalance: 98,
+            contributorTwoBalance: 100,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 4000,
+            contributorTwoBalance: 0,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 5000,
+            bountyBalance: 1000
+        });
+        const totalEtherPaid = await testConfig.generalSale.totalEtherPaid.call();
+        assert.equal(totalEtherPaid.toNumber(), web3.toWei(2));
+    });
+
+    it('should allow owner to resume sale', async function() {
+        await testConfig.generalSale.resumeContribution({
+            from: testConfig.ownerAddress
+        });
+        const generalPaused = await testConfig.generalSale.paused();
+        assert.equal(false, generalPaused);
+    });
 
     it('should allow contribution with affiliate data', async function() {
-        const contributionValue = web3.toWei(25);
+        const contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
             from: testConfig.contributorOneAddress,
             data: testConfig.contributorTwoAddress
         });
-
         assertions.ether({
-            etherEscrowBalance: 50,
+            etherEscrowBalance: 4,
             presaleBalance: 0,
-            contributorOneBalance: 50,
+            contributorOneBalance: 96,
             contributorTwoBalance: 100,
             reserveBalance: 0,
             foundersBalance: 0
         });
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 100500,
-            contributorTwoBalance: 2500,
+            contributorOneBalance: 8040,
+            contributorTwoBalance: 120,
             reserveBalance: 0,
             foundersBalance: 0,
-            trusteeBalance: 125000,
-            bountyBalance: 25000
+            trusteeBalance: 10000,
+            bountyBalance: 2000
         });
-    });   
-    it('should not allow contribution with too much gas', async function() {
+        const totalEtherPaid = await testConfig.generalSale.totalEtherPaid.call();
+        assert.equal(totalEtherPaid.toNumber(), web3.toWei(4));
+    });
+
+    it('should allow smaller contribution when exceeds remaining and refund excess', async function() {
+        const contributionValue = web3.toWei(2);
+        await testConfig.generalSale.sendTransaction({
+            value: contributionValue,
+            from: testConfig.contributorOneAddress,
+            data: testConfig.contributorTwoAddress
+        });
+        assertions.ether({
+            etherEscrowBalance: 5,
+            presaleBalance: 0,
+            contributorOneBalance: 95,
+            contributorTwoBalance: 100,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 10060,
+            contributorTwoBalance: 180,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 12500,
+            bountyBalance: 2500
+        });
+    });
+
+    it('should reject transaction when cap is breached', async function() {
         await assertFail(async function() {
-            let contribution = web3.toWei(110/testConfig.etherPeggedValue);
+            let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
-                from: testConfig.contributorOneAddress,
-                gas: 50000000001
+                from: testConfig.contributorOneAddress
             });
         });
+    });
+
+    it('should allow owner to manually close the sale', async function() {
+        await testConfig.generalSale.closeSale({
+            from: testConfig.ownerAddress
+        });
+        const closed = await testConfig.generalSale.closed.call();
+        assert.equal(true, closed);
+    });
+
+    it('should not allow contributions after closed', async function() {
+        await assertFail(async function() {
+            let contribution = web3.toWei(1);
+            await testConfig.generalSale.sendTransaction({
+                value: contribution,
+                from: testConfig.contributorOneAddress
+            });
+        });
+    });
+
+    it('should allow transfer of ownership', async function() {
+        await testConfig.generalSale.transferOwnership(testConfig.shpController.address, testConfig.shpController.address, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.shpController.setContracts(testConfig.shp.address, testConfig.trusteeWallet.address);
+        let controller = await testConfig.shp.controller();
+        let owner = await testConfig.trusteeWallet.owner();
+        assert.equal(owner, testConfig.shpController.address);
+        assert.equal(controller, testConfig.shpController.address);
     });
 });

@@ -37,6 +37,14 @@ contract("Presale whitelist extended", function(accounts) {
         );
     });
 
+    it('should allow owner to resume the sale', async function(){
+        await testConfig.preSale.resumeContribution({
+            from: testConfig.ownerAddress
+        });
+        const paused = await testConfig.preSale.paused();
+        assert.equal(false, paused);
+    });
+
     it('should set honour whitelist to true', async function() {
         await testConfig.preSale.setHonourWhitelist(
             true,

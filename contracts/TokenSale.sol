@@ -31,6 +31,7 @@ contract TokenSale is Owned, TokenController {
     bool public paused;
     bool public closed;
 
+    event Contribution(uint256 etherAmount, address _caller);
     event NewSale(address indexed caller, uint256 etherAmount, uint256 tokensGenerated);
 
     modifier notPaused() {
@@ -50,6 +51,52 @@ contract TokenSale is Owned, TokenController {
         require(tx.gasprice <= MAX_GAS_PRICE);
         _;
     }
+
+    /// @notice This method sends the Ether received to the Ether escrow address
+    /// and generates the calculated number of SHP tokens, sending them to the caller's address.
+    /// It also generates the founder's tokens and the reserve tokens at the same time.
+    function doBuy(
+        address _caller,
+        uint256 etherAmount
+    )
+        internal
+    {
+
+        Contribution(etherAmount, _caller);
+
+        uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
+        uint256 callerTokensWithDiscount = applyDiscount(etherAmount, callerTokens);
+
+        uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
+        uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
+        uint256 bountyTokens = etherAmount.mul(BOUNTY_EXCHANGE_RATE);
+        uint256 vestingTokens = founderTokens.add(reserveTokens);
+
+        founderTokenCount = founderTokenCount.add(founderTokens);
+        reserveTokenCount = reserveTokenCount.add(reserveTokens);
+
+        payAffiliate(callerTokensWithDiscount, msg.value, msg.data, msg.sender);
+
+        shp.generateTokens(_caller, callerTokensWithDiscount);
+        shp.generateTokens(bountyAddress, bountyTokens);
+        shp.generateTokens(trusteeAddress, vestingTokens);
+
+        NewSale(_caller, etherAmount, callerTokensWithDiscount);
+        NewSale(trusteeAddress, etherAmount, vestingTokens);
+        NewSale(bountyAddress, etherAmount, bountyTokens);
+
+        etherEscrowAddress.transfer(etherAmount);
+        updateCounters(etherAmount);
+    }
+
+    /// @notice Applies the discount based on the discount tiers
+    /// @param _etherAmount The amount of ether used to evaluate the tier the contribution lies within
+    /// @param _contributorTokens The tokens allocated based on the contribution
+    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal returns (uint256);
+
+    /// @notice Updates the counters for the amount of Ether paid
+    /// @param _etherAmount the amount of Ether paid
+    function updateCounters(uint256 _etherAmount) internal;
     
     /// @notice Parent constructor. This needs to be extended from the child contracts
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
@@ -67,7 +114,7 @@ contract TokenSale is Owned, TokenController {
         trusteeAddress = _trusteeAddress;
         affiliateUtility = AffiliateUtility(_affiliateUtilityAddress);
         trustee = Trustee(_trusteeAddress);
-        paused = false;
+        paused = true;
         closed = false;
     }
 

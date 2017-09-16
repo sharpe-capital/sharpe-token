@@ -40,7 +40,6 @@ contract PreSale is TokenSale {
     event AllowedContributionCheck(uint256 contribution, AllowedContributionState allowedContributionState);
     event ValidContributionCheck(uint256 contribution, bool isContributionValid);
     event DiscountApplied(uint256 etherAmount, uint256 tokens, uint256 discount);
-    event Contribution(uint256 etherAmount, address _caller);
     event ContributionRefund(uint256 etherAmount, address _caller);
     event CountersUpdated(uint256 preSaleEtherPaid, uint256 gracePeriodEtherPaid, uint256 totalContributions);
     event PresaleClosed(uint256 when);
@@ -309,44 +308,6 @@ contract PreSale is TokenSale {
 
         DiscountApplied(_etherAmount, _contributorTokens, discount);
         return discount.add(_contributorTokens);
-    }
-
-    /// @notice This method sends the Ether received to the Ether escrow address
-    /// and generates the calculated number of SHP tokens, sending them to the caller's address.
-    /// It also generates the founder's tokens and the reserve tokens at the same time.
-    function doBuy(
-        address _caller,
-        uint256 etherAmount
-    )
-        internal
-    {
-
-        Contribution(etherAmount, _caller);
-
-        uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
-        uint256 callerTokensWithDiscount = applyDiscount(etherAmount, callerTokens);
-
-        uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
-        uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
-        uint256 bountyTokens = etherAmount.mul(BOUNTY_EXCHANGE_RATE);
-        uint256 vestingTokens = founderTokens.add(reserveTokens);
-
-        founderTokenCount = founderTokenCount.add(founderTokens);
-        reserveTokenCount = reserveTokenCount.add(reserveTokens);
-
-        payAffiliate(callerTokensWithDiscount, msg.value, msg.data, msg.sender);
-
-        shp.generateTokens(_caller, callerTokensWithDiscount);
-        shp.generateTokens(bountyAddress, bountyTokens);
-        shp.generateTokens(trusteeAddress, vestingTokens);
-
-        NewSale(_caller, etherAmount, callerTokensWithDiscount);
-        NewSale(trusteeAddress, etherAmount, vestingTokens);
-        NewSale(bountyAddress, etherAmount, bountyTokens);
-
-        etherEscrowAddress.transfer(etherAmount);
-
-        updateCounters(etherAmount);
     }
 
     /// @notice Updates the counters for the amount of Ether paid

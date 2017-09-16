@@ -31,6 +31,14 @@ contract("Presale move tokens", function(accounts) {
         );
     });
 
+    it('should allow owner to resume the sale', async function(){
+        await testConfig.preSale.resumeContribution({
+            from: testConfig.ownerAddress
+        });
+        const paused = await testConfig.preSale.paused();
+        assert.equal(false, paused);
+    });
+
     it('should set the cap and contribute some Ether', async function() {
         let cap = web3.toWei('75', 'ether');
         await testConfig.preSale.setPresaleCap(cap, {

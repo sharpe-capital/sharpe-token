@@ -30,6 +30,14 @@ contract("Presale cap/limits", function(accounts) {
         );
     });
 
+    it('should allow owner to resume the sale', async function(){
+        await testConfig.preSale.resumeContribution({
+            from: testConfig.ownerAddress
+        });
+        const paused = await testConfig.preSale.paused();
+        assert.equal(false, paused);
+    });
+
     it('should accept valid contribution', async function() {
         await testConfig.preSale.sendTransaction({
             value: testConfig.minPresaleContributionEther,

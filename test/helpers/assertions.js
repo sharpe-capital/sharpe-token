@@ -155,7 +155,7 @@ module.exports = {
         assert.equal(initValues.thirdTierDiscountUpperLimitEther, actualThirdTierDiscountUpperLimitEther);
 
         // console.log("contributionPaused: " + contributionPaused);
-        assert.equal(false, contributionPaused);
+        assert.equal(true, contributionPaused);
 
         // console.log("gracePeriod: " + gracePeriod);
         assert.equal(false, gracePeriod);
@@ -193,7 +193,7 @@ module.exports = {
 
         let actualMinContributionInWei = (await generalSale.minContributionInWei()).toNumber();
         assert.equal(initValues.minContributionInWei, actualMinContributionInWei);
-        assert.equal(false, contributionPaused);
+        assert.equal(true, contributionPaused);
     },
     roundFromWei: roundFromWei
 };

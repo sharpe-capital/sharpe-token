@@ -6,36 +6,46 @@ import "./TokenSale.sol";
 contract GeneralSale is TokenSale {
 
     uint256 public totalEtherPaid = 0;
-    uint256 public totalContributions = 0;
-    
     uint256 public minContributionInWei;
-
+    uint256 public maxContributionInWei;
+    uint256 public hardCapInWei;
     address public saleAddress;
 
     modifier amountValidated() {
         require(msg.value >= minContributionInWei);
+        require(msg.value <= maxContributionInWei);
         _;
     }
 
+    modifier capNotBreached() {
+        require(totalEtherPaid < hardCapInWei);
+        _;
+    }
 
     /// @notice Constructs the contract with the following arguments
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
     /// @param _bountyAddress the address that will hold the bounty SHP
     /// @param _trusteeAddress the address that will hold the vesting SHP
     /// @param _affiliateUtilityAddress address of the deployed AffiliateUtility contract.
-    /// @param _minContributionInWei minimum amound to contribution possilble
+    /// @param _maxContributionInWei maximum amount to contribution possilble
+    /// @param _minContributionInWei minimum amount to contribution possilble
+    /// @param _hardCapInWei the hard cap for the sale
     function GeneralSale( 
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
         address _affiliateUtilityAddress,
-        uint256 _minContributionInWei) 
+        uint256 _minContributionInWei,
+        uint256 _maxContributionInWei,
+        uint256 _hardCapInWei) 
         TokenSale (
         _etherEscrowAddress,
         _bountyAddress,
         _trusteeAddress,
         _affiliateUtilityAddress) 
     {
+        hardCapInWei = _hardCapInWei;
+        maxContributionInWei = _maxContributionInWei;
         minContributionInWei = _minContributionInWei;
         saleAddress = address(this);
     }
@@ -47,31 +57,36 @@ contract GeneralSale is TokenSale {
     notClosed
     isValidated 
     amountValidated
+    capNotBreached
     {
-        uint256 etherAmount = msg.value;
-
-        uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
-        uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
-        uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
-        uint256 bountyTokens = etherAmount.mul(BOUNTY_EXCHANGE_RATE);
-        uint256 vestingTokens = founderTokens.add(reserveTokens);
-        
-        payAffiliate(callerTokens,msg.value, msg.data, msg.sender);
-
-        require(shp.generateTokens(msg.sender, callerTokens));
-        shp.generateTokens(bountyAddress, bountyTokens);
-        shp.generateTokens(trusteeAddress, vestingTokens);
-
-        NewSale(msg.sender, etherAmount, callerTokens);
-        NewSale(trusteeAddress, etherAmount, vestingTokens);
-        NewSale(bountyAddress, etherAmount, bountyTokens);
-
-        //TODO: investigate withdraw pattern
-        etherEscrowAddress.transfer(etherAmount);
-        updateCounters(etherAmount);
+        uint256 contribution = msg.value;
+        uint256 remaining = hardCapInWei.sub(totalEtherPaid);
+        uint256 refund = 0;
+        if (contribution > remaining) {
+            contribution = remaining;
+            refund = msg.value.sub(contribution);
+        }
+        doBuy(msg.sender, contribution);
+        if (refund > 0) {
+            msg.sender.transfer(refund);
+        }
     }
 
-    function updateCounters(uint256 _etherAmount) {
-        totalContributions = totalContributions.add(1);
+    /// @notice Applies the discount based on the discount tiers
+    /// @param _etherAmount The amount of ether used to evaluate the tier the contribution lies within
+    /// @param _contributorTokens The tokens allocated based on the contribution
+    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal returns (uint256) {
+        return _contributorTokens;
+    }
+
+    /// @notice Updates the counters for the amount of Ether paid
+    /// @param _etherAmount the amount of Ether paid
+    function updateCounters(uint256 _etherAmount) internal {
+        totalEtherPaid = totalEtherPaid.add(_etherAmount);
+    }
+
+    /// @notice Public function enables closing of the crowdsale manually if necessary
+    function closeSale() public onlyOwner notClosed {
+        closed = true;
     }
 }
