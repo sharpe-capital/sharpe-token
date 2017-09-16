@@ -10,6 +10,7 @@ contract SHPController is Owned {
     Trustee public trustee;
 
     bool public grantsCreated = false;
+    bool public tokenCountSet = false;
 
     address public reserveAddress;
     address public foundersAddress;
@@ -20,6 +21,11 @@ contract SHPController is Owned {
 
     modifier grantsNotCreated() {
         require(!grantsCreated);
+        _;
+    }
+
+    modifier tokenCountNotSet() {
+        require(!tokenCountSet);
         _;
     }
 
@@ -40,12 +46,12 @@ contract SHPController is Owned {
         uint256 _foundersTokens
     ) 
         public 
-        onlyOwner 
+        onlyOwner
+        tokenCountNotSet
     {
-        require(reserveTokens == 0);
-        require(foundersTokens == 0);
         reserveTokens = _reserveTokens;
         foundersTokens = _foundersTokens;
+        tokenCountSet = true;
     }
 
     function setContracts(address _shpAddress, address _trusteeAddress) public onlyOwner {

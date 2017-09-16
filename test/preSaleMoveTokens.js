@@ -242,6 +242,20 @@ contract("Presale move tokens", function(accounts) {
         assert.equal(web3.fromWei(reserveTokenCount).toNumber(), 37500);
     });
 
+    it('should not be able to set token counts once already set', async function() {
+        let founderTokenCount = await testConfig.preSale.founderTokenCount();
+        let reserveTokenCount = await testConfig.preSale.reserveTokenCount();
+        await assertFail(async function() {
+            await testConfig.shpController.setTokenCounts(reserveTokenCount, founderTokenCount, {
+                from: testConfig.ownerAddress
+            });
+        });
+        founderTokenCount = await testConfig.shpController.foundersTokens();
+        reserveTokenCount = await testConfig.shpController.reserveTokens();
+        assert.equal(web3.fromWei(founderTokenCount).toNumber(), 25000);
+        assert.equal(web3.fromWei(reserveTokenCount).toNumber(), 37500);
+    });
+
     it('should not be able to create vesting grants when not owner', async function() {
         await assertFail(async function() {
             await testConfig.shpController.createVestingGrants({

@@ -104,15 +104,9 @@ contract TokenSale is Owned, TokenController {
     /// @param _caller The address being queried
     /// @return True if `caller` is a contract
     function isContract(address _caller) internal constant returns (bool) {
-        if (_caller == 0) {
-            return false;
-        } else {
-            uint256 size;
-            assembly {
-                size := extcodesize(_caller)
-            }
-            return (size > 0);
-        }
+        uint size;
+        assembly { size := extcodesize(_caller) }
+        return size > 0;
     }
 
     /// @notice Pauses the contribution if there is any issue
