@@ -7,22 +7,12 @@ contract("DynamicCeiling", function (accounts) {
     const randomAddress = accounts[4];
 
     let dynamicCeiling;
-
-    let hash1;
-    let hash2;
-    let hash3;
-    let hash4;
-    let hash5;
-    // let hashes = [];
-
     const hashes = [];
     const ceilings = [
         [web3.toWei(1000), 30, 10 ** 12],
         [web3.toWei(21000), 30, 10 ** 12],
         [web3.toWei(61000), 30, 10 ** 12],
     ];
-
-
 
     before(async function () {
 
@@ -123,7 +113,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.allRevealed(), false);
     });
 
-    it("should return the right amounts when first ceiling is enabled", async function() {
+    it("should return the right amounts when first ceiling is revealed", async function() {
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '0');
         assert.equal((await dynamicCeiling.avialableAmountToCollect.call(0, { from: saleAddress })).toFixed(), '33333333333333333333');
 
@@ -143,7 +133,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '0');
     });
 
-        it("Reveals 2nd curve", async function() {
+    it("should reveal the 2nd ceiling", async function() {
         await dynamicCeiling.revealCeiling(
             ceilings[1][0],
             ceilings[1][1],
@@ -156,7 +146,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.allRevealed(), false);
     });
 
-    it("Checks avialableAmountToCollect after 2nd curve is revealed", async function() {
+    it("should return the right amounts when 2nd ceiling is revealed", async function() {
         await dynamicCeiling.avialableAmountToCollect(ceilings[0][0],{ from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '1');
         assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '666666666666666666666')
@@ -177,7 +167,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[1][0], { from: saleAddress })).toFixed(), '0');
     });
 
-    it("Reveals last curve", async function() {
+    it("should reveal the 3rd ceiling", async function() {
         await dynamicCeiling.revealCeiling(
             ceilings[2][0],
             ceilings[2][1],
@@ -190,7 +180,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.allRevealed(), true);
     });
 
-    it("Checks avialableAmountToCollect after 3rd curve is revealed", async function() {
+    it("should return the right amounts when 3rd ceiling is revealed", async function() {
         await dynamicCeiling.avialableAmountToCollect(ceilings[1][0],{ from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '2');
         assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[1][0],{ from: saleAddress })).toFixed(), '1333333333333333333333');
@@ -213,18 +203,18 @@ contract("DynamicCeiling", function (accounts) {
     });
 
 
-    it("Deploys dynamicCeiling", async function() {
+    it("should reset dynamicCeiling contract", async function() {
         dynamicCeiling = await DynamicCeiling.new(accounts[0], accounts[0]);
 
         assert.equal(await dynamicCeiling.currentIndex(), 0);
     });
 
-    it("Sets the ceilings", async function() {
+    it("should reset the ceilings", async function() {
         await dynamicCeiling.setHiddenCeilings(hashes);
         assert.equal(await dynamicCeiling.nCeilings(), 10);
     });
 
-    it("Reveals multiple ceilings", async function() {
+    it("should reveal multiple ceilings", async function() {
         await dynamicCeiling.revealMulti(
             [
                 ceilings[0][0],
@@ -257,6 +247,5 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.revealedCeilings(), 3);
         assert.equal(await dynamicCeiling.allRevealed(), true);
     });
-
 
 });

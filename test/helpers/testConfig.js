@@ -3,6 +3,7 @@ const GeneralSale = artifacts.require("GeneralSale");
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const SHP = artifacts.require("SHP");
 const SCD = artifacts.require("SCD");
+const DynamicCeiling = artifacts.require("DynamicCeiling");
 const MultiSigWallet = artifacts.require("MultiSigWallet");
 const Trustee = artifacts.require("Trustee");
 const AffiliateUtility = artifacts.require("AffiliateUtility");
@@ -65,7 +66,7 @@ class TestConfig {
         await this.generalSetup(accounts);
         this.MIN_GENERAL_SALE_CONTRIBUTION = 100;
         this.MAX_GENERAL_SALE_CONTRIBUTION = 1000;
-        this.GENERAL_SALE_HARDCAP = 2000;
+        this.GENERAL_SALE_HARDCAP = 4400;
         this.minContributionInWei = web3.toWei(this.MIN_GENERAL_SALE_CONTRIBUTION/this.etherPeggedValue);
         this.maxContributionInWei = web3.toWei(this.MAX_GENERAL_SALE_CONTRIBUTION/this.etherPeggedValue);
         this.hardCapInWei = web3.toWei(this.GENERAL_SALE_HARDCAP/this.etherPeggedValue);
@@ -83,6 +84,13 @@ class TestConfig {
         await this.generalSale.setShp(this.shp.address);
         this.maliciousContract = await MaliciousContract.new(this.generalSale.address);
         
+        this.dynamicCeiling = await DynamicCeiling.new(
+            this.ownerAddress,
+            this.generalSale.address
+        );
+        this.generalSale.setDynamicCeilingAddress(this.dynamicCeiling.address);
+
+    
         assertions.initialize(
             this.etherEscrowAddress, 
             this.generalSale.address, 

@@ -1,6 +1,7 @@
 pragma solidity ^0.4.11;
 
 import "./TokenSale.sol";
+import "./DynamicCeiling.sol";
 
 
 contract GeneralSale is TokenSale {
@@ -10,6 +11,8 @@ contract GeneralSale is TokenSale {
     uint256 public maxContributionInWei;
     uint256 public hardCapInWei;
     address public saleAddress;
+    
+    DynamicCeiling public dynamicCeiling;
 
     modifier amountValidated() {
         require(msg.value >= minContributionInWei);
@@ -50,6 +53,10 @@ contract GeneralSale is TokenSale {
         saleAddress = address(this);
     }
 
+    function setDynamicCeilingAddress(address _dynamicCeilingAddress) public onlyOwner {
+        dynamicCeiling = DynamicCeiling(_dynamicCeilingAddress);
+    }
+
     function () 
     public 
     payable
@@ -60,8 +67,13 @@ contract GeneralSale is TokenSale {
     capNotBreached
     {
         uint256 contribution = msg.value;
-        uint256 remaining = hardCapInWei.sub(totalEtherPaid);
+        uint256 remaining = dynamicCeiling.avialableAmountToCollect(totalEtherPaid);
         uint256 refund = 0;
+
+        if (remaining == 0) {
+            revert();
+        }
+
         if (contribution > remaining) {
             contribution = remaining;
             refund = msg.value.sub(contribution);
@@ -86,7 +98,7 @@ contract GeneralSale is TokenSale {
     }
 
     /// @notice Public function enables closing of the crowdsale manually if necessary
-    function closeSale() public onlyOwner notClosed {
+    function closeSale() public onlyOwner {
         closed = true;
     }
 }
