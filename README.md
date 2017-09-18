@@ -10,8 +10,9 @@ SHP is an ERC20-compliant token, derived from the [MiniMe Token](https://github.
 Once our ICO launches, contributors will be able to "mint" SHP tokens by sending Ethereum to a contributor address. Upon receipt of 1 ETH, the following amount of SHP will be generated:
 
 - 2,000 SHP will be sent to the address of the user that sent the 1 ETH.
-- 2,000 SHP will be sent to a multi-signature 'reserve address'. These tokens will be used to raise further capital in future.
+- 1,500 SHP will be sent to a multi-signature 'reserve address'. These tokens will be used to raise further capital in future.
 - 1,000 SHP will be sent to a multi-signature 'founders & community address'. These tokens will vest according the the vesting schedule set out below, and will be used to reward those that contribute to the success of the Sharpe project.
+- 500 SHP will be sent to a multi-signature address for issuing bounty payments. This will be instantly liquid.
 
 ## Vesting Schedule
 
