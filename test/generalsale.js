@@ -9,7 +9,7 @@ contract("General Sale", function(accounts) {
     const ceilings = [];
 
     before(async function() {
-        await testConfig.setUpForGeneralSale(accounts);
+        await testConfig.setUpForGeneralSale(accounts, true);
     });
     it('should initialize contract with expected values', async function() {
         const minContribution = await testConfig.generalSale.minContributionInWei();

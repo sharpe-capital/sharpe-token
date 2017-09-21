@@ -14,10 +14,9 @@ const assertions = require("./assertions");
 
 class TestConfig {
 
-    constructor() {
-    }
+    constructor() {}
 
-    async generalSetup(accounts){
+    async generalSetup(accounts) {
         console.log('Logging out all of the accounts for reference...');
         accounts.forEach(acc => console.log(acc + ' -> ' + web3.fromWei(web3.eth.getBalance(acc).toNumber())));
         this.etherPeggedValue = 400;
@@ -31,7 +30,7 @@ class TestConfig {
 
         this.miniMeTokenFactory = await MiniMeTokenFactory.new();
         this.ownerAddress = accounts[0];
-        
+
         this.shp = await SHP.new(this.miniMeTokenFactory.address);
         this.scd = await SCD.new(this.miniMeTokenFactory.address);
 
@@ -44,7 +43,7 @@ class TestConfig {
         this.reserveWallet = await MultiSigWallet.new([this.reserveSignAddress], 1);
         this.trusteeWallet = await Trustee.new(this.shp.address);
         this.affiliateUtility = await AffiliateUtility.new(affiliateTierTwo, affiliateTierThree);
-        
+
         this.etherEscrowAddress = this.etherEscrowWallet.address;
         this.foundersAddress = this.foundersWallet.address;
         this.reserveAddress = this.reserveWallet.address;
@@ -52,26 +51,28 @@ class TestConfig {
         this.trusteeAddress = this.trusteeWallet.address;
 
         this.shpController = await SHPController.new(
-            this.reserveAddress, 
+            this.reserveAddress,
             this.foundersAddress
         );
 
         await this.shpController.setContracts(this.shp.address, this.trusteeAddress);
-        
+
         console.log("ownerAddress: " + this.ownerAddress);
         console.log("contributorOneAddress: " + this.contributorOneAddress);
         console.log("contributorTwoAddress: " + this.contributorTwoAddress);
     }
-    async setUpForGeneralSale(accounts) {
-        await this.generalSetup(accounts);
+    async setUpForGeneralSale(accounts, includeGeneral) {
+        if (includeGeneral) {
+            await this.generalSetup(accounts);
+        }
         this.MIN_GENERAL_SALE_CONTRIBUTION = 100;
         this.MAX_GENERAL_SALE_CONTRIBUTION = 1000;
         this.GENERAL_SALE_HARDCAP = 4400;
-        this.minContributionInWei = web3.toWei(this.MIN_GENERAL_SALE_CONTRIBUTION/this.etherPeggedValue);
-        this.maxContributionInWei = web3.toWei(this.MAX_GENERAL_SALE_CONTRIBUTION/this.etherPeggedValue);
-        this.hardCapInWei = web3.toWei(this.GENERAL_SALE_HARDCAP/this.etherPeggedValue);
-        this.generalSale = await GeneralSale.new( 
-            this.etherEscrowWallet.address, 
+        this.minContributionInWei = web3.toWei(this.MIN_GENERAL_SALE_CONTRIBUTION / this.etherPeggedValue);
+        this.maxContributionInWei = web3.toWei(this.MAX_GENERAL_SALE_CONTRIBUTION / this.etherPeggedValue);
+        this.hardCapInWei = web3.toWei(this.GENERAL_SALE_HARDCAP / this.etherPeggedValue);
+        this.generalSale = await GeneralSale.new(
+            this.etherEscrowWallet.address,
             this.bountyWallet.address,
             this.trusteeWallet.address,
             this.affiliateUtility.address,
@@ -79,29 +80,33 @@ class TestConfig {
             this.maxContributionInWei,
             this.hardCapInWei);
 
-        await this.trusteeWallet.changeOwner(this.generalSale.address);
-        await this.shp.changeController(this.generalSale.address);
-        await this.generalSale.setShp(this.shp.address);
+        if (includeGeneral) {
+            await this.trusteeWallet.changeOwner(this.generalSale.address);
+            await this.shp.changeController(this.generalSale.address);
+            await this.generalSale.setShp(this.shp.address);
+        }
+
         this.maliciousContract = await MaliciousContract.new(this.generalSale.address);
-        
+
         this.dynamicCeiling = await DynamicCeiling.new(
             this.ownerAddress,
             this.generalSale.address
         );
         this.generalSale.setDynamicCeilingAddress(this.dynamicCeiling.address);
 
-    
-        assertions.initialize(
-            this.etherEscrowAddress, 
-            this.generalSale.address, 
-            this.contributorOneAddress, 
-            this.contributorTwoAddress, 
-            this.reserveAddress, 
-            this.foundersAddress,
-            this.trusteeAddress,
-            this.bountyAddress,
-            this.masterAddress,
-            this.shp);
+        if (includeGeneral) {
+            assertions.initialize(
+                this.etherEscrowAddress,
+                this.generalSale.address,
+                this.contributorOneAddress,
+                this.contributorTwoAddress,
+                this.reserveAddress,
+                this.foundersAddress,
+                this.trusteeAddress,
+                this.bountyAddress,
+                this.masterAddress,
+                this.shp);
+        }
 
     }
     async setupForPreSale(accounts, tweakLimits) {
@@ -114,29 +119,29 @@ class TestConfig {
         this.SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
         this.THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
         this.PRESALE_CAP = 10000000;
-        
-        if(tweakLimits) {
+
+        if (tweakLimits) {
             // Tweak values because test accounts only have 100 ETH
-            this.minPresaleContributionEther = web3.toWei(500/this.etherPeggedValue);
-            this.maxPresaleContributionEther = web3.toWei(5000/this.etherPeggedValue);        
-            this.firstTierDiscountUpperLimitEther = web3.toWei(1000/this.etherPeggedValue);
-            this.secondTierDiscountUpperLimitEther = web3.toWei(2000/this.etherPeggedValue) - 1;
-            this.thirdTierDiscountUpperLimitEther = web3.toWei(4000/this.etherPeggedValue);
+            this.minPresaleContributionEther = web3.toWei(500 / this.etherPeggedValue);
+            this.maxPresaleContributionEther = web3.toWei(5000 / this.etherPeggedValue);
+            this.firstTierDiscountUpperLimitEther = web3.toWei(1000 / this.etherPeggedValue);
+            this.secondTierDiscountUpperLimitEther = web3.toWei(2000 / this.etherPeggedValue) - 1;
+            this.thirdTierDiscountUpperLimitEther = web3.toWei(4000 / this.etherPeggedValue);
         } else {
-            this.minPresaleContributionEther = web3.toWei(this.MIN_PRESALE_CONTRIBUTION/this.etherPeggedValue);
-            this.maxPresaleContributionEther = web3.toWei(this.MAX_PRESALE_CONTRIBUTION/this.etherPeggedValue);
-            this.firstTierDiscountUpperLimitEther = web3.toWei(this.FIRST_TIER_DISCOUNT_UPPER_LIMIT/this.etherPeggedValue);
-            this.secondTierDiscountUpperLimitEther = web3.toWei(this.SECOND_TIER_DISCOUNT_UPPER_LIMIT/this.etherPeggedValue);
-            this.thirdTierDiscountUpperLimitEther = web3.toWei(this.THIRD_TIER_DISCOUNT_UPPER_LIMIT/this.etherPeggedValue);
+            this.minPresaleContributionEther = web3.toWei(this.MIN_PRESALE_CONTRIBUTION / this.etherPeggedValue);
+            this.maxPresaleContributionEther = web3.toWei(this.MAX_PRESALE_CONTRIBUTION / this.etherPeggedValue);
+            this.firstTierDiscountUpperLimitEther = web3.toWei(this.FIRST_TIER_DISCOUNT_UPPER_LIMIT / this.etherPeggedValue);
+            this.secondTierDiscountUpperLimitEther = web3.toWei(this.SECOND_TIER_DISCOUNT_UPPER_LIMIT / this.etherPeggedValue);
+            this.thirdTierDiscountUpperLimitEther = web3.toWei(this.THIRD_TIER_DISCOUNT_UPPER_LIMIT / this.etherPeggedValue);
         }
 
-        this.preSaleCap = web3.toWei(this.PRESALE_CAP/this.etherPeggedValue);
-        
-        this.honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime(); 
+        this.preSaleCap = web3.toWei(this.PRESALE_CAP / this.etherPeggedValue);
+
+        this.honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
         // console.log("honourWhitelistEnd " + this.honourWhitelistEnd);
 
         this.preSale = await Presale.new(
-            this.etherEscrowWallet.address, 
+            this.etherEscrowWallet.address,
             this.bountyWallet.address,
             this.trusteeWallet.address,
             this.affiliateUtility.address,
@@ -148,7 +153,7 @@ class TestConfig {
             this.preSaleCap,
             this.honourWhitelistEnd
         );
-        
+
         this.preSaleAddress = this.preSale.address;
 
         await this.trusteeWallet.changeOwner(this.preSale.address);
@@ -158,11 +163,11 @@ class TestConfig {
         this.maliciousContract = await MaliciousContract.new(this.preSaleAddress);
 
         assertions.initialize(
-            this.etherEscrowAddress, 
-            this.preSaleAddress, 
-            this.contributorOneAddress, 
-            this.contributorTwoAddress, 
-            this.reserveAddress, 
+            this.etherEscrowAddress,
+            this.preSaleAddress,
+            this.contributorOneAddress,
+            this.contributorTwoAddress,
+            this.reserveAddress,
             this.foundersAddress,
             this.trusteeAddress,
             this.bountyAddress,
@@ -170,7 +175,7 @@ class TestConfig {
             this.shp);
 
         console.log("preSaleAddress: " + this.preSaleAddress);
-        
+
         // console.log("minPresaleContributionEther: " + this.minPresaleContributionEther);
         // console.log("maxPresaleContributionEther: " + this.maxPresaleContributionEther);
         // console.log("firstTierDiscountUpperLimitEther: " + this.firstTierDiscountUpperLimitEther);
