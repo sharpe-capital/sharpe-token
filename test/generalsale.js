@@ -43,7 +43,7 @@ contract("General Sale", function(accounts) {
             hashes.push(h);
             i += 1;
         }
-        // add some more random hashes to conceal the total number of ceiliengs
+        // add some more random hashes to conceal the total number of ceilings
         for (; i < 10; i += 1) {
             hashes.push(web3.sha3(`pwd${i}`));
         }
@@ -225,8 +225,8 @@ contract("General Sale", function(accounts) {
         });
     });
 
-    it('should reject transaction when ceilieng limit is exhusted', async function() {
-        await assertFail(async function() {
+    it('should reject transaction when ceiling limit is exhusted', async function () {
+        await assertFail(async function () {
             let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -249,7 +249,7 @@ contract("General Sale", function(accounts) {
         assert.equal(await testConfig.dynamicCeiling.allRevealed(), true);
     });
 
-    it('should allow contribution when 2nd ceiling is revlead', async function() {
+    it('should allow contribution when 2nd ceiling is revealed', async function() {
         const contributionValue = web3.toWei(1);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -275,7 +275,7 @@ contract("General Sale", function(accounts) {
         });
     });
 
-    it('should allow samller amount if contribution is larger than the final cap and close the sale', async function() {
+    it('should allow smaller amount if contribution is larger than the final cap and close the sale', async function() {
         const contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -299,6 +299,8 @@ contract("General Sale", function(accounts) {
             trusteeBalance: (10000 + 2500 + 2500 + 2500),
             bountyBalance: (2000 + 500 + 500 + 500)
         });
+        
+        assert.equal(await testConfig.generalSale.closed(), true);
     });
 
 

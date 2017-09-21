@@ -20,11 +20,6 @@ contract GeneralSale is TokenSale {
         _;
     }
 
-    modifier capNotBreached() {
-        require(totalEtherPaid < hardCapInWei);
-        _;
-    }
-
     /// @notice Constructs the contract with the following arguments
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
     /// @param _bountyAddress the address that will hold the bounty SHP
@@ -64,10 +59,9 @@ contract GeneralSale is TokenSale {
     notClosed
     isValidated 
     amountValidated
-    capNotBreached
     {
         uint256 contribution = msg.value;
-        uint256 remaining = dynamicCeiling.avialableAmountToCollect(totalEtherPaid);
+        uint256 remaining = dynamicCeiling.availableAmountToCollect(totalEtherPaid);
         uint256 refund = 0;
 
         if (remaining == 0) {
@@ -87,7 +81,7 @@ contract GeneralSale is TokenSale {
     /// @notice Applies the discount based on the discount tiers
     /// @param _etherAmount The amount of ether used to evaluate the tier the contribution lies within
     /// @param _contributorTokens The tokens allocated based on the contribution
-    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal returns (uint256) {
+    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal constant returns (uint256) {
         return _contributorTokens;
     }
 

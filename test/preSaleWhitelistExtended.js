@@ -2,18 +2,15 @@ const assertFail = require("./helpers/assertFail");
 const assertions = require("./helpers/assertions");
 const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
+const time = require("./helpers/time");
 
 contract("Presale whitelist extended", function(accounts) {
 
     let contributorThreeAddress = accounts[8];
     let contributorFourAddress = accounts[9];
-    let contributorFiveAddress = accounts[10];
 
     before(async function() {
         await testConfig.setupForPreSale(accounts);
-        console.log("contributorThreeAddress "  + contributorThreeAddress);
-        console.log("contributorFourAddress "  + contributorFourAddress);
-        console.log("contributorFiveAddress "  + contributorFiveAddress);
     });
 
     it('should initialize contract with expected values', async function() {
@@ -43,17 +40,6 @@ contract("Presale whitelist extended", function(accounts) {
         });
         const paused = await testConfig.preSale.paused();
         assert.equal(false, paused);
-    });
-
-    it('should set honour whitelist to true', async function() {
-        await testConfig.preSale.setHonourWhitelist(
-            true,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-        let honourWhitelist = await testConfig.preSale.honourWhitelist();
-        assert.equal(honourWhitelist, true);
     });
 
     it('should add unused whitelisted contribution back to cap', async function() {
@@ -243,14 +229,35 @@ contract("Presale whitelist extended", function(accounts) {
     });
 
     it('should set honour whitelist to false', async function() {
-        await testConfig.preSale.setHonourWhitelist(
-            false,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-        let honourWhitelist = await testConfig.preSale.honourWhitelist();
-        assert.equal(honourWhitelist, false);
+
+        let afterWhitelistPeriod = new Date(2017, 10, 10, 9, 0, 0, 0).getTime(); 
+        await time.increaseTime(afterWhitelistPeriod);
+
+        // Need a transaction to update the honourWhitelist flag, counters, etc..
+        let plannedContribution = web3.toWei('25', 'ether');
+        await testConfig.preSale.sendTransaction({
+            value: plannedContribution,
+            from: testConfig.contributorTwoAddress
+        });
+
+        assertions.ether({
+            etherEscrowBalance: 100,
+            presaleBalance: 0,
+            contributorOneBalance: 50,
+            contributorTwoBalance: 50,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 110000,
+            contributorTwoBalance: 110000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 250000,
+            bountyBalance: 50000
+        });
     });
 
     it('should add remaining whitelisted planned contributions to cap after whitelist stops being honoured', async function() {
@@ -261,7 +268,7 @@ contract("Presale whitelist extended", function(accounts) {
         assert.equal(preSaleCap, web3.toWei(350));
     });
 
-    it('should detect whitelisted is not honoured and allow contribution from cap', async function() {
+    it('should detect over whitelist period and allow contribution from cap', async function() {
         
         let plannedContribution = web3.toWei('25', 'ether');
 
@@ -283,10 +290,10 @@ contract("Presale whitelist extended", function(accounts) {
         });
        
         assertions.ether({
-            etherEscrowBalance: 100,
+            etherEscrowBalance: 125,
             presaleBalance: 0,
             contributorOneBalance: 25,
-            contributorTwoBalance: 75,
+            contributorTwoBalance: 50,
             reserveBalance: 0,
             foundersBalance: 0
         });
@@ -294,15 +301,15 @@ contract("Presale whitelist extended", function(accounts) {
             etherEscrowBalance: 0,
             presaleBalance: 0,
             contributorOneBalance: 165000,
-            contributorTwoBalance: 55000,
+            contributorTwoBalance: 110000,
             reserveBalance: 0,
             foundersBalance: 0,
-            trusteeBalance: 250000,
-            bountyBalance: 50000
+            trusteeBalance: 312500,
+            bountyBalance: 62500
         });
         
         preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
-        assert.equal(preSaleEtherPaid, web3.toWei(100));
+        assert.equal(preSaleEtherPaid, web3.toWei(125));
 
         let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
         assert.equal(whitelistedPlannedContributions, 0);

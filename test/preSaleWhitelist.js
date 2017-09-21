@@ -38,17 +38,6 @@ contract("Presale whitelist", function(accounts) {
         assert.equal(false, paused);
     });
 
-    it('should set honour whitelist to true', async function() {
-        await testConfig.preSale.setHonourWhitelist(
-            true,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-        let honourWhitelist = await testConfig.preSale.honourWhitelist();
-        assert.equal(honourWhitelist, true);
-    });
-
     it('should allow valid contribution from not whitelisted contributor if below cap', async function() {
         let newPresaleCap = web3.toWei('75', 'ether');
         await testConfig.preSale.setPresaleCap(newPresaleCap, {

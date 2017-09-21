@@ -125,7 +125,7 @@ contract DynamicCeiling is Owned {
 
     /// @return Return the funds to collect for the current point on the ceiling
     ///  (or 0 if no ceilings revealed yet)
-    function avialableAmountToCollect(uint256  totallCollected) public onlySaleAddress returns (uint256) {
+    function availableAmountToCollect(uint256  totallCollected) public onlySaleAddress returns (uint256) {
     
         if (revealedCeilings == 0) {
             return 0;
@@ -159,6 +159,7 @@ contract DynamicCeiling is Owned {
     /// @notice Calculates the hash of a ceiling.
     /// @param _limit Ceiling cap.
     /// @param _last `true` if it's the last ceiling.
+    /// @param _collectMinimum the minimum amount to collect
     /// @param _salt Random number that will be needed to reveal this ceiling.
     /// @return The calculated hash of this ceiling to be used in the `setHiddenCurves` method
     function calculateHash(

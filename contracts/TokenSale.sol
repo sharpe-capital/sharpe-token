@@ -92,7 +92,7 @@ contract TokenSale is Owned, TokenController {
     /// @notice Applies the discount based on the discount tiers
     /// @param _etherAmount The amount of ether used to evaluate the tier the contribution lies within
     /// @param _contributorTokens The tokens allocated based on the contribution
-    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal returns (uint256);
+    function applyDiscount(uint256 _etherAmount, uint256 _contributorTokens) internal constant returns (uint256);
 
     /// @notice Updates the counters for the amount of Ether paid
     /// @param _etherAmount the amount of Ether paid
@@ -156,12 +156,12 @@ contract TokenSale is Owned, TokenController {
     }
 
     /// @notice Pauses the contribution if there is any issue
-    function pauseContribution() public payable onlyOwner {
+    function pauseContribution() public onlyOwner {
         paused = true;
     }
 
     /// @notice Resumes the contribution
-    function resumeContribution() public payable onlyOwner {
+    function resumeContribution() public onlyOwner {
         paused = false;
     }
 

@@ -30,14 +30,14 @@ contract("DynamicCeiling", function (accounts) {
             i += 1;
         }
 
-        // add some more random hashes to conceal the total number of ceiliengs
+        // add some more random hashes to conceal the total number of ceilings
         for (; i < 10; i += 1) {
             hashes.push(web3.sha3(`pwd${i}`));
         }
         console.log("HASHES", hashes);
     });
 
-    it('should not allow non-owner to set the ceiliengs', async function () {
+    it('should not allow non-owner to set the ceilings', async function () {
         await assertFail(async function () {
             await dynamicCeiling.setHiddenCeilings(hashes, {
                 from: randomAddress
@@ -47,40 +47,40 @@ contract("DynamicCeiling", function (accounts) {
     });
     it('should not allow non-sale address to call available amount function', async function () {
         await assertFail(async function () {
-            await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(5), {
+            await dynamicCeiling.availableAmountToCollect.call(web3.toWei(5), {
                 from: randomAddress
             });
         });
     });
-    it('checks available amount to collect is 0 if no ceiliengs are set', async function () {
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(0, { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(15), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(20), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(30), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(55), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(676), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(5555), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10 ** 8), { from: saleAddress }), 0);
+    it('checks available amount to collect is 0 if no ceilings are set', async function () {
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(0, { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(15), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(20), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(30), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(55), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(676), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(5555), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10 ** 8), { from: saleAddress }), 0);
 
         assert.equal(await dynamicCeiling.currentIndex(), 0);
     });
 
-    it('should allow owner to set the ceiliengs', async function () {
+    it('should allow owner to set the ceilings', async function () {
         await dynamicCeiling.setHiddenCeilings(hashes);
         assert.equal(await dynamicCeiling.nCeilings(), 10);
     });
 
-    it('checks available amount to collect is 0 if no ceilieng is revelead', async function () {
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(0, { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(15), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(20), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(30), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(55), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(676), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(5555), { from: saleAddress }), 0);
-        assert.equal(await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10 ** 8), { from: saleAddress }), 0);
+    it('checks available amount to collect is 0 if no ceilings is revelead', async function () {
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(0, { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(15), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(20), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(30), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(55), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(676), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(5555), { from: saleAddress }), 0);
+        assert.equal(await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10 ** 8), { from: saleAddress }), 0);
 
         assert.equal(await dynamicCeiling.currentIndex(), 0);
     });
@@ -115,22 +115,22 @@ contract("DynamicCeiling", function (accounts) {
 
     it("should return the right amounts when first ceiling is revealed", async function() {
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '0');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(0, { from: saleAddress })).toFixed(), '33333333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(0, { from: saleAddress })).toFixed(), '33333333333333333333');
 
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10), { from: saleAddress })).toFixed(), '33000000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(15), { from: saleAddress })).toFixed(), '32833333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(20), { from: saleAddress })).toFixed(), '32666666666666666666');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(30), { from: saleAddress })).toFixed(), '32333333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(55), { from: saleAddress })).toFixed(), '31500000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(676), { from: saleAddress })).toFixed(), '10800000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(999), { from: saleAddress })).toFixed(), '33333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('999999999999999999999', { from: saleAddress })).toFixed(), '1');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10), { from: saleAddress })).toFixed(), '33000000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(15), { from: saleAddress })).toFixed(), '32833333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(20), { from: saleAddress })).toFixed(), '32666666666666666666');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(30), { from: saleAddress })).toFixed(), '32333333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(55), { from: saleAddress })).toFixed(), '31500000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(676), { from: saleAddress })).toFixed(), '10800000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(999), { from: saleAddress })).toFixed(), '33333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('999999999999999999999', { from: saleAddress })).toFixed(), '1');
 
-        await dynamicCeiling.avialableAmountToCollect(ceilings[0][0], { from: saleAddress });
+        await dynamicCeiling.availableAmountToCollect(ceilings[0][0], { from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '0');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '0');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '0');
     });
 
     it("should reveal the 2nd ceiling", async function() {
@@ -147,24 +147,24 @@ contract("DynamicCeiling", function (accounts) {
     });
 
     it("should return the right amounts when 2nd ceiling is revealed", async function() {
-        await dynamicCeiling.avialableAmountToCollect(ceilings[0][0],{ from: saleAddress });
+        await dynamicCeiling.availableAmountToCollect(ceilings[0][0],{ from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '1');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '666666666666666666666')
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(1010), { from: saleAddress })).toFixed(), '666333333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(1015), { from: saleAddress })).toFixed(), '666166666666666666666');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(1020), { from: saleAddress })).toFixed(), '666000000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(1030), { from: saleAddress })).toFixed(), '665666666666666666666');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(1055), { from: saleAddress })).toFixed(), '664833333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10676), { from: saleAddress })).toFixed(), '344133333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(10999), { from: saleAddress })).toFixed(), '333366666666666666666');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(ceilings[0][0], { from: saleAddress })).toFixed(), '666666666666666666666')
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(1010), { from: saleAddress })).toFixed(), '666333333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(1015), { from: saleAddress })).toFixed(), '666166666666666666666');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(1020), { from: saleAddress })).toFixed(), '666000000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(1030), { from: saleAddress })).toFixed(), '665666666666666666666');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(1055), { from: saleAddress })).toFixed(), '664833333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10676), { from: saleAddress })).toFixed(), '344133333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(10999), { from: saleAddress })).toFixed(), '333366666666666666666');
 
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('20999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('20999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('20999999999999999999999', { from: saleAddress })).toFixed(), '1');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('20999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('20999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('20999999999999999999999', { from: saleAddress })).toFixed(), '1');
 
-        await dynamicCeiling.avialableAmountToCollect(ceilings[1][0], { from: saleAddress });
+        await dynamicCeiling.availableAmountToCollect(ceilings[1][0], { from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '1');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[1][0], { from: saleAddress })).toFixed(), '0');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(ceilings[1][0], { from: saleAddress })).toFixed(), '0');
     });
 
     it("should reveal the 3rd ceiling", async function() {
@@ -181,25 +181,25 @@ contract("DynamicCeiling", function (accounts) {
     });
 
     it("should return the right amounts when 3rd ceiling is revealed", async function() {
-        await dynamicCeiling.avialableAmountToCollect(ceilings[1][0],{ from: saleAddress });
+        await dynamicCeiling.availableAmountToCollect(ceilings[1][0],{ from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '2');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[1][0],{ from: saleAddress })).toFixed(), '1333333333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(ceilings[1][0],{ from: saleAddress })).toFixed(), '1333333333333333333333');
 
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21010), { from: saleAddress })).toFixed(), '1333000000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21015), { from: saleAddress })).toFixed(), '1332833333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21020), { from: saleAddress })).toFixed(), '1332666666666666666666');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21030), { from: saleAddress })).toFixed(), '1332333333333333333333');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21055), { from: saleAddress })).toFixed(), '1331500000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21676), { from: saleAddress })).toFixed(), '1310800000000000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(web3.toWei(21999), { from: saleAddress })).toFixed(), '1300033333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21010), { from: saleAddress })).toFixed(), '1333000000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21015), { from: saleAddress })).toFixed(), '1332833333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21020), { from: saleAddress })).toFixed(), '1332666666666666666666');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21030), { from: saleAddress })).toFixed(), '1332333333333333333333');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21055), { from: saleAddress })).toFixed(), '1331500000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21676), { from: saleAddress })).toFixed(), '1310800000000000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(web3.toWei(21999), { from: saleAddress })).toFixed(), '1300033333333333333333');
 
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('60999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('60999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call('60999999999999999999999', { from: saleAddress })).toFixed(), '1');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('60999999999998999999999', { from: saleAddress })).toFixed(), '1000000001');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('60999999999999000000000', { from: saleAddress })).toFixed(), '1000000000');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call('60999999999999999999999', { from: saleAddress })).toFixed(), '1');
 
-        await dynamicCeiling.avialableAmountToCollect(ceilings[2][0], { from: saleAddress });
+        await dynamicCeiling.availableAmountToCollect(ceilings[2][0], { from: saleAddress });
         assert.equal((await dynamicCeiling.currentIndex()).toFixed(), '2');
-        assert.equal((await dynamicCeiling.avialableAmountToCollect.call(ceilings[2][0], { from: saleAddress })).toFixed(), '0');
+        assert.equal((await dynamicCeiling.availableAmountToCollect.call(ceilings[2][0], { from: saleAddress })).toFixed(), '0');
     });
 
 
