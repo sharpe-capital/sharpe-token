@@ -11,13 +11,11 @@ contract("Presale affiliate bonuses", function(accounts) {
 
     it('should initialize contract with expected values', async function() {
         await assertions.expectedInitialisation(
-            testConfig.preSale, 
-            {
+            testConfig.preSale, {
                 etherEscrowWallet: testConfig.etherEscrowWallet,
                 reserveWallet: testConfig.reserveWallet,
                 foundersWallet: testConfig.foundersWallet
-            },
-            {
+            }, {
                 preSaleBegin: testConfig.preSaleBegin,
                 preSaleEnd: testConfig.preSaleEnd,
                 preSaleCap: testConfig.preSaleCap,
@@ -31,14 +29,14 @@ contract("Presale affiliate bonuses", function(accounts) {
     });
 
     it('should whitelist an affiliate', async function() {
-        await testConfig.affiliateUtility.addAffiliate(testConfig.contributorTwoAddress, testConfig.contributorTwoAddress);
-        const affiliate = await testConfig.affiliateUtility.getAffiliate.call(testConfig.contributorTwoAddress, {
+        await testConfig.affiliateUtility.addAffiliate(testConfig.contributorOneAddress, testConfig.contributorTwoAddress);
+        const affiliate = await testConfig.affiliateUtility.getAffiliate.call(testConfig.contributorOneAddress, {
             from: testConfig.ownerAddress
         });
         assert.equal(affiliate, testConfig.contributorTwoAddress);
     });
 
-    it('should allow owner to resume the sale', async function(){
+    it('should allow owner to resume the sale', async function() {
         await testConfig.preSale.resumeContribution({
             from: testConfig.ownerAddress
         });
@@ -49,11 +47,10 @@ contract("Presale affiliate bonuses", function(accounts) {
     it('should deposit extra bonus with valid affiliate', async function() {
 
         let contribution = web3.toWei('50', 'ether');
-        
+
         await testConfig.preSale.sendTransaction({
             value: contribution,
-            from: testConfig.contributorOneAddress,
-            data: testConfig.contributorTwoAddress
+            from: testConfig.contributorOneAddress
         });
 
         assertions.ether({
@@ -79,58 +76,25 @@ contract("Presale affiliate bonuses", function(accounts) {
     it('should not deposit extra when affiliate is invalid', async function() {
 
         let contribution = web3.toWei('25', 'ether');
-        
+
         await testConfig.preSale.sendTransaction({
             value: contribution,
-            from: testConfig.contributorOneAddress,
-            data: testConfig.bountySignAddress
+            from: testConfig.contributorTwoAddress
         });
 
         assertions.ether({
             etherEscrowBalance: 75,
             presaleBalance: 0,
-            contributorOneBalance: 25,
-            contributorTwoBalance: 100,
+            contributorOneBalance: 50,
+            contributorTwoBalance: 75,
             reserveBalance: 0,
             foundersBalance: 0
         });
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 166100,
-            contributorTwoBalance: 5500,
-            reserveBalance: 0,
-            foundersBalance: 0,
-            trusteeBalance: 187500,
-            bountyBalance: 37500
-        });
-    });
-
-    it('should reject deposits when the affiliate address is the same as msg.sender', async function() {
-        
-        let contribution = web3.toWei('25', 'ether');
-        
-        await assertFail(async function () {
-            await testConfig.preSale.sendTransaction({
-                value: contribution,
-                from: testConfig.contributorTwoAddress,
-                data: testConfig.contributorTwoAddress
-            });
-        });
-
-        assertions.ether({
-            etherEscrowBalance: 75,
-            presaleBalance: 0,
-            contributorOneBalance: 25,
-            contributorTwoBalance: 100,
-            reserveBalance: 0,
-            foundersBalance: 0
-        });
-        await assertions.SHP({
-            etherEscrowBalance: 0,
-            presaleBalance: 0,
-            contributorOneBalance: 166100,
-            contributorTwoBalance: 5500,
+            contributorOneBalance: 111100,
+            contributorTwoBalance: 60500,
             reserveBalance: 0,
             foundersBalance: 0,
             trusteeBalance: 187500,

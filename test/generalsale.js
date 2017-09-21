@@ -72,11 +72,11 @@ contract("General Sale", function(accounts) {
     });
 
     it('should whitelist an affiliate', async function() {
-        await testConfig.affiliateUtility.addAffiliate(testConfig.contributorTwoAddress, testConfig.contributorTwoAddress);
+        await testConfig.affiliateUtility.addAffiliate(testConfig.contributorTwoAddress, testConfig.contributorOneAddress);
         const affiliate = await testConfig.affiliateUtility.getAffiliate.call(testConfig.contributorTwoAddress, {
             from: testConfig.ownerAddress
         });
-        assert.equal(affiliate, testConfig.contributorTwoAddress);
+        assert.equal(affiliate, testConfig.contributorOneAddress);
     });
 
     it('should not allow contribution bellow the minimum amount', async function() {
@@ -175,22 +175,21 @@ contract("General Sale", function(accounts) {
         const contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
-            from: testConfig.contributorOneAddress,
-            data: testConfig.contributorTwoAddress
+            from: testConfig.contributorTwoAddress
         });
         assertions.ether({
             etherEscrowBalance: 4,
             presaleBalance: 0,
-            contributorOneBalance: 96,
-            contributorTwoBalance: 100,
+            contributorOneBalance: 98,
+            contributorTwoBalance: 98,
             reserveBalance: 0,
             foundersBalance: 0
         });
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 8040,
-            contributorTwoBalance: 120,
+            contributorOneBalance: 4120,
+            contributorTwoBalance: 4040,
             reserveBalance: 0,
             foundersBalance: 0,
             trusteeBalance: 10000,
@@ -209,16 +208,16 @@ contract("General Sale", function(accounts) {
         await assertions.ether({
             etherEscrowBalance: 5,
             presaleBalance: 0,
-            contributorOneBalance: 96,
-            contributorTwoBalance: 99,
+            contributorOneBalance: 98,
+            contributorTwoBalance: 97,
             reserveBalance: 0,
             foundersBalance: 0
         });
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 8040,
-            contributorTwoBalance: (120 + 2000),
+            contributorOneBalance: 4180,
+            contributorTwoBalance: (4040 + 2020),
             reserveBalance: 0,
             foundersBalance: 0,
             trusteeBalance: (10000 + 2500),
@@ -259,16 +258,16 @@ contract("General Sale", function(accounts) {
         await assertions.ether({
             etherEscrowBalance: 6,
             presaleBalance: 0,
-            contributorOneBalance: 96,
-            contributorTwoBalance: 98,
+            contributorOneBalance: 98,
+            contributorTwoBalance: 96,
             reserveBalance: 0,
             foundersBalance: 0
         });
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 8040,
-            contributorTwoBalance: (120 + 2000 + 2000),
+            contributorOneBalance: 4240,
+            contributorTwoBalance: (4040 + 2020 + 2020),
             reserveBalance: 0,
             foundersBalance: 0,
             trusteeBalance: (10000 + 2500 + 2500),
@@ -285,24 +284,21 @@ contract("General Sale", function(accounts) {
         await assertions.ether({
             etherEscrowBalance: 7,
             presaleBalance: 0,
-            contributorOneBalance: 96,
-            contributorTwoBalance: 97,
+            contributorOneBalance: 98,
+            contributorTwoBalance: 95,
             reserveBalance: 0,
             foundersBalance: 0
         });
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 8040,
-            contributorTwoBalance: (120 + 2000 + 2000 + 2000),
+            contributorOneBalance: 4300,
+            contributorTwoBalance: (4040 + 2020 + 2020 + 2020),
             reserveBalance: 0,
             foundersBalance: 0,
             trusteeBalance: (10000 + 2500 + 2500 + 2500),
             bountyBalance: (2000 + 500 + 500 + 500)
         });
-
-        // const closed = await testConfig.generalSale.closed.call();
-        // assert.equal(true, closed);
     });
 
 

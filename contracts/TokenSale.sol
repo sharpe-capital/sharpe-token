@@ -75,7 +75,7 @@ contract TokenSale is Owned, TokenController {
         founderTokenCount = founderTokenCount.add(founderTokens);
         reserveTokenCount = reserveTokenCount.add(reserveTokens);
 
-        payAffiliate(callerTokensWithDiscount, msg.value, msg.data, msg.sender);
+        payAffiliate(callerTokensWithDiscount, msg.value, msg.sender);
 
         shp.generateTokens(_caller, callerTokensWithDiscount);
         shp.generateTokens(bountyAddress, bountyTokens);
@@ -121,12 +121,11 @@ contract TokenSale is Owned, TokenController {
     /// @notice Pays an affiliate if they are valid and present in the transaction data
     /// @param _tokens The contribution tokens used to calculate affiliate payment amount
     /// @param _etherValue The Ether value sent
-    /// @param _data The txn payload data
     /// @param _caller The address of the caller
-    function payAffiliate(uint256 _tokens, uint256 _etherValue, bytes _data, address _caller) internal {
-        if (affiliateUtility.isAffiliateValid(_data, _caller)) {
-            address affiliate = affiliateUtility.getAffiliate(_data);
-            var (affiliateBonus, contributorBonus) = affiliateUtility.applyAffiliate(_data, _tokens, _etherValue);
+    function payAffiliate(uint256 _tokens, uint256 _etherValue, address _caller) internal {
+        if (affiliateUtility.isAffiliateValid(_caller)) {
+            address affiliate = affiliateUtility.getAffiliate(_caller);
+            var (affiliateBonus, contributorBonus) = affiliateUtility.applyAffiliate(_caller, _tokens, _etherValue);
             shp.generateTokens(affiliate, affiliateBonus);
             shp.generateTokens(_caller, contributorBonus);
         }
