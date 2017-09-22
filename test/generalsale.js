@@ -299,8 +299,6 @@ contract("General Sale", function(accounts) {
             trusteeBalance: (10000 + 2500 + 2500 + 2500),
             bountyBalance: (2000 + 500 + 500 + 500)
         });
-        
-        assert.equal(await testConfig.generalSale.closed(), true);
     });
 
 

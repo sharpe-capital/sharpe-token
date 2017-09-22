@@ -39,7 +39,6 @@ contract PreSale is TokenSale {
     event DiscountApplied(uint256 etherAmount, uint256 tokens, uint256 discount);
     event ContributionRefund(uint256 etherAmount, address _caller);
     event CountersUpdated(uint256 preSaleEtherPaid, uint256 totalContributions);
-    event PresaleClosed(uint256 when);
     event WhitelistedUpdated(uint256 plannedContribution, bool contributed);
     event WhitelistedCounterUpdated(uint256 whitelistedPlannedContributions, uint256 usedContributions);
 
@@ -157,6 +156,7 @@ contract PreSale is TokenSale {
             doBuy(_caller, allowedContribution);
             if (refundAmount > 0) {
                 msg.sender.transfer(refundAmount);
+                closePreSale();
             }
         } else {
             revert();
@@ -252,7 +252,6 @@ contract PreSale is TokenSale {
         uint256 tillCap = remainingCap();
         uint256 refundAmount = 0;
         if (msg.value > tillCap) {
-            closePreSale();
             allowedContribution = tillCap;
             refundAmount = msg.value.sub(allowedContribution);
             ContributionRefund(refundAmount, msg.sender);
@@ -274,7 +273,7 @@ contract PreSale is TokenSale {
     /// @notice Private function used to close the pre-sale when the hard-cap is hit
     function closePreSale() private {
         closed = true;
-        PresaleClosed(now);
+        SaleClosed(now);
     }
 
     /// @notice Ensure the contribution is valid

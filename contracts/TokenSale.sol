@@ -33,7 +33,8 @@ contract TokenSale is Owned, TokenController {
 
     event Contribution(uint256 etherAmount, address _caller);
     event NewSale(address indexed caller, uint256 etherAmount, uint256 tokensGenerated);
-
+    event SaleClosed(uint256 when);
+    
     modifier notPaused() {
         require(!paused);
         _;

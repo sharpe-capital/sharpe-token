@@ -94,5 +94,6 @@ contract GeneralSale is TokenSale {
     /// @notice Public function enables closing of the crowdsale manually if necessary
     function closeSale() public onlyOwner {
         closed = true;
+        SaleClosed(now);
     }
 }
