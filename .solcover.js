@@ -1,5 +1,5 @@
 module.exports = {
-    testCommand: 'truffle test test/endToEndSale.js --network coverage',
+    testCommand: 'truffle test --network coverage',
     copyNodeModules: true,
     skipFiles: [
         'lib/MultiSigWallet.sol',
