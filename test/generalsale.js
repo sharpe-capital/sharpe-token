@@ -3,24 +3,22 @@ const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
 const assertions = require("./helpers/assertions");
 
-contract("General Sale", function (accounts) {
+contract("General Sale", function(accounts) {
 
     const hashes = [];
     const ceilings = [];
 
-    before(async function () {
+    before(async function() {
         await testConfig.setUpForGeneralSale(accounts);
     });
-    it('should initialize contract with expected values', async function () {
+    it('should initialize contract with expected values', async function() {
         const minContribution = await testConfig.generalSale.minContributionInWei();
         await assertions.expectedInitialisationGeneral(
-            testConfig.generalSale,
-            {
+            testConfig.generalSale, {
                 etherEscrowWallet: testConfig.etherEscrowWallet,
                 reserveWallet: testConfig.reserveWallet,
                 foundersWallet: testConfig.foundersWallet
-            },
-            {
+            }, {
                 minContributionInWei: minContribution
             }
         );
@@ -30,7 +28,7 @@ contract("General Sale", function (accounts) {
     //     assert.equal(testConfig.generalSale.dynamicCeiling.address, testConfig.dynamicCeiling.address);
     // });
 
-    it('should set some ceilings and reveal the first ceiling   ', async function () {
+    it('should set some ceilings and reveal the first ceiling   ', async function() {
         const minContribution = await testConfig.generalSale.minContributionInWei();
         ceilings.push([web3.toWei(5), 1, minContribution]);
         ceilings.push([web3.toWei(7), 1, minContribution]);
@@ -65,7 +63,7 @@ contract("General Sale", function (accounts) {
 
     });
 
-    it('should allow owner to resume the sale', async function () {
+    it('should allow owner to resume the sale', async function() {
         await testConfig.generalSale.resumeContribution({
             from: testConfig.ownerAddress
         });
@@ -73,7 +71,7 @@ contract("General Sale", function (accounts) {
         assert.equal(false, generalPaused);
     });
 
-    it('should whitelist an affiliate', async function () {
+    it('should whitelist an affiliate', async function() {
         await testConfig.affiliateUtility.addAffiliate(testConfig.contributorTwoAddress, testConfig.contributorTwoAddress);
         const affiliate = await testConfig.affiliateUtility.getAffiliate.call(testConfig.contributorTwoAddress, {
             from: testConfig.ownerAddress
@@ -81,8 +79,8 @@ contract("General Sale", function (accounts) {
         assert.equal(affiliate, testConfig.contributorTwoAddress);
     });
 
-    it('should not allow contribution bellow the minimum amount', async function () {
-        await assertFail(async function () {
+    it('should not allow contribution bellow the minimum amount', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(80 / testConfig.etherPeggedValue);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -91,7 +89,7 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should allow contribution above the minimum amount without affiliate data', async function () {
+    it('should allow contribution above the minimum amount without affiliate data', async function() {
         let contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -117,8 +115,8 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should not allow contribution above the maximum amount', async function () {
-        await assertFail(async function () {
+    it('should not allow contribution above the maximum amount', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(1001 / testConfig.etherPeggedValue);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -127,7 +125,7 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should allow owner to pause the sale', async function () {
+    it('should allow owner to pause the sale', async function() {
         await testConfig.generalSale.pauseContribution({
             from: testConfig.ownerAddress
         });
@@ -135,9 +133,9 @@ contract("General Sale", function (accounts) {
         assert.equal(true, generalPaused);
     });
 
-    it('should not allow contributions whilst paused', async function () {
+    it('should not allow contributions whilst paused', async function() {
         const contributionValue = web3.toWei(2);
-        await assertFail(async function () {
+        await assertFail(async function() {
             await testConfig.generalSale.sendTransaction({
                 value: contributionValue,
                 from: testConfig.contributorOneAddress
@@ -165,7 +163,7 @@ contract("General Sale", function (accounts) {
         assert.equal(totalEtherPaid.toNumber(), web3.toWei(2));
     });
 
-    it('should allow owner to resume sale', async function () {
+    it('should allow owner to resume sale', async function() {
         await testConfig.generalSale.resumeContribution({
             from: testConfig.ownerAddress
         });
@@ -173,7 +171,7 @@ contract("General Sale", function (accounts) {
         assert.equal(false, generalPaused);
     });
 
-    it('should allow contribution with affiliate data', async function () {
+    it('should allow contribution with affiliate data', async function() {
         const contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -202,7 +200,7 @@ contract("General Sale", function (accounts) {
         assert.equal(totalEtherPaid.toNumber(), web3.toWei(4));
     });
 
-    it('should allow smaller contribution when exceeds the ceiling and refund excess', async function () {
+    it('should allow smaller contribution when exceeds the ceiling and refund excess', async function() {
         const contributionValue = web3.toWei(2);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -228,8 +226,8 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should reject transaction when ceilieng limit is exhusted', async function () {
-        await assertFail(async function () {
+    it('should reject transaction when ceilieng limit is exhusted', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -252,7 +250,7 @@ contract("General Sale", function (accounts) {
         assert.equal(await testConfig.dynamicCeiling.allRevealed(), true);
     });
 
-    it('should allow contribution when 2nd ceiling is revlead', async function () {
+    it('should allow contribution when 2nd ceiling is revlead', async function() {
         const contributionValue = web3.toWei(1);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
@@ -278,14 +276,12 @@ contract("General Sale", function (accounts) {
         });
     });
 
-        it('should allow samller amount if contribution is larger than the final cap and close the sale', async function () {
+    it('should allow samller amount if contribution is larger than the final cap and close the sale', async function() {
         const contributionValue = web3.toWei(2);
-        console.log(0);
         await testConfig.generalSale.sendTransaction({
             value: contributionValue,
             from: testConfig.contributorTwoAddress
         });
-        console.log(1);
         await assertions.ether({
             etherEscrowBalance: 7,
             presaleBalance: 0,
@@ -310,8 +306,8 @@ contract("General Sale", function (accounts) {
     });
 
 
-    it('should reject transaction when final cap is breached', async function () {
-        await assertFail(async function () {
+    it('should reject transaction when final cap is breached', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -320,7 +316,7 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should allow owner to manually close the sale', async function () {
+    it('should allow owner to manually close the sale', async function() {
         await testConfig.generalSale.closeSale({
             from: testConfig.ownerAddress
         });
@@ -328,8 +324,8 @@ contract("General Sale", function (accounts) {
         assert.equal(true, closed);
     });
 
-    it('should not allow contributions after closed', async function () {
-        await assertFail(async function () {
+    it('should not allow contributions after closed', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
@@ -338,7 +334,7 @@ contract("General Sale", function (accounts) {
         });
     });
 
-    it('should allow transfer of ownership', async function () {
+    it('should allow transfer of ownership', async function() {
         await testConfig.generalSale.transferOwnership(testConfig.shpController.address, testConfig.shpController.address, {
             from: testConfig.ownerAddress
         });
