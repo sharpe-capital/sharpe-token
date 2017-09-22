@@ -12,16 +12,12 @@ contract PreSale is TokenSale {
     mapping(address => Whitelisted) public whitelist;
     
     uint256 public preSaleEtherPaid = 0;
-    uint256 public gracePeriodEtherPaid = 0;
     uint256 public totalContributions = 0;
     uint256 public whitelistedPlannedContributions = 0;
 
     uint256 constant public FIRST_TIER_DISCOUNT = 10;
     uint256 constant public SECOND_TIER_DISCOUNT = 20;
     uint256 constant public THIRD_TIER_DISCOUNT = 30;
-
-    bool public gracePeriod;
-    bool public honourWhitelist;
 
     uint256 public minPresaleContributionEther;
     uint256 public maxPresaleContributionEther;
@@ -31,6 +27,7 @@ contract PreSale is TokenSale {
     uint256 public thirdTierDiscountUpperLimitEther;
 
     uint256 public preSaleCap;
+    uint256 public honourWhitelistEnd;
 
     address public presaleAddress;
     
@@ -41,8 +38,7 @@ contract PreSale is TokenSale {
     event ValidContributionCheck(uint256 contribution, bool isContributionValid);
     event DiscountApplied(uint256 etherAmount, uint256 tokens, uint256 discount);
     event ContributionRefund(uint256 etherAmount, address _caller);
-    event CountersUpdated(uint256 preSaleEtherPaid, uint256 gracePeriodEtherPaid, uint256 totalContributions);
-    event PresaleClosed(uint256 when);
+    event CountersUpdated(uint256 preSaleEtherPaid, uint256 totalContributions);
     event WhitelistedUpdated(uint256 plannedContribution, bool contributed);
     event WhitelistedCounterUpdated(uint256 whitelistedPlannedContributions, uint256 usedContributions);
 
@@ -66,6 +62,7 @@ contract PreSale is TokenSale {
     /// @param _minPresaleContributionEther Lower contribution range (WEI)
     /// @param _maxPresaleContributionEther Upper contribution range (WEI)
     /// @param _preSaleCap Presale cap (WEI)
+    /// @param _honourWhitelistEnd End time of whitelist period
     function PreSale(
         address _etherEscrowAddress,
         address _bountyAddress,
@@ -76,7 +73,8 @@ contract PreSale is TokenSale {
         uint256 _thirdTierDiscountUpperLimitEther,
         uint256 _minPresaleContributionEther,
         uint256 _maxPresaleContributionEther,
-        uint256 _preSaleCap)
+        uint256 _preSaleCap,
+        uint256 _honourWhitelistEnd)
         TokenSale (
             _etherEscrowAddress,
             _bountyAddress,
@@ -84,22 +82,11 @@ contract PreSale is TokenSale {
             _affiliateUtilityAddress
         )
     {
-        gracePeriod = false;
-        honourWhitelist = false;
+        honourWhitelistEnd = _honourWhitelistEnd;
         presaleAddress = address(this);
         setDiscountLimits(_firstTierDiscountUpperLimitEther, _secondTierDiscountUpperLimitEther, _thirdTierDiscountUpperLimitEther);
         setContributionRange(_minPresaleContributionEther, _maxPresaleContributionEther);
         preSaleCap = _preSaleCap;
-    }
-
-    /// @notice Enables the grace period, by which not whitelisted accounts can perform contributions.  
-    function enableGracePeriod() public onlyOwner {
-        gracePeriod = true;
-    }
-
-    /// @notice Disables the grace period, only whitelisted accounts can contribute
-    function disableGracePeriod() public onlyOwner {
-        gracePeriod = false;
     }
 
     /// @notice Set the range of accepted contributions during pre-sale  
@@ -147,17 +134,6 @@ contract PreSale is TokenSale {
         whitelistedPlannedContributions = whitelistedPlannedContributions.add(_plannedContribution);
     }
 
-    /// @notice Sets whether or not to honour the whitelist  
-    /// @param _honourWhitelist Honour whitelist flag
-    function setHonourWhitelist(bool _honourWhitelist) public onlyOwner {
-        honourWhitelist = _honourWhitelist;
-        if (!_honourWhitelist) {
-            preSaleCap = preSaleCap.add(whitelistedPlannedContributions);
-            whitelistedPlannedContributions = 0;
-            WhitelistedCounterUpdated(whitelistedPlannedContributions, 0);
-        }
-    }
-
     /// @notice This function fires when someone sends Ether to the address of this contract.
     /// The ETH will be exchanged for SHP and it ensures contributions cannot be made from known addresses.
     function ()
@@ -173,22 +149,38 @@ contract PreSale is TokenSale {
 
     /// @notice Processes the presale if the allowed contribution is more than zero
     /// @param _caller the address sending the Ether
-    function processPreSale(address _caller) internal {
+    function processPreSale(address _caller) private {
         var (allowedContribution, refundAmount) = processContribution();
+        assert(msg.value==allowedContribution.add(refundAmount));
         if (allowedContribution > 0) {
             doBuy(_caller, allowedContribution);
             if (refundAmount > 0) {
                 msg.sender.transfer(refundAmount);
+                closePreSale();
             }
         } else {
             revert();
         }
     }
 
-    function processContribution() internal isValidContribution returns (uint256, uint256) {
+    /// @notice Returns true if the whitelist period is still active, false otherwise.
+    /// When whitelist period ends, it will transfer any unclaimed planned contributions to the pre-sale cap. 
+    function honourWhitelist() private returns (bool) {
+        bool honourWhitelist = true;
+        if (honourWhitelistEnd <= now) {
+            honourWhitelist = false;
+            preSaleCap = preSaleCap.add(whitelistedPlannedContributions);
+            whitelistedPlannedContributions = 0;
+            WhitelistedCounterUpdated(whitelistedPlannedContributions, 0);
+        }
+        return honourWhitelist;
+    }
+
+    /// @notice Returns the contribution to be used as part of the transaction, and any refund value if expected.  
+    function processContribution() private isValidContribution returns (uint256, uint256) {
         var (allowedContribution, refundAmount) = getAllowedContribution();
         
-        if (!honourWhitelist) {
+        if (!honourWhitelist()) {
             AllowedContributionCheck(allowedContribution, AllowedContributionState.WhitelistClosed);
             return (allowedContribution, refundAmount);
         }
@@ -201,7 +193,8 @@ contract PreSale is TokenSale {
         return (allowedContribution, refundAmount);
     }
 
-    function processWhitelistedContribution(uint256 allowedContribution, uint256 refundAmount) internal returns (uint256, uint256) {
+    /// @notice Returns the contribution to be used for a sender that had previously been whitelisted, and any refund value if expected.
+    function processWhitelistedContribution(uint256 allowedContribution, uint256 refundAmount) private returns (uint256, uint256) {
         uint256 plannedContribution = whitelist[msg.sender].plannedContribution;
         
         whitelist[msg.sender].contributed = true;
@@ -218,19 +211,25 @@ contract PreSale is TokenSale {
         return handlePlannedWhitelistedContribution(plannedContribution);
     }
 
-    function handlePlannedWhitelistedContribution(uint256 plannedContribution) internal returns (uint256, uint256) {
+    /// @notice Returns the contribution and refund value to be used when the transaction value equals the whitelisted contribution for the sender.
+    /// Note that refund value will always be 0 in this case, as the planned contribution for the sender and transaction value match.
+    function handlePlannedWhitelistedContribution(uint256 plannedContribution) private returns (uint256, uint256) {
         updateWhitelistedContribution(plannedContribution);
         AllowedContributionCheck(plannedContribution, AllowedContributionState.Whitelisted);
         return (plannedContribution, 0);
     }
     
-    function handleAbovePlannedWhitelistedContribution(uint256 allowedContribution, uint256 plannedContribution, uint256 refundAmount) internal returns (uint256, uint256) {
+    /// @notice Returns the contribution and refund value to be used when the transaction value is higher than the whitelisted contribution for the sender.
+    /// Note that only in this case, the refund value will not be 0.
+    function handleAbovePlannedWhitelistedContribution(uint256 allowedContribution, uint256 plannedContribution, uint256 refundAmount) private returns (uint256, uint256) {
         updateWhitelistedContribution(plannedContribution);
         AllowedContributionCheck(allowedContribution, AllowedContributionState.AboveWhitelisted);
         return (allowedContribution, refundAmount);
     }
 
-    function handleBelowPlannedWhitelistedContribution(uint256 plannedContribution) internal returns (uint256, uint256) {
+    /// @notice Returns the contribution and refund value to be used when the transaction value is lower than the whitelisted contribution for the sender.
+    /// Note that refund value will always be 0 in this case, as transaction value is below the planned contribution for this sender.
+    function handleBelowPlannedWhitelistedContribution(uint256 plannedContribution) private returns (uint256, uint256) {
         uint256 belowPlanned = plannedContribution.sub(msg.value);
         preSaleCap = preSaleCap.add(belowPlanned);
         
@@ -239,20 +238,20 @@ contract PreSale is TokenSale {
         return (msg.value, 0);
     }
 
-    function updateWhitelistedContribution(uint256 plannedContribution) internal {
+    /// @notice Updates the whitelistedPlannedContributions counter, subtracting the contribution about to be applied.
+    function updateWhitelistedContribution(uint256 plannedContribution) private {
         whitelistedPlannedContributions = whitelistedPlannedContributions.sub(plannedContribution);
         WhitelistedCounterUpdated(whitelistedPlannedContributions, plannedContribution);
     }
 
-    function getAllowedContribution() internal returns (uint256, uint256) {
+    /// @notice Calculates the allowed contribution based on the transaction value and amount remaining till cap.
+    /// If the transaction contribution is higher than cap, will return the excess amount to be refunded to sender.
+    /// @return the allowed contribution and refund amount (if any). All in WEI.
+    function getAllowedContribution() private returns (uint256, uint256) {
         uint256 allowedContribution = msg.value;
-        if (gracePeriod) {
-            return (allowedContribution, 0);
-        }
         uint256 tillCap = remainingCap();
         uint256 refundAmount = 0;
         if (msg.value > tillCap) {
-            closed = true;
             allowedContribution = tillCap;
             refundAmount = msg.value.sub(allowedContribution);
             ContributionRefund(refundAmount, msg.sender);
@@ -262,7 +261,7 @@ contract PreSale is TokenSale {
 
     /// @notice Returns the Ether amount remaining until the hard-cap
     /// @return the remaining cap in WEI
-    function remainingCap() internal returns (uint256) {
+    function remainingCap() private returns (uint256) {
         return preSaleCap.sub(preSaleEtherPaid);
     }
 
@@ -271,15 +270,15 @@ contract PreSale is TokenSale {
         closePreSale();
     }
 
-    /// @notice Internal function used to close the pre-sale when the hard-cap is hit
-    function closePreSale() internal {
+    /// @notice Private function used to close the pre-sale when the hard-cap is hit
+    function closePreSale() private {
         closed = true;
-        PresaleClosed(now);
+        SaleClosed(now);
     }
 
     /// @notice Ensure the contribution is valid
     /// @return Returns whether the contribution is valid or not
-    function validContribution() internal returns (bool) {
+    function validContribution() private returns (bool) {
         bool isContributionValid = msg.value >= minPresaleContributionEther && msg.value <= maxPresaleContributionEther;
         ValidContributionCheck(msg.value, isContributionValid);
         return isContributionValid;
@@ -293,6 +292,7 @@ contract PreSale is TokenSale {
         uint256 _contributorTokens
     )
         internal
+        constant
         returns (uint256)
     {
 
@@ -313,12 +313,8 @@ contract PreSale is TokenSale {
     /// @notice Updates the counters for the amount of Ether paid
     /// @param _etherAmount the amount of Ether paid
     function updateCounters(uint256 _etherAmount) internal {
-        if (!gracePeriod) {
-            preSaleEtherPaid = preSaleEtherPaid.add(_etherAmount);
-        } else {
-            gracePeriodEtherPaid = gracePeriodEtherPaid.add(_etherAmount);
-        }
+        preSaleEtherPaid = preSaleEtherPaid.add(_etherAmount);
         totalContributions = totalContributions.add(1);
-        CountersUpdated(preSaleEtherPaid, gracePeriodEtherPaid, _etherAmount);
+        CountersUpdated(preSaleEtherPaid, _etherAmount);
     }
 }

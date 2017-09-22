@@ -115,17 +115,12 @@ module.exports = {
         let preSaleEtherPaid = (await presale.preSaleEtherPaid()).toNumber();
         // console.log("preSaleEtherPaid: " + preSaleEtherPaid);
         assert.equal(preSaleEtherPaid, web3.toWei(0));
-
-        let gracePeriodEtherPaid = (await presale.gracePeriodEtherPaid()).toNumber();
-        // console.log("gracePeriodEtherPaid: " + gracePeriodEtherPaid);
-        assert.equal(gracePeriodEtherPaid, web3.toWei(0));
     },
     expectedInitialisation: async function(presale, wallets, initValues) {
         const presaleAddr = await presale.presaleAddress();
         const etherEscrowAddr = await presale.etherEscrowAddress();
         
         const contributionPaused = await presale.paused();
-        const gracePeriod = await presale.gracePeriod();
         const actualPreSaleCap = (await presale.preSaleCap()).toNumber();
 
         assert.equal(presaleAddr, presale.address);
@@ -156,9 +151,6 @@ module.exports = {
 
         // console.log("contributionPaused: " + contributionPaused);
         assert.equal(true, contributionPaused);
-
-        // console.log("gracePeriod: " + gracePeriod);
-        assert.equal(false, gracePeriod);
     },
 
     cleanStateGeneral: async function(generalSale) {

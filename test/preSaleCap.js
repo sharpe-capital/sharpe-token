@@ -78,9 +78,6 @@ contract("Presale cap/limits", function(accounts) {
         let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
         assert.equal(preSaleCap, web3.toWei(25));
 
-        let gracePeriod = await testConfig.preSale.gracePeriod();
-        assert.equal(gracePeriod, false);
-
         let closed = await testConfig.preSale.closed();
         assert.equal(closed, false);
     });

@@ -103,32 +103,6 @@ contract("Presale initialization and permissions", function(accounts) {
         assertions.cleanState(testConfig.preSale);
     });
 
-    it('should not allow grace period to be enabled if not owner', async function() {
-        await assertFail(async function() {
-            await testConfig.preSale.enableGracePeriod(
-                {
-                    from: testConfig.contributorTwoAddress
-                }
-            )
-        });
-    });
-
-    it('should allow grace period to be enabled by owner', async function() {
-        await testConfig.preSale.enableGracePeriod({
-            from: testConfig.ownerAddress
-        });
-        assert.equal(true, await testConfig.preSale.gracePeriod());
-        assertions.cleanState(testConfig.preSale);
-    });
-
-    it('should disable grace period', async function() {
-        await testConfig.preSale.disableGracePeriod({
-            from: testConfig.ownerAddress
-        });
-        assert.equal(false, await testConfig.preSale.gracePeriod());
-        assertions.cleanState(testConfig.preSale);
-    })
-
     it('shoud not allow presale cap to be enabled if not owner', async function() {
         await assertFail(async function() {
             await testConfig.preSale.setPresaleCap(1000, {
@@ -212,29 +186,5 @@ contract("Presale initialization and permissions", function(accounts) {
                 from: testConfig.ownerAddress
             }
         );
-    });
-
-    it('should not allow honour whitelist flag to be set if not owner', async function() {
-        await assertFail(async function() {
-            await testConfig.preSale.setHonourWhitelist(
-                true,
-                {
-                    from: testConfig.contributorTwoAddress
-                }
-            )
-        });
-        let honourWhitelist = await testConfig.preSale.honourWhitelist();
-        assert.equal(honourWhitelist, false);
-    });
-
-    it('should  allow honour whitelist flag to be set if owner', async function() {
-        await testConfig.preSale.setHonourWhitelist(
-            true,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-        let honourWhitelist = await testConfig.preSale.honourWhitelist();
-        assert.equal(honourWhitelist, true);
     });
 });

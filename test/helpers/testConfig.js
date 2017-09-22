@@ -131,6 +131,9 @@ class TestConfig {
         }
 
         this.preSaleCap = web3.toWei(this.PRESALE_CAP/this.etherPeggedValue);
+        
+        this.honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime(); 
+        // console.log("honourWhitelistEnd " + this.honourWhitelistEnd);
 
         this.preSale = await Presale.new(
             this.etherEscrowWallet.address, 
@@ -142,16 +145,15 @@ class TestConfig {
             this.thirdTierDiscountUpperLimitEther,
             this.minPresaleContributionEther,
             this.maxPresaleContributionEther,
-            this.preSaleCap
+            this.preSaleCap,
+            this.honourWhitelistEnd
         );
         
         this.preSaleAddress = this.preSale.address;
-        this.honourWhitelist = false;
 
         await this.trusteeWallet.changeOwner(this.preSale.address);
         await this.shp.changeController(this.preSale.address);
         await this.preSale.setShp(this.shp.address);
-        await this.preSale.setHonourWhitelist(this.honourWhitelist);
 
         this.maliciousContract = await MaliciousContract.new(this.preSaleAddress);
 
