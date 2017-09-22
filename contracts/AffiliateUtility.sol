@@ -14,9 +14,9 @@ contract AffiliateUtility is Owned {
     uint256 public constant TIER2_PERCENT = 4;
     uint256 public constant TIER3_PERCENT = 5;
     
-    mapping (bytes => Affiliate) private affiliates;
+    mapping (address => Affiliate) private affiliates;
 
-    event AffiliateReceived(address affiliateAddress, bytes messageData, bool valid);
+    event AffiliateReceived(address affiliateAddress, address investorAddress, bool valid);
 
     struct Affiliate {
         address etherAddress;
@@ -36,26 +36,26 @@ contract AffiliateUtility is Owned {
     }
 
     /// @notice This adds an affiliate Ethereum address to our whitelist
-    /// @param _key The lookup key (in bytes)
+    /// @param _investor The investor's address
     /// @param _affiliate The Ethereum address of the affiliate
-    function addAffiliate(bytes _key, address _affiliate) onlyOwner {
-        affiliates[_key] = Affiliate(_affiliate, true);
+    function addAffiliate(address _investor, address _affiliate) onlyOwner {
+        affiliates[_investor] = Affiliate(_affiliate, true);
     }
 
     /// @notice calculates and returns the amount to token minted for affilliate
-    /// @param _key address of the proposed affiliate
+    /// @param _investor address of the investor
     /// @param _contributorTokens amount of SHP tokens minted for contributor
     /// @param _contributionValue amount of ETH contributed
     /// @return tuple of two values (affiliateBonus, contributorBouns)
     function applyAffiliate(
-        bytes _key, 
+        address _investor, 
         uint256 _contributorTokens, 
         uint256 _contributionValue
     )
         public 
         returns(uint256, uint256) 
     {
-        if (getAffiliate(_key) == address(0)) {
+        if (getAffiliate(_investor) == address(0)) {
             return (0, 0);
         }
 
@@ -74,23 +74,18 @@ contract AffiliateUtility is Owned {
     }
 
     /// @notice Fetches the Ethereum address of a valid affiliate
-    /// @param _key The Ethereum address in bytes format
+    /// @param _investor The Ethereum address of the investor
     /// @return The Ethereum address as an address type
-    function getAffiliate(bytes _key) returns(address) {
-        return affiliates[_key].etherAddress;
+    function getAffiliate(address _investor) returns(address) {
+        return affiliates[_investor].etherAddress;
     }
 
     /// @notice Checks if an affiliate is valid
-    /// @param _key The Ethereum address in bytes format
-    /// @param _contributor The contributing Ethereum address
+    /// @param _investor The Ethereum address of the investor
     /// @return True or False
-    function isAffiliateValid(bytes _key, address _contributor) public returns(bool) {
-        if (_key.length == 0) {
-            return false;
-        }
-        Affiliate memory affiliate = affiliates[_key];
-        AffiliateReceived(affiliate.etherAddress, _key, affiliate.isPresent);
-        require(affiliate.etherAddress != _contributor);
+    function isAffiliateValid(address _investor) public returns(bool) {
+        Affiliate memory affiliate = affiliates[_investor];
+        AffiliateReceived(affiliate.etherAddress, _investor, affiliate.isPresent);
         return affiliate.isPresent;
     }
 }
