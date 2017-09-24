@@ -248,4 +248,9 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.allRevealed(), true);
     });
 
+    it("should move to the next ceiling", async function() {
+        await dynamicCeiling.moveToNextCeiling();
+        assert.equal(await dynamicCeiling.currentIndex(), 1);
+    });
+
 });
