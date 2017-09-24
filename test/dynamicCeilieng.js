@@ -85,7 +85,7 @@ contract("DynamicCeiling", function (accounts) {
         assert.equal(await dynamicCeiling.currentIndex(), 0);
     });
 
-    it("should not reveals ceiling with incorrect data", async function () {
+    it("should not reveal ceiling with incorrect data", async function () {
         await assertFail(async function () {
             await dynamicCeiling.revealCeiling(
                 ceilings[0][0],

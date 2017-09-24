@@ -2,6 +2,7 @@ const assertFail = require("./helpers/assertFail");
 const assertions = require("./helpers/assertions");
 const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
+const time = require("./helpers/time");
 
 contract("End-to-end process for pre-sale, crowdsale & vesting", function(accounts) {
 
@@ -12,7 +13,7 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         await testConfig.setupForPreSale(accounts);
     });
 
-    it('should initialize contract with expected values', async function() {
+    it('should initialize Presale contract with expected values', async function() {
         await assertions.expectedInitialisation(testConfig.preSale, {
             etherEscrowWallet: testConfig.etherEscrowWallet,
             reserveWallet: testConfig.reserveWallet,
@@ -41,7 +42,12 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(whitelistedPlannedContributions, web3.toWei(50));
     });
 
-    it('should enable contributions', async function() {
+    it('should check both presale is still paused', async function() {
+        const pspaused = await testConfig.preSale.paused();
+        assert.equal(true, pspaused);
+    });
+
+    it('should enable PreSale contributions', async function() {
         await testConfig.preSale.resumeContribution({
             from: testConfig.ownerAddress
         });
@@ -123,17 +129,20 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(true, closed);
     });
 
-    it('should deploy the general sale', async function() {
+    it('should initialize General Sale contract with expected values', async function() {
         await testConfig.setUpForGeneralSale(accounts);
         const minContribution = await testConfig.generalSale.minContributionInWei();
-        await assertions.expectedInitialisationGeneral(testConfig.generalSale, {
-            etherEscrowWallet: testConfig.etherEscrowWallet,
-            reserveWallet: testConfig.reserveWallet,
-            foundersWallet: testConfig.foundersWallet
-        }, {
-            minContributionInWei: minContribution
-        });
+        await assertions.expectedInitialisationGeneral(
+            testConfig.generalSale, {
+                etherEscrowWallet: testConfig.etherEscrowWallet,
+                reserveWallet: testConfig.reserveWallet,
+                foundersWallet: testConfig.foundersWallet
+            }, {
+                minContributionInWei: minContribution
+            }
+        );
     });
+
 
     it('should transfer ownership to the general sale', async function() {
         await testConfig.preSale.transferOwnership(testConfig.generalSale.address, testConfig.generalSale.address, {
@@ -148,8 +157,8 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
 
     it('should set the hidden dynamic ceilings', async function() {
         const minContribution = await testConfig.generalSale.minContributionInWei();
-        ceilings.push([web3.toWei(5), 1, minContribution]);
-        ceilings.push([web3.toWei(7), 1, minContribution]);
+        ceilings.push([web3.toWei(2), 1, minContribution]);
+        ceilings.push([web3.toWei(4), 1, minContribution]);
         let i = 0;
         for (let c of ceilings) {
             const h = await testConfig.dynamicCeiling.calculateHash(
@@ -169,6 +178,44 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(await testConfig.dynamicCeiling.nCeilings(), 10);
     });
 
+    it('should enable contributions', async function() {
+        await testConfig.generalSale.resumeContribution({
+            from: testConfig.ownerAddress
+        });
+        const paused = await testConfig.generalSale.paused();
+        assert.equal(false, paused);
+    });
+
+    it('should not allow contributions when no ceiliengs have been revealed', async function() {
+        const contributionValue = web3.toWei(2);
+        await assertFail(async function() {
+            await testConfig.generalSale.sendTransaction({
+                value: contributionValue,
+                from: testConfig.contributorOneAddress
+            });
+        });
+        assertions.ether({
+            etherEscrowBalance: 75,
+            presaleBalance: 0,
+            contributorOneBalance: 50,
+            contributorTwoBalance: 75,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 110000,
+            contributorTwoBalance: 55000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 187500,
+            bountyBalance: 37500
+        });
+        const totalEtherPaid = await testConfig.generalSale.totalEtherPaid.call();
+        assert.equal(totalEtherPaid.toNumber(), web3.toWei(0));
+    });
+
     it('should reveal the first ceiling', async function() {
         await testConfig.dynamicCeiling.revealCeiling(
             ceilings[0][0],
@@ -182,25 +229,17 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(await testConfig.dynamicCeiling.allRevealed(), false);
     });
 
-    it('should enable contributions', async function() {
-        await testConfig.generalSale.resumeContribution({
-            from: testConfig.ownerAddress
-        });
-        const paused = await testConfig.generalSale.paused();
-        assert.equal(false, paused);
-    });
-
     it('should accept a contribution', async function() {
 
-        let contribution = web3.toWei('1', 'ether');
+        let contribution = web3.toWei('2', 'ether');
         await testConfig.generalSale.sendTransaction({
             value: contribution,
             from: testConfig.contributorOneAddress
         });
         assertions.ether({
-            etherEscrowBalance: 76,
+            etherEscrowBalance: 77,
             presaleBalance: 0,
-            contributorOneBalance: 49,
+            contributorOneBalance: 48,
             contributorTwoBalance: 75,
             reserveBalance: 0,
             foundersBalance: 0
@@ -208,25 +247,262 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         await assertions.SHP({
             etherEscrowBalance: 0,
             presaleBalance: 0,
-            contributorOneBalance: 112000,
+            contributorOneBalance: 114000,
             contributorTwoBalance: 55000,
             reserveBalance: 0,
             foundersBalance: 0,
-            trusteeBalance: 190000,
-            bountyBalance: 38000
+            trusteeBalance: 192500,
+            bountyBalance: 38500
         });
 
         let totalEtherPaid = (await testConfig.generalSale.totalEtherPaid()).toNumber();
-        assert.equal(totalEtherPaid, web3.toWei(1));
+        assert.equal(totalEtherPaid, web3.toWei(2));
         assert.equal(await testConfig.dynamicCeiling.revealedCeilings(), 1);
     });
+    
+    it('should not accept contribution when ceiling cap is reached', async function() {
+        await assertFail(async function() {
+            let contribution = web3.toWei(1);
+            await testConfig.generalSale.sendTransaction({
+                value: contribution,
+                from: testConfig.contributorOneAddress
+            });
+        });
+    });
 
-    it('should move to the next ceiling', async function() {});
-    it('should accept a smaller contribution at next ceiling', async function() {});
-    it('should manually close the sale', async function() {});
-    it('should transfer ownership to the SHP controller', async function() {});
-    it('should move bounty tokens immediately after the sale closes', async function() {});
-    it('should create the vesting grants', async function() {});
-    it('should exercise the grant after the cliff', async function() {});
-    it('should exercise the full grant when vesting is complete', async function() {});
+    it('should move to the next ceiling', async function() {
+        await testConfig.dynamicCeiling.revealCeiling(
+            ceilings[1][0],
+            ceilings[1][1],
+            ceilings[1][2],
+            true,
+            web3.sha3("pwd1"));
+
+        assert.equal(await testConfig.dynamicCeiling.revealedCeilings(), 2);
+        assert.equal((await testConfig.dynamicCeiling.currentIndex()).toFixed(), '0');
+        assert.equal(await testConfig.dynamicCeiling.allRevealed(), true);
+    });
+
+    it('should accept a smaller contribution at next ceiling', async function() {
+
+        let contribution = web3.toWei('1', 'ether');
+        await testConfig.generalSale.sendTransaction({
+            value: contribution,
+            from: testConfig.contributorOneAddress
+        });
+        assertions.ether({
+            etherEscrowBalance: 78,
+            presaleBalance: 0,
+            contributorOneBalance: 47,
+            contributorTwoBalance: 75,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000,
+            contributorTwoBalance: 55000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 195000,
+            bountyBalance: 39000
+        });
+
+        let totalEtherPaid = (await testConfig.generalSale.totalEtherPaid()).toNumber();
+        assert.equal(totalEtherPaid, web3.toWei(3));
+        assert.equal(await testConfig.dynamicCeiling.revealedCeilings(), 2);
+    });
+    it('should manually close the sale', async function() {
+        await testConfig.generalSale.closeSale({
+            from: testConfig.ownerAddress
+        });
+        const closed = await testConfig.preSale.closed();
+        assert.equal(true, closed);
+    });
+    it('should transfer ownership to the SHP controller', async function() {
+        await testConfig.generalSale.transferOwnership(testConfig.shpController.address, testConfig.shpController.address, {
+            from: testConfig.ownerAddress
+        });
+        let controller = await testConfig.shp.controller();
+        let owner = await testConfig.trusteeWallet.owner();
+        assert.equal(owner, testConfig.shpController.address);
+        assert.equal(controller, testConfig.shpController.address);
+    });
+
+    it('should set token counts', async function() {
+        let founderTokenCount = web3.toWei(78000);
+        let reserveTokenCount = web3.toWei(117000);
+        await testConfig.shpController.setTokenCounts(reserveTokenCount, founderTokenCount, {
+            from: testConfig.ownerAddress
+        });
+        founderTokenCount = await testConfig.shpController.foundersTokens();
+        reserveTokenCount = await testConfig.shpController.reserveTokens();
+        assert.equal(founderTokenCount.toNumber(), web3.toWei(78000));
+        assert.equal(reserveTokenCount.toNumber(), web3.toWei(117000));
+    });
+
+    it('should create the vesting grants', async function() {
+        await testConfig.shpController.createVestingGrants({
+            from: testConfig.ownerAddress
+        });
+        let grantsCreated = await testConfig.shpController.grantsCreated();
+        assert.equal(grantsCreated, true);
+    });
+
+    it('should move bounty tokens immediately after the sale closes', async function() {
+        let withdraw = web3.toWei(39000);
+        let data = await testConfig.shp.contract.transfer.getData(testConfig.contributorOneAddress, withdraw);
+
+        await testConfig.bountyWallet.submitTransaction(
+            testConfig.shp.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.bountySignAddress
+            }
+        );
+
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 195000,
+            bountyBalance: 0
+        });
+    });
+    
+    it('should not be able to move SHP founders tokens before cliff', async function() {
+
+        let withdraw = web3.toWei(50);
+        let data = await testConfig.shp.contract.transfer.getData(testConfig.contributorOneAddress, withdraw);
+
+        await testConfig.foundersWallet.submitTransaction(
+            testConfig.shp.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.foundersSignAddress
+            }
+        );
+
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 195000,
+            bountyBalance: 0
+        });
+    });
+
+    it('should move some SHP reserve tokens after cliff', async function() {
+        const sevenMonths = (60 * 60 * 24 * 30) * 7;
+        await time.increaseTime(sevenMonths);
+
+        let data = await testConfig.trusteeWallet.contract.unlockVestedTokens.getData();  
+        
+        await testConfig.reserveWallet.submitTransaction(
+            testConfig.trusteeWallet.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.reserveSignAddress
+            }
+        );
+        
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            foundersBalance: 0,
+            reserveBalance: 33750,
+            trusteeBalance: 195000 - 33750,
+            bountyBalance: 0
+        });
+    });
+     it('should move some SHP founders tokens after cliff', async function() {
+
+        let data = await testConfig.trusteeWallet.contract.unlockVestedTokens.getData();
+        
+        await testConfig.foundersWallet.submitTransaction(
+            testConfig.trusteeWallet.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.foundersSignAddress
+            }
+        );
+
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            foundersBalance: 22500,
+            reserveBalance: 33750,
+            trusteeBalance: 195000 - 33750 - 22500,
+            bountyBalance: 0
+        });
+    });
+
+    it('should move all SHP reserve tokens when fully vested', async function() {
+
+        const eighteenMonths = (60 * 60 * 24 * 30) * 18;
+        await time.increaseTime(eighteenMonths);
+
+        let data = await testConfig.trusteeWallet.contract.unlockVestedTokens.getData();
+        
+        await testConfig.reserveWallet.submitTransaction(
+            testConfig.trusteeWallet.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.reserveSignAddress
+            }
+        );
+
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            foundersBalance: 22500,
+            reserveBalance: 117000,
+            trusteeBalance: 195000 - 117000 - 22500,
+            bountyBalance: 0
+        });
+    });
+
+    it('should move all SHP founders tokens when fully vested', async function() {
+
+        let data = await testConfig.trusteeWallet.contract.unlockVestedTokens.getData();
+        
+        await testConfig.foundersWallet.submitTransaction(
+            testConfig.trusteeWallet.address, 
+            0, 
+            data, 
+            {
+                from: testConfig.foundersSignAddress
+            }
+        );
+
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 116000 + 39000,
+            contributorTwoBalance: 55000,
+            foundersBalance: 78000,
+            reserveBalance: 117000,
+            trusteeBalance: 0,
+            bountyBalance: 0
+        });
+    });
+
 });
