@@ -199,6 +199,55 @@ contract("Presale whitelist extended", function(accounts) {
         assert.equal(whitelistedPlannedContributions, web3.toWei(25));
     });
 
+    it('should allow contribution from not whitelisted contributor', async function() {
+        
+        let plannedContribution = web3.toWei('25', 'ether');
+        
+        await testConfig.preSale.sendTransaction({
+            value: plannedContribution,
+            from: testConfig.contributorOneAddress
+        })
+        .then(result => {
+            eventsUtil.eventValidator(
+                result, {
+                    name: "AllowedContributionCheck",
+                    args: {
+                        contribution: web3.toWei('25', 'ether'),
+                        allowedContributionState: 1
+                    }
+                }
+            );
+        });
+
+        assertions.ether({
+            etherEscrowBalance: 100,
+            presaleBalance: 0,
+            contributorOneBalance: 25,
+            contributorTwoBalance: 75,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 165000,
+            contributorTwoBalance: 55000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 250000,
+            bountyBalance: 50000
+        });
+
+        let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
+        assert.equal(preSaleEtherPaid, web3.toWei(100));
+
+        let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
+        assert.equal(preSaleCap, web3.toWei(225));
+
+        let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
+        assert.equal(whitelistedPlannedContributions, web3.toWei(25));
+    });
+
     it('should add contributors to whitelist', async function() {
 
         let plannedContribution = web3.toWei('35', 'ether');
@@ -234,54 +283,6 @@ contract("Presale whitelist extended", function(accounts) {
         });
 
         assertions.ether({
-            etherEscrowBalance: 100,
-            presaleBalance: 0,
-            contributorOneBalance: 50,
-            contributorTwoBalance: 50,
-            reserveBalance: 0,
-            foundersBalance: 0
-        });
-        await assertions.SHP({
-            etherEscrowBalance: 0,
-            presaleBalance: 0,
-            contributorOneBalance: 110000,
-            contributorTwoBalance: 110000,
-            reserveBalance: 0,
-            foundersBalance: 0,
-            trusteeBalance: 250000,
-            bountyBalance: 50000
-        });
-    });
-
-    it('should add remaining whitelisted planned contributions to cap after whitelist stops being honoured', async function() {
-        let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
-        assert.equal(whitelistedPlannedContributions, 0);
-
-        let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
-        assert.equal(preSaleCap, web3.toWei(350));
-    });
-
-    it('should detect over whitelist period and allow contribution from cap', async function() {
-
-        let plannedContribution = web3.toWei('25', 'ether');
-
-        await testConfig.preSale.sendTransaction({
-                value: plannedContribution,
-                from: testConfig.contributorOneAddress
-            })
-            .then(result => {
-                eventsUtil.eventValidator(
-                    result, {
-                        name: "AllowedContributionCheck",
-                        args: {
-                            contribution: plannedContribution,
-                            allowedContributionState: 4
-                        }
-                    }
-                );
-            });
-
-        assertions.ether({
             etherEscrowBalance: 125,
             presaleBalance: 0,
             contributorOneBalance: 25,
@@ -299,9 +300,57 @@ contract("Presale whitelist extended", function(accounts) {
             trusteeBalance: 312500,
             bountyBalance: 62500
         });
+    });
+
+    it('should add remaining whitelisted planned contributions to cap after whitelist stops being honoured', async function() {
+        let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
+        assert.equal(whitelistedPlannedContributions, 0);
+
+        let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
+        assert.equal(preSaleCap, web3.toWei(350));
+    });
+
+    it('should detect over whitelist period and allow contribution from cap', async function() {
+
+        let plannedContribution = web3.toWei('25', 'ether');
+
+        await testConfig.preSale.sendTransaction({
+                value: plannedContribution,
+                from: testConfig.contributorTwoAddress
+            })
+            .then(result => {
+                eventsUtil.eventValidator(
+                    result, {
+                        name: "AllowedContributionCheck",
+                        args: {
+                            contribution: plannedContribution,
+                            allowedContributionState: 4
+                        }
+                    }
+                );
+            });
+        
+        assertions.ether({
+            etherEscrowBalance: 150,
+            presaleBalance: 0,
+            contributorOneBalance: 25,
+            contributorTwoBalance: 25,
+            reserveBalance: 0,
+            foundersBalance: 0
+        });
+        await assertions.SHP({
+            etherEscrowBalance: 0,
+            presaleBalance: 0,
+            contributorOneBalance: 165000,
+            contributorTwoBalance: 165000,
+            reserveBalance: 0,
+            foundersBalance: 0,
+            trusteeBalance: 375000,
+            bountyBalance: 75000
+        });
 
         preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
-        assert.equal(preSaleEtherPaid, web3.toWei(125));
+        assert.equal(preSaleEtherPaid, web3.toWei(150));
 
         let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
         assert.equal(whitelistedPlannedContributions, 0);

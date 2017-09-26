@@ -185,7 +185,7 @@ contract PreSale is TokenSale {
             return (allowedContribution, refundAmount);
         }
         
-        if (!whitelist[msg.sender].contributed) {
+        if (whitelist[msg.sender].plannedContribution > 0) {
             return processWhitelistedContribution(allowedContribution, refundAmount);
         } 
 
@@ -198,6 +198,7 @@ contract PreSale is TokenSale {
         uint256 plannedContribution = whitelist[msg.sender].plannedContribution;
         
         whitelist[msg.sender].contributed = true;
+        whitelist[msg.sender].plannedContribution = 0;
         WhitelistedUpdated(plannedContribution, whitelist[msg.sender].contributed);
         
         if (msg.value > plannedContribution) {
