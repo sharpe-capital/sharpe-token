@@ -9,7 +9,7 @@ import "./SCD.sol";
 contract PreSale is TokenSale {
     using SafeMath for uint256;
  
-    mapping(address => Whitelisted) public whitelist;
+    mapping(address => uint256) public whitelist;
     
     uint256 public preSaleEtherPaid = 0;
     uint256 public totalContributions = 0;
@@ -41,11 +41,6 @@ contract PreSale is TokenSale {
     event CountersUpdated(uint256 preSaleEtherPaid, uint256 totalContributions);
     event WhitelistedUpdated(uint256 plannedContribution, bool contributed);
     event WhitelistedCounterUpdated(uint256 whitelistedPlannedContributions, uint256 usedContributions);
-
-    struct Whitelisted {
-        uint256 plannedContribution;
-        bool contributed; 
-    }
 
     modifier isValidContribution() {
         require(validContribution());
@@ -130,7 +125,7 @@ contract PreSale is TokenSale {
     /// @param _sender The address to whitelist
     /// @param _plannedContribution The planned contribution (WEI)
     function addToWhitelist(address _sender, uint256 _plannedContribution) public onlyOwner {
-        whitelist[_sender] = Whitelisted(_plannedContribution, false);
+        whitelist[_sender] = _plannedContribution;
         whitelistedPlannedContributions = whitelistedPlannedContributions.add(_plannedContribution);
     }
 
@@ -185,7 +180,7 @@ contract PreSale is TokenSale {
             return (allowedContribution, refundAmount);
         }
         
-        if (whitelist[msg.sender].plannedContribution > 0) {
+        if (whitelist[msg.sender] > 0) {
             return processWhitelistedContribution(allowedContribution, refundAmount);
         } 
 
@@ -195,11 +190,10 @@ contract PreSale is TokenSale {
 
     /// @notice Returns the contribution to be used for a sender that had previously been whitelisted, and any refund value if expected.
     function processWhitelistedContribution(uint256 allowedContribution, uint256 refundAmount) private returns (uint256, uint256) {
-        uint256 plannedContribution = whitelist[msg.sender].plannedContribution;
+        uint256 plannedContribution = whitelist[msg.sender];
         
-        whitelist[msg.sender].contributed = true;
-        whitelist[msg.sender].plannedContribution = 0;
-        WhitelistedUpdated(plannedContribution, whitelist[msg.sender].contributed);
+        whitelist[msg.sender] = 0;
+        WhitelistedUpdated(plannedContribution, true);
         
         if (msg.value > plannedContribution) {
             return handleAbovePlannedWhitelistedContribution(allowedContribution, plannedContribution, refundAmount);
