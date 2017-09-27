@@ -69,16 +69,12 @@ class TestConfig {
         this.MAX_GENERAL_SALE_CONTRIBUTION = 1000;
         this.GENERAL_SALE_HARDCAP = 4400;
         this.minContributionInWei = web3.toWei(this.MIN_GENERAL_SALE_CONTRIBUTION / this.etherPeggedValue);
-        this.maxContributionInWei = web3.toWei(this.MAX_GENERAL_SALE_CONTRIBUTION / this.etherPeggedValue);
-        this.hardCapInWei = web3.toWei(this.GENERAL_SALE_HARDCAP / this.etherPeggedValue);
         this.generalSale = await GeneralSale.new(
             this.etherEscrowWallet.address,
             this.bountyWallet.address,
             this.trusteeWallet.address,
             this.affiliateUtility.address,
-            this.minContributionInWei,
-            this.maxContributionInWei,
-            this.hardCapInWei);
+            this.minContributionInWei);
 
         if (includeGeneral) {
             await this.trusteeWallet.changeOwner(this.generalSale.address);

@@ -8,15 +8,12 @@ contract GeneralSale is TokenSale {
 
     uint256 public totalEtherPaid = 0;
     uint256 public minContributionInWei;
-    uint256 public maxContributionInWei;
-    uint256 public hardCapInWei;
     address public saleAddress;
     
     DynamicCeiling public dynamicCeiling;
 
     modifier amountValidated() {
         require(msg.value >= minContributionInWei);
-        require(msg.value <= maxContributionInWei);
         _;
     }
 
@@ -25,25 +22,19 @@ contract GeneralSale is TokenSale {
     /// @param _bountyAddress the address that will hold the bounty SHP
     /// @param _trusteeAddress the address that will hold the vesting SHP
     /// @param _affiliateUtilityAddress address of the deployed AffiliateUtility contract.
-    /// @param _maxContributionInWei maximum amount to contribution possilble
     /// @param _minContributionInWei minimum amount to contribution possilble
-    /// @param _hardCapInWei the hard cap for the sale
     function GeneralSale( 
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
         address _affiliateUtilityAddress,
-        uint256 _minContributionInWei,
-        uint256 _maxContributionInWei,
-        uint256 _hardCapInWei) 
+        uint256 _minContributionInWei) 
         TokenSale (
         _etherEscrowAddress,
         _bountyAddress,
         _trusteeAddress,
         _affiliateUtilityAddress) 
     {
-        hardCapInWei = _hardCapInWei;
-        maxContributionInWei = _maxContributionInWei;
         minContributionInWei = _minContributionInWei;
         saleAddress = address(this);
     }

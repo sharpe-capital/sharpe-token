@@ -115,15 +115,15 @@ contract("General Sale", function(accounts) {
         });
     });
 
-    it('should not allow contribution above the maximum amount', async function() {
-        await assertFail(async function() {
-            let contribution = web3.toWei(1001 / testConfig.etherPeggedValue);
-            await testConfig.generalSale.sendTransaction({
-                value: contribution,
-                from: testConfig.contributorOneAddress
-            });
-        });
-    });
+    // it('should not allow contribution above the maximum amount', async function() {
+    //     await assertFail(async function() {
+    //         let contribution = web3.toWei(1001 / testConfig.etherPeggedValue);
+    //         await testConfig.generalSale.sendTransaction({
+    //             value: contribution,
+    //             from: testConfig.contributorOneAddress
+    //         });
+    //     });
+    // });
 
     it('should allow owner to pause the sale', async function() {
         await testConfig.generalSale.pauseContribution({
@@ -225,8 +225,8 @@ contract("General Sale", function(accounts) {
         });
     });
 
-    it('should reject transaction when ceiling limit is exhusted', async function () {
-        await assertFail(async function () {
+    it('should reject transaction when ceiling limit is exhusted', async function() {
+        await assertFail(async function() {
             let contribution = web3.toWei(1);
             await testConfig.generalSale.sendTransaction({
                 value: contribution,
