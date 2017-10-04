@@ -20,7 +20,7 @@ import "./SHP.sol";
  */
 
  
-contract SHPController is Owned {
+contract SHPController is Owned, TokenController {
 
     SHP public shp;
     Trustee public trustee;
