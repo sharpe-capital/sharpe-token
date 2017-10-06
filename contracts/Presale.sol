@@ -141,6 +141,8 @@ contract PreSale is TokenSale {
     /// @param _sender The address to whitelist
     /// @param _plannedContribution The planned contribution (WEI)
     function addToWhitelist(address _sender, uint256 _plannedContribution) public onlyOwner {
+        require(whitelist[_sender] == 0);
+        
         whitelist[_sender] = _plannedContribution;
         whitelistedPlannedContributions = whitelistedPlannedContributions.add(_plannedContribution);
     }

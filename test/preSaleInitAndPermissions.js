@@ -187,4 +187,20 @@ contract("Presale initialization and permissions", function(accounts) {
             }
         );
     });
+
+    it('should not allow the same address to be whitelisted more than once', async function() {
+        let plannedContribution = web3.toWei('25', 'ether');
+        await assertFail(async function() {
+            await testConfig.preSale.addToWhitelist(
+                testConfig.contributorTwoAddress,
+                plannedContribution,
+                {
+                    from: testConfig.ownerAddress
+                }
+            )
+        });
+    });
+
+
+
 });
