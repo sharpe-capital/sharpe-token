@@ -7,7 +7,7 @@ const time = require("./helpers/time");
 contract("Presale move tokens", function(accounts) {
 
     before(async function() {
-        await testConfig.setupForPreSale(accounts);
+        await testConfig.setupForPreSale(accounts, false , 75);
     });
 
     it('should initialize contract with expected values', async function() {
@@ -40,11 +40,7 @@ contract("Presale move tokens", function(accounts) {
     });
 
     it('should set the cap and contribute some Ether', async function() {
-        let cap = web3.toWei('75', 'ether');
-        await testConfig.preSale.setPresaleCap(cap, {
-            from: testConfig.ownerAddress
-        });
-    
+
         let contribution = web3.toWei('25', 'ether');
         await testConfig.preSale.sendTransaction({
             value: contribution,

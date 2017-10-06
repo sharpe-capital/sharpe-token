@@ -6,7 +6,7 @@ const testConfig = require("./helpers/testConfig");
 contract("Presale cap/limits", function(accounts) {
 
     before(async function() {
-        await testConfig.setupForPreSale(accounts);
+        await testConfig.setupForPreSale(accounts, false, 50);
     });
 
     it('should initialize contract with expected values', async function() {
@@ -28,23 +28,6 @@ contract("Presale cap/limits", function(accounts) {
                 thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
             }
         );
-    });
-
-    it('should set the pre-sale cap to 50 ETH', async function() {
-
-        let newPresaleCap = web3.toWei('50', 'ether');
-        await testConfig.preSale.setPresaleCap(
-            newPresaleCap,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-        
-        let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
-        assert.equal(preSaleCap, web3.toWei(50));
-
-        let closed = await testConfig.preSale.closed();
-        assert.equal(closed, false);
     });
 
     it('should allow owner to resume the sale', async function(){

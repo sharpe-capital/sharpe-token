@@ -95,48 +95,14 @@ contract PreSale is TokenSale {
     {
         honourWhitelistEnd = _honourWhitelistEnd;
         presaleAddress = address(this);
-        setDiscountLimits(_firstTierDiscountUpperLimitEther, _secondTierDiscountUpperLimitEther, _thirdTierDiscountUpperLimitEther);
-        setContributionRange(_minPresaleContributionEther, _maxPresaleContributionEther);
-        preSaleCap = _preSaleCap;
-    }
-
-    /// @notice Set the range of accepted contributions during pre-sale  
-    /// @param _minPresaleContributionEther Lower contribution range (WEI)
-    /// @param _maxPresaleContributionEther Upper contribution range (WEI)
-    function setContributionRange(
-        uint256 _minPresaleContributionEther,
-        uint256 _maxPresaleContributionEther
-    ) 
-        public 
-        onlyOwner 
-    {
-        minPresaleContributionEther = _minPresaleContributionEther;
-        maxPresaleContributionEther = _maxPresaleContributionEther;
-    }
-
-    /// @notice Set the presale cap  
-    /// @param _preSaleCap Presale cap (WEI)
-    function setPresaleCap(uint256 _preSaleCap) public onlyOwner {
-        preSaleCap = _preSaleCap;
-    }
-
-    /// @notice Set the discount limits
-    /// @param _firstTierDiscountUpperLimitEther First discount limits (WEI)
-    /// @param _secondTierDiscountUpperLimitEther Second discount limits (WEI)
-    /// @param _thirdTierDiscountUpperLimitEther Third discount limits (WEI)
-    function setDiscountLimits(
-        uint256 _firstTierDiscountUpperLimitEther,
-        uint256 _secondTierDiscountUpperLimitEther,
-        uint256 _thirdTierDiscountUpperLimitEther
-    ) 
-        public 
-        onlyOwner 
-    {
         firstTierDiscountUpperLimitEther = _firstTierDiscountUpperLimitEther;
         secondTierDiscountUpperLimitEther = _secondTierDiscountUpperLimitEther;
         thirdTierDiscountUpperLimitEther = _thirdTierDiscountUpperLimitEther;
+        minPresaleContributionEther = _minPresaleContributionEther;
+        maxPresaleContributionEther = _maxPresaleContributionEther;
+        preSaleCap = _preSaleCap;
     }
-    
+
     /// @notice Adds to the whitelist
     /// @param _sender The address to whitelist
     /// @param _plannedContribution The planned contribution (WEI)

@@ -105,7 +105,7 @@ class TestConfig {
         }
 
     }
-    async setupForPreSale(accounts, tweakLimits) {
+    async setupForPreSale(accounts, tweakLimits, capInEther) {
 
         await this.generalSetup(accounts);
 
@@ -131,7 +131,15 @@ class TestConfig {
             this.thirdTierDiscountUpperLimitEther = web3.toWei(this.THIRD_TIER_DISCOUNT_UPPER_LIMIT / this.etherPeggedValue);
         }
 
-        this.preSaleCap = web3.toWei(this.PRESALE_CAP / this.etherPeggedValue);
+        
+
+        if (capInEther && capInEther > 0) {
+            this.preSaleCap = web3.toWei(capInEther);
+        } else {
+            this.preSaleCap = web3.toWei(this.PRESALE_CAP / this.etherPeggedValue);
+        }
+
+        console.log("cap is set to " + this.preSaleCap);
 
         this.honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
         // console.log("honourWhitelistEnd " + this.honourWhitelistEnd);
