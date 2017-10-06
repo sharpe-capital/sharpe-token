@@ -91,14 +91,14 @@ contract AffiliateUtility is Owned {
     /// @notice Fetches the Ethereum address of a valid affiliate
     /// @param _investor The Ethereum address of the investor
     /// @return The Ethereum address as an address type
-    function getAffiliate(address _investor) returns(address) {
+    function getAffiliate(address _investor) constant returns(address) {
         return affiliates[_investor].etherAddress;
     }
 
     /// @notice Checks if an affiliate is valid
     /// @param _investor The Ethereum address of the investor
     /// @return True or False
-    function isAffiliateValid(address _investor) public returns(bool) {
+    function isAffiliateValid(address _investor) constant public returns(bool) {
         Affiliate memory affiliate = affiliates[_investor];
         AffiliateReceived(affiliate.etherAddress, _investor, affiliate.isPresent);
         return affiliate.isPresent;

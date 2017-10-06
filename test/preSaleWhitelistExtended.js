@@ -10,7 +10,7 @@ contract("Presale whitelist extended", function(accounts) {
     let contributorFourAddress = accounts[9];
 
     before(async function() {
-        await testConfig.setupForPreSale(accounts);
+        await testConfig.setupForPreSale(accounts, false, 200);
         console.log("contributorThreeAddress " + contributorThreeAddress);
         console.log("contributorFourAddress " + contributorFourAddress);
     });
@@ -43,10 +43,6 @@ contract("Presale whitelist extended", function(accounts) {
     });
 
     it('should add unused whitelisted contribution back to cap', async function() {
-        let newPresaleCap = web3.toWei('200', 'ether');
-        await testConfig.preSale.setPresaleCap(newPresaleCap, {
-            from: testConfig.ownerAddress
-        });
 
         let plannedContribution = web3.toWei('50', 'ether');
         await testConfig.preSale.addToWhitelist(
