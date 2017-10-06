@@ -169,6 +169,13 @@ contract PreSale is TokenSale {
                 msg.sender.transfer(refundAmount);
                 closePreSale();
             }
+
+            // Covergin the edge case where the last contribution equals the remaining cap
+            uint256 tillCap = remainingCap();
+            if (tillCap == 0) {
+                closePreSale();
+            }
+
         } else {
             revert();
         }
