@@ -162,6 +162,25 @@ contract("Presale move tokens", function(accounts) {
         });
     });
 
+    it('should not allow transfering ownership to zero address', async function() {
+        await assertFail(async function() { 
+            await testConfig.preSale.transferOwnership(testConfig.shpController.address, 0x0, {
+                from: testConfig.ownerAddress
+            });
+        });
+        await assertFail(async function() { 
+            await testConfig.preSale.transferOwnership(0x0, testConfig.shpController.address, {
+                from: testConfig.ownerAddress
+            });
+        });
+
+        let controller = await testConfig.shp.controller();
+        let owner = await testConfig.trusteeWallet.owner();
+        assert.equal(owner, testConfig.preSale.address);
+        assert.equal(controller, testConfig.preSale.address);
+
+    });
+
     it('should transfer ownership to SHPController', async function() {
         await testConfig.preSale.transferOwnership(testConfig.shpController.address, testConfig.shpController.address, {
             from: testConfig.ownerAddress

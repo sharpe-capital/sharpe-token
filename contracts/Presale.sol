@@ -138,7 +138,7 @@ contract PreSale is TokenSale {
                 closePreSale();
             }
 
-            // Covergin the edge case where the last contribution equals the remaining cap
+            // Covering the edge case where the last contribution equals the remaining cap
             uint256 tillCap = remainingCap();
             if (tillCap == 0) {
                 closePreSale();

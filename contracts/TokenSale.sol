@@ -159,6 +159,8 @@ contract TokenSale is Owned, TokenController {
     /// @param _trusteeOwner the address of the new trustee owner
     function transferOwnership(address _tokenController, address _trusteeOwner) public onlyOwner {
         require(closed);
+        require(_tokenController != 0x0);
+        require(_trusteeOwner != 0x0);
         shp.changeController(_tokenController);
         trustee.changeOwner(_trusteeOwner);
     }
