@@ -1,12 +1,14 @@
 // Contracts:
+const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
+const MiniMeToken = artifacts.require("./MiniMeToken.sol");
 const GeneralSale = artifacts.require("./GeneralSale.sol");
 const SHP = artifacts.require("./SHP.sol");
+const SCD = artifacts.require("./SCD.sol");
 const AffiliateUtility = artifacts.require("./AffiliateUtility.sol");
 const DynamicCeiling = artifacts.require("./DynamicCeiling.sol");
 const Presale = artifacts.require("./SHP.sol");
 const SHPController = artifacts.require("./SHPController.sol");
 const TokenSale = artifacts.require("./TokenSale.sol");
-const MiniMeToken = artifacts.require("./MiniMeToken.sol");
 const Owned = artifacts.require("./Owned.sol");
 const SafeMath = artifacts.require("./SafeMath.sol");
 const Trustee = artifacts.require("./Trustee.sol");
@@ -50,6 +52,7 @@ module.exports = async function(deployer, network, accounts) {
     console.log("deploying on network: " + network);
 
 
+
     if (network === "development") {
         return;
     }
@@ -57,27 +60,40 @@ module.exports = async function(deployer, network, accounts) {
     //SHP Token
     let miniMeTokenFactory = await MiniMeTokenFactory.new();
     let shp = await SHP.new(miniMeTokenFactory.address);
+    let shpAddress = await shp.address;
+    console.log("SHP" + "has been deployed to: " + shpAddress);
 
     //General Setup
     let etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
-    let bountyWallet = await MultiSigWallet.new([bountySignAddress], 1);
-    let foundersWallet = await MultiSigWallet.new([foundersSignAddress], 1);
-    let reserveWallet = await MultiSigWallet.new([reserveSignAddress], 1);
-    let trusteeWallet = await Trustee.new(shp.address);
-    let shpController = await SHPController.new(reserveAddress, foundersAddress);
-    let affiliateUtility = await AffiliateUtility.new(affiliateTierTwo, affiliateTierThree);
-
     let etherEscrowAddress = await etherEscrowWallet.address;
+    console.log("Ether Escrow Wallet" + " has been deployed to: " + etherEscrowAddress);
+
+    let bountyWallet = await MultiSigWallet.new([bountySignAddress], 1);
+    let bountyWalletAddress = await bountyWallet.address;
+    console.log("bountyWallet" + " has been deployed to: " + bountyWalletAddress );
+
+    let foundersWallet = await MultiSigWallet.new([foundersSignAddress], 1);
     let foundersAddress = await foundersWallet.address;
+    console.log("Founders Wallet" + " has been deployed to: " + foundersAddress);
+
+    let reserveWallet = await MultiSigWallet.new([reserveSignAddress], 1);
     let reserveAddress = await reserveWallet.address;
-    let bountyAddress = await bountyWallet.address;
-    let trusteeAddress = await trusteeWallet.address;
+    console.log("Reserve Wallet" + " has been deployed to: " + reserveAddress );
+
+    let trusteeWallet = await Trustee.new(shpAddress);
+    let trusteeWalletAddress = await trusteeWallet.address;
+    console.log("Trustee Wallet" + " has been deployed to: " + trusteeWalletAddress );
+    
+    let shpController = await SHPController.new(reserveAddress, foundersAddress);
     let shpControllerAddress = await shpController.address;
+    console.log("SHPController" + " has been deployed to: " + shpControllerAddress);
+    
+    let affiliateUtility = await AffiliateUtility.new(affiliateTierTwo, affiliateTierThree);
     let affiliateUtilityAddress = await affiliateUtility.address;
-    let shpAddress = await shp.address;
+    console.log("AffiliateUtility" + " has been deployed to: " + affiliateUtilityAddress);
 
     //SHP Controller
-    await shpController.setContracts(shp.address, trusteeAddress);
+    await shpController.setContracts(shp.address, trusteeWalletAddress);
 
     //Presale
     let presale = await Presale.new(
@@ -89,11 +105,12 @@ module.exports = async function(deployer, network, accounts) {
         web3.toWei(SECOND_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(MIN_PRESALE_CONTRIBUTION / etherPeggedValue),
-        web3.toWei(this.MAX_PRESALE_CONTRIBUTION / etherPeggedValue),
-        preSaleCap,
+        web3.toWei(MAX_PRESALE_CONTRIBUTION / etherPeggedValue),
+        web3.toWei(PRESALE_CAP / etherPeggedValue),
         honourWhitelistEnd
     );
     let presaleAddress = await presale.address;
+    console.log("PreSale" + " has been deplo;yed to: " + presaleAddress )
 
     /// MOVE THIS
     // await trusteeWallet.changeOwner(preSaleAddress);
@@ -104,18 +121,20 @@ module.exports = async function(deployer, network, accounts) {
     let minContributionInWei = web3.toWei(MIN_GENERAL_SALE_CONTRIBUTION / etherPeggedValue);
    
     let generalSale = await GeneralSale.new(
-        etherEscrowWalletAddress,
+        etherEscrowAddress,
         bountyWalletAddress,
         trusteeWalletAddress,
         affiliateUtilityAddress,
         minContributionInWei);
     
     let generalSaleAddress = await generalSale.address;
+    console.log("GeneralSale" + " has been deployed to: " + generalSaleAddress);
 
     let dynamicCeiling = await DynamicCeiling.new(masterAddress,generalSaleAddress);
     let dynamicCeilingAddress = await dynamicCeiling.address;
 
     await generalSale.setDynamicCeilingAddress(dynamicCeiling.address);
+    console.log("Dynamic Ceiling" + " has been deployed to: " + dynamicCeilingAddress);
 
     // Log all addresses:
     console.log("__________________________________________")
@@ -125,11 +144,11 @@ module.exports = async function(deployer, network, accounts) {
     console.log("bountyWallet" + " has been deployed to: " + bountyWalletAddress );
     console.log("Founders Wallet" + " has been deployed to: " + foundersAddress);
     console.log("Reserve Wallet" + " has been deployed to: " + reserveAddress );
-    console.log("Trustee Wallet" + " has been deployed to: " + trusteeWallet );
+    console.log("Trustee Wallet" + " has been deployed to: " + trusteeWalletAddress );
     console.log("SHPController" + " has been deployed to: " + shpControllerAddress);
     console.log("AffiliateUtility" + " has been deployed to: " + affiliateUtilityAddress);
     console.log("SHP" + "has been deployed to: " + shpAddress);
-    console.log("PreSale" + " has been deployed to: " + presaleAddress );
+    console.log("PreSale" + " has been deplo;yed to: " + presaleAddress )
     console.log("GeneralSale" + " has been deployed to: " + generalSaleAddress);
     console.log("Dynamic Ceiling" + " has been deployed to: " + dynamicCeilingAddress);
     console.log("__________________________________________")

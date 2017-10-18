@@ -11,16 +11,16 @@ module.exports = {
             gas: 6000000,
             gasPrice: 20e9,
         },
-        ropsten: {
+        testnet: {
             network_id: 3,
             host: "localhost",
             port: 8545,
-            gas: 6000000,
+            gas: 4000000,
             gasPrice: 20e9,
         },
         coverage: {
             host: "localhost",
-            network_id: "*",
+            network_id: "23",
             port: 8555,
             gas: 0xfffffffffff,
             gasPrice: 0x01
