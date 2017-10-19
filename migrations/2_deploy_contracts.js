@@ -112,11 +112,6 @@ module.exports = async function(deployer, network, accounts) {
     let presaleAddress = await presale.address;
     console.log("PreSale" + " has been deplo;yed to: " + presaleAddress )
 
-    /// MOVE THIS
-    // await trusteeWallet.changeOwner(preSaleAddress);
-    // await shp.changeController(preSaleAddress);
-    // await preSale.setShp(shpAddress);
-
     // General Sale
     let minContributionInWei = web3.toWei(MIN_GENERAL_SALE_CONTRIBUTION / etherPeggedValue);
    
