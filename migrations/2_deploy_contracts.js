@@ -15,34 +15,60 @@ const Trustee = artifacts.require("./Trustee.sol");
 const MultiSigWallet = artifacts.require("./MultiSigWallet");
 
 // Addresses
-const masterAddress = '0x167b7133b1CAa3ce98A911dF67C3f760889A37be';
+const masterAddress = '0x57a2925eee743a6f29997e65ea2948f296e84b08';
 const escrowSignAddress = '0x0f586d0a27E28784312245a11b66F3011a0af27C';
 const bountySignAddress = `0x7620DA4995f170314b71421E2b22111FEF0E6f97`;
 const foundersSignAddress = `0x3Ec07aee1F9d104C9C930e41BE0f523446c49490`;
 const reserveSignAddress = `0xFC553eA109CF4b8fbD0174d6395f1319C71A88ee`;
 
-// Ether to Dollar Value
-const etherPeggedValue = 400;
+/////////
+//// Live Values
+////////
+// // Ether to Dollar Value
+// const etherPeggedValue = 400;
+
+// // Affiliate Tiers
+// const affiliateTierTwo = web3.toWei(1) * (3000 / 300);
+// const affiliateTierThree = web3.toWei(1) * (6000 / 300);
+
+// //PRESALE VALUSE:
+// const MIN_PRESALE_CONTRIBUTION = 10000;
+// const MAX_PRESALE_CONTRIBUTION = 1000000;
+// const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
+// const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
+// const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
+// const PRESALE_CAP = 10000000;
+// const honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+
+// //GENEARL SALE VALUES
+// const MIN_GENERAL_SALE_CONTRIBUTION = 100;
+// const MAX_GENERAL_SALE_CONTRIBUTION = 1000;
+// const GENERAL_SALE_HARDCAP = 4400;
+
+
+
+/////////
+//// Test Values
+////////
+const etherPeggedValue = 1;
 
 // Affiliate Tiers
-const affiliateTierTwo = web3.toWei(1) * (3000 / 300);
-const affiliateTierThree = web3.toWei(1) * (6000 / 300);
+const affiliateTierTwo = web3.toWei(1) * 0.5;
+const affiliateTierThree = web3.toWei(1) * 1;
 
 //PRESALE VALUSE:
-const MIN_PRESALE_CONTRIBUTION = 10000;
-const MAX_PRESALE_CONTRIBUTION = 1000000;
-const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
-const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
-const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
-const PRESALE_CAP = 10000000;
-const honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+const MIN_PRESALE_CONTRIBUTION = 1;
+const MAX_PRESALE_CONTRIBUTION = 3;
+const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 0.9;
+const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 1.9;
+const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 3;
+const PRESALE_CAP = 10;
+const honourWhitelistEnd = new Date(2017, 10, 20, 9, 0, 0, 0).getTime();
 
 //GENEARL SALE VALUES
-const MIN_GENERAL_SALE_CONTRIBUTION = 100;
-const MAX_GENERAL_SALE_CONTRIBUTION = 1000;
-const GENERAL_SALE_HARDCAP = 4400;
-
-
+const MIN_GENERAL_SALE_CONTRIBUTION = 0.01;
+const MAX_GENERAL_SALE_CONTRIBUTION = 3;
+const GENERAL_SALE_HARDCAP = 15;
 
 module.exports = async function(deployer, network, accounts) {
 

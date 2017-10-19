@@ -4,12 +4,11 @@ module.exports = function(deployer, network, accounts) {
     console.log("DEPLOY", deployer);
     console.log("NETWORK",network);
 
-    web3.personal.unlockAccount(accounts[0], "1234", 0);
-    web3.personal.unlockAccount(accounts[1], "1234", 0);
+    web3.personal.unlockAccount("0x57a2925eee743a6f29997e65ea2948f296e84b08", "", 0);
 
     function checkAllBalances() {
             var totalBal = 0;
-        web3.fromWei(web3.eth.getBalance('0xee7de5394d9c64a1fe73fd7b0ef9f8df3c6b4497'),'ether').toString(10)
+        web3.fromWei(web3.eth.getBalance('0x57a2925eee743a6f29997e65ea2948f296e84b08'),'ether').toString(10)
         for (var acctNum in accounts) {
             var acct = accounts[acctNum];
             var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
