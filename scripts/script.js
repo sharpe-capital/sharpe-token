@@ -1,17 +1,37 @@
-const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
-const MiniMeToken = artifacts.require("./MiniMeToken.sol");
-const GeneralSale = artifacts.require("./GeneralSale.sol");
-const SHP = artifacts.require("./SHP.sol");
-const SCD = artifacts.require("./SCD.sol");
-const AffiliateUtility = artifacts.require("./AffiliateUtility.sol");
-const DynamicCeiling = artifacts.require("./DynamicCeiling.sol");
-const Presale = artifacts.require("./SHP.sol");
-const SHPController = artifacts.require("./SHPController.sol");
-const TokenSale = artifacts.require("./TokenSale.sol");
-const Owned = artifacts.require("./Owned.sol");
-const SafeMath = artifacts.require("./SafeMath.sol");
-const Trustee = artifacts.require("./Trustee.sol");
-const MultiSigWallet = artifacts.require("./MultiSigWallet");
+let Web3 = require('web3')
+var provider = new Web3.providers.HttpProvider("http://52.210.215.150:8545")
+let contract = require('truffle-contract')
+
+
+const MiniMeTokenFactory = contract(require('../build/contracts/MiniMeTokenFactory'));
+const MiniMeToken = contract(require('../build/contracts/MiniMeToken.json'));
+const GeneralSale = contract(require('../build/contracts/GeneralSale.json'));
+const SHP = contract(require('../build/contracts/SHP.json'));
+const SCD = contract(require('../build/contracts/SCD.json'));
+const AffiliateUtility = contract(require('../build/contracts/AffiliateUtility.json'));
+const DynamicCeiling = contract(require('../build/contracts/DynamicCeiling.json'));
+const Presale = contract(require('../build/contracts/Presale.json'));
+const SHPController = contract(require('../build/contracts/SHPController.json'));
+const TokenSale = contract(require('../build/contracts/TokenSale.json'));
+const Owned = contract(require('../build/contracts/Owned.json'));
+const SafeMath = contract(require('../build/contracts/SafeMath.json'));
+const Trustee = contract(require('../build/contracts/Trustee.json'));
+const MultiSigWallet = contract(require('../build/contracts/MultiSigWallet.json'));
+
+MiniMeTokenFactory.setProvider(provider);
+MiniMeToken.setProvider(provider);
+GeneralSale.setProvider(provider);
+SHP.setProvider(provider);
+SCD.setProvider(provider);
+AffiliateUtility.setProvider(provider);
+DynamicCeiling.setProvider(provider);
+Presale.setProvider(provider);
+SHPController.setProvider(provider);
+Owned.setProvider(provider);
+SafeMath.setProvider(provider);
+Trustee.setProvider(provider);
+MultiSigWallet.setProvider(provider);
+
 
 const MASTER = "0x57a2925eee743a6f29997e65ea2948f296e84b08";
 
@@ -19,7 +39,7 @@ var preSaleAddress = "0xd65296442610bb0ba9e1f73bee10b0527e87990f";
 var generalSaleAddress = "0x40bfe6e04f8a622b0a842016a5739489a82d2538";
 var affiliateUtilityAddress = "0xd885a4b0a96aa046e34dc719bdfef2bf4b3a5948";
 var shpAddress = "0x6c85185cf240ef62b0d9bc774e3e001048a4c884";
-var shpControllerAddressa = "0x38a6441e796fe3ef4daa40addbc9451a8a4dc1d6";
+var shpControllerAddress = "0x38a6441e796fe3ef4daa40addbc9451a8a4dc1d6";
 var trusteeAddress = "0x218ab446ca6aff00a5104f61a1b2d2b917c150e8";
 var dynamicCeilingAddress = "0x7630c6aff4d5566f7d6bb4d3296d8b846c91ef67";
 
@@ -31,7 +51,7 @@ class TokenSaleControllerScript {
         _generalSaleAddress,
         _affiliateUtilityAddress,
         _shpAddress,
-        _shpControllerAddressa,
+        _shpControllerAddress,
         _trusteeAddress,
         _dynamicCeilingAddress
     ) {
@@ -40,7 +60,7 @@ class TokenSaleControllerScript {
         this.generalSaleAddress = _generalSaleAddress;
         this.affiliateUtilityAddress = _affiliateUtilityAddress;
         this.shpAddress = _shpAddress;
-        this.shpControllerAddressa = _shpControllerAddressa;
+        this.shpControllerAddress = _shpControllerAddress;
         this.trusteeAddress = _trusteeAddress;
         this.dynamicCeilingAddress = _dynamicCeilingAddress;
         initialize();
@@ -51,7 +71,7 @@ class TokenSaleControllerScript {
         this.presaleContract = await Presale.at(preSaleAddress);
         this.generalSaleContract = await GeneralSale.at(generalSaleAddress);
         this.shpContract = await SHP.at(shpAddress);
-        this.shpControllerContract = await SHPController.at(shpControllerContract);
+        this.shpControllerContract = await SHPController.at(shpControllerAddress);
         this.trusteeContract = await Trustee.at(trusteeAddress);
         this.dynamicCeilingContract = await DynamicCeiling.at(dynamicCeilingAddress);
     }
@@ -192,4 +212,4 @@ class TokenSaleControllerScript {
     }
 
 }
-module.exports = new TokenSaleControllerScript(callback);
+module.exports = new TokenSaleControllerScript();
