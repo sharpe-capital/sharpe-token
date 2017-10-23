@@ -6,13 +6,16 @@ const SHP = artifacts.require("./SHP.sol");
 const SCD = artifacts.require("./SCD.sol");
 const AffiliateUtility = artifacts.require("./AffiliateUtility.sol");
 const DynamicCeiling = artifacts.require("./DynamicCeiling.sol");
-const Presale = artifacts.require("./SHP.sol");
+const Presale = artifacts.require("./Presale.sol");
 const SHPController = artifacts.require("./SHPController.sol");
 const TokenSale = artifacts.require("./TokenSale.sol");
 const Owned = artifacts.require("./Owned.sol");
 const SafeMath = artifacts.require("./SafeMath.sol");
 const Trustee = artifacts.require("./Trustee.sol");
 const MultiSigWallet = artifacts.require("./MultiSigWallet");
+
+// ABI GENERATOR
+var abi = require('ethereumjs-abi')
 
 // Addresses
 const masterAddress = '0x57a2925eee743a6f29997e65ea2948f296e84b08';
@@ -59,11 +62,11 @@ const affiliateTierThree = web3.toWei(1) * 1;
 //PRESALE VALUSE:
 const MIN_PRESALE_CONTRIBUTION = 1;
 const MAX_PRESALE_CONTRIBUTION = 3;
-const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 0.9;
+const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 1.4;
 const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 1.9;
 const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 3;
 const PRESALE_CAP = 10;
-const honourWhitelistEnd = new Date(2017, 10, 20, 9, 0, 0, 0).getTime();
+const honourWhitelistEnd = new Date(2017, 10, 23, 9, 0, 0, 0).getTime();
 
 //GENEARL SALE VALUES
 const MIN_GENERAL_SALE_CONTRIBUTION = 0.01;
@@ -77,7 +80,9 @@ module.exports = async function(deployer, network, accounts) {
     console.log("__________________________________________")
     console.log("deploying on network: " + network);
 
-
+    var parameterTypes = [];
+    var parameterValues = [];
+    
 
     if (network === "development") {
         return;
@@ -87,7 +92,7 @@ module.exports = async function(deployer, network, accounts) {
     let miniMeTokenFactory = await MiniMeTokenFactory.new();
     let shp = await SHP.new(miniMeTokenFactory.address);
     let shpAddress = await shp.address;
-    console.log("SHP" + "has been deployed to: " + shpAddress);
+    console.log("SHP" + " has been deployed to: " + shpAddress);
 
     //General Setup
     let etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
@@ -109,6 +114,7 @@ module.exports = async function(deployer, network, accounts) {
     let trusteeWallet = await Trustee.new(shpAddress);
     let trusteeWalletAddress = await trusteeWallet.address;
     console.log("Trustee Wallet" + " has been deployed to: " + trusteeWalletAddress );
+
     
     let shpController = await SHPController.new(reserveAddress, foundersAddress);
     let shpControllerAddress = await shpController.address;
@@ -136,7 +142,7 @@ module.exports = async function(deployer, network, accounts) {
         honourWhitelistEnd
     );
     let presaleAddress = await presale.address;
-    console.log("PreSale" + " has been deplo;yed to: " + presaleAddress )
+    console.log("PreSale" + " has been deployed to: " + presaleAddress )
 
     // General Sale
     let minContributionInWei = web3.toWei(MIN_GENERAL_SALE_CONTRIBUTION / etherPeggedValue);
@@ -154,6 +160,9 @@ module.exports = async function(deployer, network, accounts) {
     let dynamicCeiling = await DynamicCeiling.new(masterAddress,generalSaleAddress);
     let dynamicCeilingAddress = await dynamicCeiling.address;
 
+    console.log("DYNAMIC CEILIENG ABI ARGUMENTS: ", 
+    abi.rawEncode(["address","address"], [masterAddress,generalSaleAddress]).toString('hex'));
+
     await generalSale.setDynamicCeilingAddress(dynamicCeiling.address);
     console.log("Dynamic Ceiling" + " has been deployed to: " + dynamicCeilingAddress);
 
@@ -169,9 +178,61 @@ module.exports = async function(deployer, network, accounts) {
     console.log("SHPController" + " has been deployed to: " + shpControllerAddress);
     console.log("AffiliateUtility" + " has been deployed to: " + affiliateUtilityAddress);
     console.log("SHP" + "has been deployed to: " + shpAddress);
-    console.log("PreSale" + " has been deplo;yed to: " + presaleAddress )
+    console.log("PreSale" + " has been deplo;yed to: " + presaleAddress );
     console.log("GeneralSale" + " has been deployed to: " + generalSaleAddress);
     console.log("Dynamic Ceiling" + " has been deployed to: " + dynamicCeilingAddress);
-    console.log("__________________________________________")
-    console.log("__________________________________________")
+    console.log("__________________________________________");
+    console.log("__________________________________________");
+
+    console.log("__________________________________________");
+    console.log("********ABI ARGUMENTS*****");
+    console.log("__________________________________________");
+    console.log("SHP ABI ARGUMENTS: ", 
+    abi.rawEncode(["address"], [miniMeTokenFactory.address]).toString('hex'));
+   
+    console.log("TRUSTEE ABI ARGUMENTS: ", abi.rawEncode(["address"], [shpAddress]).toString('hex'));
+   
+    console.log("SHP Controller ABI ARGUMENTS: ", 
+    abi.rawEncode(["address","address"], [reserveAddress,foundersAddress]).toString('hex'));
+   
+    console.log("AFIILIATES ABI ARGUMENTS: ", 
+    abi.rawEncode(["uint256","uint256"], [affiliateTierTwo,affiliateTierThree]).toString('hex'));
+   
+    console.log("PRESALE ABI ARGUMENTS: ", 
+    abi.rawEncode(["address",
+    "address",
+    "address",
+    "address",
+    "uint256",
+    "uint256",
+    "uint256",
+    "uint256",
+    "uint256",
+    "uint256",
+    "uint256"], 
+    [etherEscrowAddress,
+        bountyWalletAddress,
+        trusteeWalletAddress,
+        affiliateUtilityAddress,
+        web3.toWei(FIRST_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
+        web3.toWei(SECOND_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
+        web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
+        web3.toWei(MIN_PRESALE_CONTRIBUTION / etherPeggedValue),
+        web3.toWei(MAX_PRESALE_CONTRIBUTION / etherPeggedValue),
+        web3.toWei(PRESALE_CAP / etherPeggedValue),
+        honourWhitelistEnd
+    ]).toString('hex'));
+    
+    console.log("GENERALSALE ABI ARGUMENTS: ", 
+    abi.rawEncode(["address",
+    "address",
+    "address",
+    "address",
+    "uint256"], 
+    [etherEscrowAddress,
+        bountyWalletAddress,
+        trusteeWalletAddress,
+        affiliateUtilityAddress,
+        minContributionInWei
+    ]).toString('hex'));
 };
