@@ -121,6 +121,7 @@ contract PreSale is TokenSale {
         isValidated
         notClosed
         notPaused
+        isApproved
     {
         address caller = msg.sender;
         processPreSale(caller);

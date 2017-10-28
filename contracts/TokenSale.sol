@@ -47,6 +47,8 @@ contract TokenSale is Owned, TokenController {
     bool public paused;
     bool public closed;
 
+    mapping(address => bool) public approvedAddresses;
+
     event Contribution(uint256 etherAmount, address _caller);
     event NewSale(address indexed caller, uint256 etherAmount, uint256 tokensGenerated);
     event SaleClosed(uint256 when);
@@ -67,6 +69,17 @@ contract TokenSale is Owned, TokenController {
         require(!isContract(msg.sender)); 
         require(tx.gasprice <= MAX_GAS_PRICE);
         _;
+    }
+
+    modifier isApproved() {
+        require(approvedAddresses[msg.sender]);
+        _;
+    }
+
+    /// @notice Adds an approved address for the sale
+    /// @param _addr The address to approve for contribution
+    function approveAddress(address _addr) public onlyOwner {
+        approvedAddresses[_addr] = true;
     }
 
     /// @notice This method sends the Ether received to the Ether escrow address

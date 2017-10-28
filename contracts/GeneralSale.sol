@@ -60,12 +60,13 @@ contract GeneralSale is TokenSale {
     }
 
     function () 
-    public 
-    payable
-    notPaused
-    notClosed
-    isValidated 
-    amountValidated
+        public 
+        payable
+        notPaused
+        notClosed
+        isValidated 
+        amountValidated
+        isApproved
     {
         uint256 contribution = msg.value;
         uint256 remaining = dynamicCeiling.availableAmountToCollect(totalEtherPaid);

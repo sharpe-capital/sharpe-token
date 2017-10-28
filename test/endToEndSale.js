@@ -55,6 +55,29 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(false, paused);
     });
 
+    it('should not accept contribution before permitted', async function() {
+        await assertFail(async function() {
+            let contribution = web3.toWei('25', 'ether');
+            await testConfig.preSale.sendTransaction({
+                value: contribution,
+                from: testConfig.contributorTwoAddress
+            });
+        });
+    });
+
+    it('should register permitted addresses', async function(){
+        await testConfig.preSale.approveAddress(testConfig.contributorOneAddress, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.preSale.approveAddress(testConfig.contributorTwoAddress, {
+            from: testConfig.ownerAddress
+        });
+        const approvedOne = await testConfig.preSale.approvedAddresses.call(testConfig.contributorOneAddress);
+        assert.equal(true, approvedOne);
+        const approvedTwo = await testConfig.preSale.approvedAddresses.call(testConfig.contributorTwoAddress);
+        assert.equal(true, approvedTwo);
+    });
+
     it('should accept whitelisted contribution', async function() {
 
         let contribution = web3.toWei('25', 'ether');
@@ -153,6 +176,19 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         let owner = await testConfig.trusteeWallet.owner();
         assert.equal(owner, testConfig.generalSale.address);
         assert.equal(controller, testConfig.generalSale.address);
+    });
+
+    it('should register permitted addresses', async function(){
+        await testConfig.generalSale.approveAddress(testConfig.contributorOneAddress, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.generalSale.approveAddress(testConfig.contributorTwoAddress, {
+            from: testConfig.ownerAddress
+        });
+        const approvedOne = await testConfig.generalSale.approvedAddresses.call(testConfig.contributorOneAddress);
+        assert.equal(true, approvedOne);
+        const approvedTwo = await testConfig.generalSale.approvedAddresses.call(testConfig.contributorTwoAddress);
+        assert.equal(true, approvedTwo);
     });
 
     it('should set the hidden dynamic ceilings', async function() {

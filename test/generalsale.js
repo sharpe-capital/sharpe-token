@@ -24,6 +24,19 @@ contract("General Sale", function(accounts) {
         );
     });
 
+    it('should register permitted addresses', async function(){
+        await testConfig.generalSale.approveAddress(testConfig.contributorOneAddress, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.generalSale.approveAddress(testConfig.contributorTwoAddress, {
+            from: testConfig.ownerAddress
+        });
+        const approvedOne = await testConfig.generalSale.approvedAddresses.call(testConfig.contributorOneAddress);
+        assert.equal(true, approvedOne);
+        const approvedTwo = await testConfig.generalSale.approvedAddresses.call(testConfig.contributorTwoAddress);
+        assert.equal(true, approvedTwo);
+    });
+
     // it('should have a Dynamic Ceiling contract linked', async function(){
     //     assert.equal(testConfig.generalSale.dynamicCeiling.address, testConfig.dynamicCeiling.address);
     // });
