@@ -31,6 +31,19 @@ contract("Presale move tokens", function(accounts) {
         );
     });
 
+    it('should register permitted addresses', async function(){
+        await testConfig.preSale.approveAddress(testConfig.contributorOneAddress, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.preSale.approveAddress(testConfig.contributorTwoAddress, {
+            from: testConfig.ownerAddress
+        });
+        const approvedOne = await testConfig.preSale.approvedAddresses.call(testConfig.contributorOneAddress);
+        assert.equal(true, approvedOne);
+        const approvedTwo = await testConfig.preSale.approvedAddresses.call(testConfig.contributorTwoAddress);
+        assert.equal(true, approvedTwo);
+    });
+
     it('should allow owner to resume the sale', async function(){
         await testConfig.preSale.resumeContribution({
             from: testConfig.ownerAddress
