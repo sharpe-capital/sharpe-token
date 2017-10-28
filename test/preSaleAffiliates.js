@@ -28,6 +28,19 @@ contract("Presale affiliate bonuses", function(accounts) {
         );
     });
 
+    it('should register permitted addresses', async function(){
+        await testConfig.preSale.approveAddress(testConfig.contributorOneAddress, {
+            from: testConfig.ownerAddress
+        });
+        await testConfig.preSale.approveAddress(testConfig.contributorTwoAddress, {
+            from: testConfig.ownerAddress
+        });
+        const approvedOne = await testConfig.preSale.approvedAddresses.call(testConfig.contributorOneAddress);
+        assert.equal(true, approvedOne);
+        const approvedTwo = await testConfig.preSale.approvedAddresses.call(testConfig.contributorTwoAddress);
+        assert.equal(true, approvedTwo);
+    });
+
     it('should whitelist an affiliate', async function() {
         await testConfig.affiliateUtility.addAffiliate(testConfig.contributorOneAddress, testConfig.contributorTwoAddress);
         const affiliate = await testConfig.affiliateUtility.getAffiliate.call(testConfig.contributorOneAddress, {
