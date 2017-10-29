@@ -152,15 +152,13 @@ class TokenSaleControllerScript {
         let i = 0;
         console.log("setting ceileings ...");
         var hashes = [];
-        // console.log();
-        // console.log(JSON.stringify(web3));
         for (let c of ceilings) {
             const h = await this.dynamicCeilingContract.calculateHash(
-                c[0],
-                c[1],
-                c[2],
-                i === ceilings.length - 1,
-                web3.sha3(c[3]), { from: MASTER });
+                web3.toWei(c.limit/etherPegvalue) ,
+                c.slope,
+                web3.toWei(c.min/etherPegvalue),
+                c.last,
+                web3.sha3(c.salt), { from: MASTER });
             hashes.push(h);
             console.log("hash " + i + " has been calculated" );
             i += 1; 
@@ -192,13 +190,13 @@ class TokenSaleControllerScript {
     }
 
     //Reveal Ceilings
-    async revealCeiling(ceiling, isLast) {
+    async revealCeiling(ceiling) {
         await this.dynamicCeilingContract.revealCeiling(
-            ceiling[0],
-            ceiling[1],
-            ceiling[2],
-            isLast,
-            web3.sha3(ceiling[3]), { from: MASTER, gas: 1000000});
+            web3.toWei(ceiling.limit/etherPegvalue),
+            ceiling.slope,
+            web3.toWei(ceiling.limit/etherPegvalue),
+            ceiling.last,
+            web3.sha3(ceiling.salt), { from: MASTER, gas: 1000000});
     }
 
     //Transfer Ownershipt to SHPController

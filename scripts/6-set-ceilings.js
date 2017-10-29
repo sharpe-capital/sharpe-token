@@ -1,11 +1,11 @@
 var sc = require('./script')
-var randomHashes = ["eweaqeqweqwewe","aweqweqweqwesd","qweqweqweads","qweqweqweas","qweqweqweahd"];
+const ceilingsJSON = require('./ceilings.json');
+
 module.exports = async function(callback) {
-    var ceilings = [
-        [7000000000000000000, 1, 10 ** 12, "1"],
-        [15000000000000000000, 1, 10 ** 12, "2"]
-    ];
+    var ceilings = [ceilingsJSON.first, ceilingsJSON.second, ceilingsJSON.third];
+    var randomHashes = [ceilingsJSON.random1, ceilingsJSON.random2,ceilingsJSON.random3,ceilingsJSON.random4];
+    
     await sc.initialize();
-    await sc.setCeilings(ceilings, randomHashes);
+    await sc.setCeilings(ceilings);
     console.log("CEILINGS HAVE BEEN SET");
 }

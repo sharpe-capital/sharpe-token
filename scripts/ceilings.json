@@ -1,0 +1,27 @@
+{
+    "first": {
+            "limit": 8000000,
+            "slope": 90,
+            "min": 75000,
+            "salt": "6e760cbbd27ad590157388f976770c51b02048d3",
+            "last": false
+        },
+        "second": {
+            "limit": 11000000,
+            "slope": 60,
+            "min": 20000,
+            "salt": "c35b125324da436d9870d5264762e9b8b9c985f2",
+            "last": false
+        },
+        "third": {
+            "limit": 12000000,
+            "slope": 30,
+            "min": 500,
+            "salt": "718d94b142a5fa28a9045c9be47cee95a793e446",
+            "last": true
+        },
+        "random1": "2f99836b06df2b2b9c2eb9fb5304df336167d9bd5fd261827c2c1ce1617706785cacba57a48be4948ee406c69feb3501e5fe8880a7fa9e4b9f2fa72796a4a8cb",
+        "random2": "b14484efba457c4a1e3875103ccf3359e1dc18571c4ad83705ff521f262f1a743f3e9f23696e0400451f0c998bd823eca84510e67ac2db28902d4c1b7abc85b6",
+        "random3": "e5898ce63b5ca6f0d68341d6e6d4feff6717a8a342a8ded5baf466e69673d57556d62fd90d1be60f42c307ee46d0024a7d1b788823e3f1870d0b88b9464bb917",
+        "random4": "48e3ab8a82344ace100a64d6619428cfbded1bc025d51bb111cd7afab6022b186a73c73f1a38619db4d452000411b6580a09f114edc0cdcbe8f68273156357f7"
+} 
