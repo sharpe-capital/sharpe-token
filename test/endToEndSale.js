@@ -166,7 +166,6 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         );
     });
 
-
     it('should transfer ownership to the general sale', async function() {
         await testConfig.preSale.transferOwnership(testConfig.generalSale.address, testConfig.generalSale.address, {
             from: testConfig.ownerAddress
