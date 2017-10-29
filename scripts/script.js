@@ -2,8 +2,7 @@ let Web3 = require('web3');
 var provider = new Web3.providers.HttpProvider("http://52.210.215.150:8545")
 let contract = require('truffle-contract')
 const web3 = new Web3();
-// const sha3 = require('solidity-sha3');
-
+    
 const MiniMeTokenFactory = contract(require('../build/contracts/MiniMeTokenFactory'));
 const MiniMeToken = contract(require('../build/contracts/MiniMeToken.json'));
 const GeneralSale = contract(require('../build/contracts/GeneralSale.json'));
@@ -33,16 +32,19 @@ SafeMath.setProvider(provider);
 Trustee.setProvider(provider);
 MultiSigWallet.setProvider(provider);
 
+const Config = require("./deployed_addresses.json");
 
-const MASTER = "0x57a2925eee743a6f29997e65ea2948f296e84b08";
+const MASTER = Config.master;
 
-var preSaleAddress = "0x2af6ce8e288efbee68c601b7cda01113c84a5f18";
-var generalSaleAddress = "0xf5f19bf6f21f2312a81277b71f103a874c306a76";
-var affiliateUtilityAddress = "0x6d6b07a4d9032cf854e4b9b582f71b2f104bb4af";
-var shpAddress = "0x52e76ec72458781004a2505da909418947adde9c";
-var shpControllerAddress = "0xd7720a32c4863d3cfedeefc7bf4b9c408009f3d8";
-var trusteeAddress = "0xd911346ce1143f9ebc7d17bd973c366b99ffe3db";
-var dynamicCeilingAddress = "0x5e1618864a1f4c7a1cf43d4d1f69f02f0b28068d";
+const preSaleAddress = Config.preSaleAddress; ;
+const generalSaleAddress = Config.generalSaleAddress;
+const affiliateUtilityAddress = Config.affiliateUtilityAddress;
+const shpAddress = Config.shpAddress;
+const shpControllerAddress = Config.shpControllerAddress;
+const trusteeAddress = Config.trusteeAddress;
+const dynamicCeilingAddress = Config.dynamicCeilingAddress;
+
+const etherPegvalue = Config.etherPegvalue;
 
 class TokenSaleControllerScript {
     constructor() { }
@@ -95,7 +97,7 @@ class TokenSaleControllerScript {
         for (var wl of whiteListItems) {
             await this.preSaleContract.addToWhitelist(
                 wl.address,
-                wl.value, {
+                web3.toWei(wl.amount/etherPegvalue), {
                     from: MASTER
                 }
             );

@@ -1,0 +1,11 @@
+{
+    "master" : "0x57a2925eee743a6f29997e65ea2948f296e84b08",
+    "preSaleAddress" : "0x2af6ce8e288efbee68c601b7cda01113c84a5f18",
+    "generalSaleAddress" : "0xf5f19bf6f21f2312a81277b71f103a874c306a76",
+    "affiliateUtilityAddress" : "0x6d6b07a4d9032cf854e4b9b582f71b2f104bb4af",
+    "shpAddress" : "0x52e76ec72458781004a2505da909418947adde9c",
+    "shpControllerAddress" : "0xd7720a32c4863d3cfedeefc7bf4b9c408009f3d8",
+    "trusteeAddress" : "0xd911346ce1143f9ebc7d17bd973c366b99ffe3db",
+    "dynamicCeilingAddress" : "0x5e1618864a1f4c7a1cf43d4d1f69f02f0b28068d",
+    "etherPegvalue": 400
+}

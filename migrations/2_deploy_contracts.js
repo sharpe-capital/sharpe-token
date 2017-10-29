@@ -14,15 +14,24 @@ const SafeMath = artifacts.require("./SafeMath.sol");
 const Trustee = artifacts.require("./Trustee.sol");
 const MultiSigWallet = artifacts.require("./MultiSigWallet");
 
+//Keys
+const Keys = require("./keys.json");
+
 // ABI GENERATOR
 var abi = require('ethereumjs-abi')
 
 // Addresses
-const masterAddress = '0x57a2925eee743a6f29997e65ea2948f296e84b08';
-const escrowSignAddress = '0x0f586d0a27E28784312245a11b66F3011a0af27C';
-const bountySignAddress = `0x7620DA4995f170314b71421E2b22111FEF0E6f97`;
-const foundersSignAddress = `0x3Ec07aee1F9d104C9C930e41BE0f523446c49490`;
-const reserveSignAddress = `0xFC553eA109CF4b8fbD0174d6395f1319C71A88ee`;
+const masterAddress = Keys.master; 
+const bountyAddresses = [Keys.bounty.i,Keys.bounty.a,Keys.bounty.j,Keys.bounty.l];
+const bountyRequiredSigs = Keys.bounty.req;
+const ethAddresses = [Keys.ether.i,Keys.ether.j,Keys.ether.l,Keys.ether.bcs1,Keys.ether.bcs2,Keys.ether.bcs3];
+const ethRequiredSigs = Keys.ether.req;
+const foundersAddresses = [Keys.founders.i,Keys.founders.a,Keys.founders.j,Keys.founders.l];
+const foundersRequiredSigs = Keys.founders.req;
+const reserveAddresses = [Keys.reserve.i,Keys.reserve.j,Keys.reserve.l,Keys.reserve.taas];
+const reserveRequiredSigs = Keys.reserve.req;
+
+
 
 /////////
 //// Live Values
@@ -31,8 +40,8 @@ const reserveSignAddress = `0xFC553eA109CF4b8fbD0174d6395f1319C71A88ee`;
 // const etherPeggedValue = 400;
 
 // // Affiliate Tiers
-// const affiliateTierTwo = web3.toWei(1) * (3000 / 300);
-// const affiliateTierThree = web3.toWei(1) * (6000 / 300);
+// const affiliateTierTwo = web3.toWei(1) * (3000 / etherPeggedValue);
+// const affiliateTierThree = web3.toWei(1) * (6000 / etherPeggedValue);
 
 // //PRESALE VALUSE:
 // const MIN_PRESALE_CONTRIBUTION = 10000;
@@ -75,6 +84,19 @@ const GENERAL_SALE_HARDCAP = 15;
 
 module.exports = async function(deployer, network, accounts) {
 
+    console.log("ADRESSES");
+    console.log("------------------------------")
+    console.log("masterAddress", masterAddress);
+    console.log("bountyAddresses", bountyAddresses);
+    console.log("bountyRequiredSigs", bountyRequiredSigs);
+    console.log("ethAddresses", ethAddresses);
+    console.log("ethRequiredSigs", ethRequiredSigs);
+    console.log("foundersAddresses", foundersAddresses);
+    console.log("foundersRequiredSigs", foundersRequiredSigs);
+    console.log("reserveAddresses", reserveAddresses);
+    console.log("reserveRequiredSigs", reserveRequiredSigs);
+    console.log("------------------------------")
+
     console.log("__________________________________________")
     console.log("*************Begin Migration**************")
     console.log("__________________________________________")
@@ -84,9 +106,9 @@ module.exports = async function(deployer, network, accounts) {
     var parameterValues = [];
     
 
-    if (network === "development") {
-        return;
-    }
+    // if (network === "development") {
+    //     return;
+    // }
 
     //SHP Token
     let miniMeTokenFactory = await MiniMeTokenFactory.new();
@@ -95,19 +117,19 @@ module.exports = async function(deployer, network, accounts) {
     console.log("SHP" + " has been deployed to: " + shpAddress);
 
     //General Setup
-    let etherEscrowWallet = await MultiSigWallet.new([escrowSignAddress], 1);
+    let etherEscrowWallet = await MultiSigWallet.new(ethAddresses, ethRequiredSigs);
     let etherEscrowAddress = await etherEscrowWallet.address;
     console.log("Ether Escrow Wallet" + " has been deployed to: " + etherEscrowAddress);
 
-    let bountyWallet = await MultiSigWallet.new([bountySignAddress], 1);
+    let bountyWallet = await MultiSigWallet.new(bountyAddresses, bountyRequiredSigs);
     let bountyWalletAddress = await bountyWallet.address;
     console.log("bountyWallet" + " has been deployed to: " + bountyWalletAddress );
 
-    let foundersWallet = await MultiSigWallet.new([foundersSignAddress], 1);
+    let foundersWallet = await MultiSigWallet.new(foundersAddresses, foundersRequiredSigs);
     let foundersAddress = await foundersWallet.address;
     console.log("Founders Wallet" + " has been deployed to: " + foundersAddress);
 
-    let reserveWallet = await MultiSigWallet.new([reserveSignAddress], 1);
+    let reserveWallet = await MultiSigWallet.new(reserveAddresses, reserveRequiredSigs);
     let reserveAddress = await reserveWallet.address;
     console.log("Reserve Wallet" + " has been deployed to: " + reserveAddress );
 

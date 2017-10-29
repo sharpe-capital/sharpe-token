@@ -1,0 +1,41 @@
+{
+    "master": "0xab7802165732d11fa921863e6868eb03f33eda54",
+   
+    "bounty":{
+        "l":"0x1b6bdae737d07eee36eba759a78e38dd1af17820",
+        "i":"0ebd51d99384e6eb7cdb170bc6c5d25c14993784",
+        "j":"0xd03B95Fc6C04AdBb0262701F9fD18a5E0A1Ba0E9",
+        "a":"0xd31d50e708ccf84c62d0062db7b543542448da44",
+        "req": 2,
+        "total": 4
+    },
+    
+    "ether":{
+        "l":"0x714f4f7d7d1c47fc52ffcd8a007ec6dde69093ad",
+        "i":"0x0",
+        "j":"0xD62C55Fb8B5711779a47316F5d534b2Fc285De63",
+        "bcs1":"0x0",
+        "bcs2":"0x0",
+        "bcs3":"0x0",
+        "req": 4,
+        "total": 6
+    },
+    
+    "founders":{
+        "l":"0xd3764c143091b8333ba6d3ec38ffb5d6cc3f11c5",
+        "i":"0x0",
+        "j":"0xa614C623ec832dbFd1de3B18DAD6C5f81a256458",
+        "a":"0x7d4ec8387e2b53df8dc8672e789fdb498339237d",
+        "req": 2,
+        "total": 4
+    },
+    
+    "reserve":{
+        "l":"0x39fe42ff205e164080677772e3694e3f06474b9a",
+        "i":"",
+        "j":"0xcc34D1797aEB3d43E13F8b594d28A2b113320F1A",
+        "taas":"0x742e99Ed26a67C95969431c3b390d694A5b46708",
+        "req": 2,
+        "total": 4
+    }
+}
