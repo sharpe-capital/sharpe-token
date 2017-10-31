@@ -1,4 +1,4 @@
-pragma solidity 0.4.17;
+pragma solidity 0.4.15;
 
 /*
     This Contract has been adopted, with slight modifications, from the 

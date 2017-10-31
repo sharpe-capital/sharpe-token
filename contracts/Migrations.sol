@@ -1,4 +1,4 @@
-pragma solidity 0.4.17;
+pragma solidity 0.4.15;
 
 /*    
     This program is free software: you can redistribute it and/or modify

@@ -105,10 +105,9 @@ module.exports = async function(deployer, network, accounts) {
     var parameterTypes = [];
     var parameterValues = [];
     
-
-    // if (network === "development") {
-    //     return;
-    // }
+    if(network == "coverage" || network == "development") {
+        return;
+    }
 
     //SHP Token
     let miniMeTokenFactory = await MiniMeTokenFactory.new();

@@ -4,6 +4,10 @@ module.exports = function(deployer, network, accounts) {
     console.log("DEPLOY", deployer);
     console.log("NETWORK",network);
 
+    if(network == "coverage" || network == "development") {
+        return;
+    }
+
     web3.personal.unlockAccount("0x167b7133b1caa3ce98a911df67c3f760889a37be", "", 0);
 
     function checkAllBalances() {
