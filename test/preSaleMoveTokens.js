@@ -33,10 +33,10 @@ contract("Presale move tokens", function(accounts) {
 
     it('should register permitted addresses', async function(){
         await testConfig.preSale.approveAddress(testConfig.contributorOneAddress, {
-            from: testConfig.ownerAddress
+            from: testConfig.apiAddress
         });
         await testConfig.preSale.approveAddress(testConfig.contributorTwoAddress, {
-            from: testConfig.ownerAddress
+            from: testConfig.apiAddress
         });
         const approvedOne = await testConfig.preSale.approvedAddresses.call(testConfig.contributorOneAddress);
         assert.equal(true, approvedOne);

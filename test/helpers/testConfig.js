@@ -1,5 +1,5 @@
-const Presale = artifacts.require("PreSale");
-const GeneralSale = artifacts.require("GeneralSale");
+const Presale = artifacts.require("SharpePresale");
+const GeneralSale = artifacts.require("SharpeCrowdsale");
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const SHP = artifacts.require("SHP");
 const SCD = artifacts.require("SCD");
@@ -27,6 +27,7 @@ class TestConfig {
         this.foundersSignAddress = accounts[5];
         this.masterAddress = accounts[6];
         this.bountySignAddress = accounts[7];
+        this.apiAddress = accounts[7];
 
         this.miniMeTokenFactory = await MiniMeTokenFactory.new();
         this.ownerAddress = accounts[0];
@@ -74,6 +75,7 @@ class TestConfig {
             this.bountyWallet.address,
             this.trusteeWallet.address,
             this.affiliateUtility.address,
+            this.apiAddress,
             this.minContributionInWei);
 
         if (includeGeneral) {
@@ -149,6 +151,7 @@ class TestConfig {
             this.bountyWallet.address,
             this.trusteeWallet.address,
             this.affiliateUtility.address,
+            this.apiAddress,
             this.firstTierDiscountUpperLimitEther,
             this.secondTierDiscountUpperLimitEther,
             this.thirdTierDiscountUpperLimitEther,

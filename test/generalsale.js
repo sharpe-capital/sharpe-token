@@ -26,10 +26,10 @@ contract("General Sale", function(accounts) {
 
     it('should register permitted addresses', async function(){
         await testConfig.generalSale.approveAddress(testConfig.contributorOneAddress, {
-            from: testConfig.ownerAddress
+            from: testConfig.apiAddress
         });
         await testConfig.generalSale.approveAddress(testConfig.contributorTwoAddress, {
-            from: testConfig.ownerAddress
+            from: testConfig.apiAddress
         });
         const approvedOne = await testConfig.generalSale.approvedAddresses.call(testConfig.contributorOneAddress);
         assert.equal(true, approvedOne);
