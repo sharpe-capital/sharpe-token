@@ -22,7 +22,7 @@ module.exports = {
             network_id: 1,
             host: "34.251.44.7",
             port: 8545,
-            gas: 40000000,
+            gas: 4000000,
             gasPrice: 20e9,
         },
         coverage: {

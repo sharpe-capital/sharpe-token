@@ -34,6 +34,7 @@ contract TokenSale is Owned, TokenController {
     address public etherEscrowAddress;
     address public bountyAddress;
     address public trusteeAddress;
+    address public apiAddress;
 
     uint256 public founderTokenCount = 0;
     uint256 public reserveTokenCount = 0;
@@ -63,6 +64,11 @@ contract TokenSale is Owned, TokenController {
         _;
     }
 
+    modifier onlyApi() {
+        require(msg.sender == apiAddress);
+        _;
+    }
+
     modifier isValidated() {
         require(msg.sender != 0x0);
         require(msg.value > 0);
@@ -78,7 +84,7 @@ contract TokenSale is Owned, TokenController {
 
     /// @notice Adds an approved address for the sale
     /// @param _addr The address to approve for contribution
-    function approveAddress(address _addr) public onlyOwner {
+    function approveAddress(address _addr) public onlyApi {
         approvedAddresses[_addr] = true;
     }
 
@@ -137,11 +143,13 @@ contract TokenSale is Owned, TokenController {
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
-        address _affiliateUtilityAddress
+        address _affiliateUtilityAddress,
+        address _apiAddress
     ) {
         etherEscrowAddress = _etherEscrowAddress;
         bountyAddress = _bountyAddress;
         trusteeAddress = _trusteeAddress;
+        apiAddress = _apiAddress;
         affiliateUtility = AffiliateUtility(_affiliateUtilityAddress);
         trustee = Trustee(_trusteeAddress);
         paused = true;

@@ -5,12 +5,12 @@ const web3 = new Web3();
     
 const MiniMeTokenFactory = contract(require('../build/contracts/MiniMeTokenFactory'));
 const MiniMeToken = contract(require('../build/contracts/MiniMeToken.json'));
-const GeneralSale = contract(require('../build/contracts/GeneralSale.json'));
+const GeneralSale = contract(require('../build/contracts/SharpeCrowdsale.json'));
 const SHP = contract(require('../build/contracts/SHP.json'));
 const SCD = contract(require('../build/contracts/SCD.json'));
 const AffiliateUtility = contract(require('../build/contracts/AffiliateUtility.json'));
 const DynamicCeiling = contract(require('../build/contracts/DynamicCeiling.json'));
-const Presale = contract(require('../build/contracts/Presale.json'));
+const Presale = contract(require('../build/contracts/SharpePresale.json'));
 const SHPController = contract(require('../build/contracts/SHPController.json'));
 const TokenSale = contract(require('../build/contracts/TokenSale.json'));
 const Owned = contract(require('../build/contracts/Owned.json'));

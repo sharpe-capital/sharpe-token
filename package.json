@@ -17,7 +17,7 @@
     "ethereumjs-testrpc": "^4.1.1",
     "ethereumjs-testrpc-sc": "git+https://github.com/sc-forks/testrpc-sc.git",
     "random-bytes": "^1.0.0",
-    "solc": "^0.4.17",
+    "solc": "0.4.15",
     "solidity-coverage": "^0.2.7",
     "solidity-parser": "^0.4.0",
     "truffle": "^3.4.9",

@@ -22,7 +22,7 @@ import "./SHP.sol";
 import "./SCD.sol";
 
 
-contract PreSale is TokenSale {
+contract SharpePresale is TokenSale {
     using SafeMath for uint256;
  
     mapping(address => uint256) public whitelist;
@@ -74,11 +74,12 @@ contract PreSale is TokenSale {
     /// @param _maxPresaleContributionEther Upper contribution range (WEI)
     /// @param _preSaleCap Presale cap (WEI)
     /// @param _honourWhitelistEnd End time of whitelist period
-    function PreSale(
+    function SharpePresale(
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
         address _affiliateUtilityAddress,
+        address _apiAddress,
         uint256 _firstTierDiscountUpperLimitEther,
         uint256 _secondTierDiscountUpperLimitEther,
         uint256 _thirdTierDiscountUpperLimitEther,
@@ -90,7 +91,8 @@ contract PreSale is TokenSale {
             _etherEscrowAddress,
             _bountyAddress,
             _trusteeAddress,
-            _affiliateUtilityAddress
+            _affiliateUtilityAddress,
+            _apiAddress
         )
     {
         honourWhitelistEnd = _honourWhitelistEnd;

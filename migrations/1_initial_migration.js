@@ -8,11 +8,11 @@ module.exports = function(deployer, network, accounts) {
         return;
     }
 
-    web3.personal.unlockAccount("0x167b7133b1caa3ce98a911df67c3f760889a37be", "", 0);
+    web3.personal.unlockAccount("0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3", "", 0);
 
     function checkAllBalances() {
             var totalBal = 0;
-        web3.fromWei(web3.eth.getBalance('0x167b7133b1caa3ce98a911df67c3f760889a37be'),'ether').toString(10)
+        web3.fromWei(web3.eth.getBalance('0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3'),'ether').toString(10)
         for (var acctNum in accounts) {
             var acct = accounts[acctNum];
             var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");

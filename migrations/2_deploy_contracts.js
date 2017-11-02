@@ -1,12 +1,12 @@
 // Contracts:
 const MiniMeTokenFactory = artifacts.require("MiniMeTokenFactory");
 const MiniMeToken = artifacts.require("./MiniMeToken.sol");
-const GeneralSale = artifacts.require("./GeneralSale.sol");
+const SharpeCrowdsale = artifacts.require("./SharpeCrowdsale.sol");
 const SHP = artifacts.require("./SHP.sol");
 const SCD = artifacts.require("./SCD.sol");
 const AffiliateUtility = artifacts.require("./AffiliateUtility.sol");
 const DynamicCeiling = artifacts.require("./DynamicCeiling.sol");
-const Presale = artifacts.require("./Presale.sol");
+const SharpePresale = artifacts.require("./SharpePresale.sol");
 const SHPController = artifacts.require("./SHPController.sol");
 const TokenSale = artifacts.require("./TokenSale.sol");
 const Owned = artifacts.require("./Owned.sol");
@@ -22,11 +22,12 @@ var abi = require('ethereumjs-abi')
 
 // Addresses
 const masterAddress = Keys.master; 
-const bountyAddresses = [Keys.bounty.i,Keys.bounty.a,Keys.bounty.j,Keys.bounty.l];
+const apiAddress = Keys.api;
+const bountyAddresses = [Keys.bounty.i,Keys.bounty.j,Keys.bounty.l];
 const bountyRequiredSigs = Keys.bounty.req;
-const ethAddresses = [Keys.ether.i,Keys.ether.j,Keys.ether.l,Keys.ether.bcs1,Keys.ether.bcs2,Keys.ether.bcs3];
+const ethAddresses = [Keys.ether.i,Keys.ether.j,Keys.ether.l,Keys.ether.taas];
 const ethRequiredSigs = Keys.ether.req;
-const foundersAddresses = [Keys.founders.i,Keys.founders.a,Keys.founders.j,Keys.founders.l];
+const foundersAddresses = [Keys.founders.i,Keys.founders.j,Keys.founders.l];
 const foundersRequiredSigs = Keys.founders.req;
 const reserveAddresses = [Keys.reserve.i,Keys.reserve.j,Keys.reserve.l,Keys.reserve.taas];
 const reserveRequiredSigs = Keys.reserve.req;
@@ -36,51 +37,48 @@ const reserveRequiredSigs = Keys.reserve.req;
 /////////
 //// Live Values
 ////////
-// // Ether to Dollar Value
-// const etherPeggedValue = 400;
+// Ether to Dollar Value
+const etherPeggedValue = 300;
 
-// // Affiliate Tiers
-// const affiliateTierTwo = web3.toWei(1) * (3000 / etherPeggedValue);
-// const affiliateTierThree = web3.toWei(1) * (6000 / etherPeggedValue);
+// Affiliate Tiers
+const affiliateTierTwo = web3.toWei(1) * (20000 / etherPeggedValue);
+const affiliateTierThree = web3.toWei(1) * (50000 / etherPeggedValue);
 
-// //PRESALE VALUSE:
-// const MIN_PRESALE_CONTRIBUTION = 10000;
-// const MAX_PRESALE_CONTRIBUTION = 1000000;
-// const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
-// const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
-// const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 1000000;
-// const PRESALE_CAP = 10000000;
-// const honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+//PRESALE VALUSE:
+const MIN_PRESALE_CONTRIBUTION = 10000;
+const MAX_PRESALE_CONTRIBUTION = 500000;
+const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
+const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
+const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 500000;
+const PRESALE_CAP = 8000000;
+const honourWhitelistEnd = new Date(2017, 10, 8, 13, 59, 59, 0).getTime();
 
-// //GENEARL SALE VALUES
-// const MIN_GENERAL_SALE_CONTRIBUTION = 100;
-// const MAX_GENERAL_SALE_CONTRIBUTION = 1000;
-// const GENERAL_SALE_HARDCAP = 4400;
-
+//GENEARL SALE VALUES
+const MIN_GENERAL_SALE_CONTRIBUTION = 100;
 
 
 /////////
 //// Test Values
 ////////
-const etherPeggedValue = 1;
+// const etherPeggedValue = 1;
 
-// Affiliate Tiers
-const affiliateTierTwo = web3.toWei(1) * 0.5;
-const affiliateTierThree = web3.toWei(1) * 1;
+// // Affiliate Tiers
+// const affiliateTierTwo = web3.toWei(1) * 0.5;
+// const affiliateTierThree = web3.toWei(1) * 1;
 
-//PRESALE VALUSE:
-const MIN_PRESALE_CONTRIBUTION = 1;
-const MAX_PRESALE_CONTRIBUTION = 3;
-const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 1.4;
-const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 1.9;
-const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 3;
-const PRESALE_CAP = 10;
-const honourWhitelistEnd = new Date(2017, 10, 23, 9, 0, 0, 0).getTime();
+// //PRESALE VALUSE:
+// const MIN_PRESALE_CONTRIBUTION = 1;
+// const MAX_PRESALE_CONTRIBUTION = 3;
+// const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 1.4;
+// const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 1.9;
+// const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 3;
+// const PRESALE_CAP = 10;
+// const honourWhitelistEnd = new Date(2017, 10, 23, 9, 0, 0, 0).getTime();
 
-//GENEARL SALE VALUES
-const MIN_GENERAL_SALE_CONTRIBUTION = 0.01;
-const MAX_GENERAL_SALE_CONTRIBUTION = 3;
-const GENERAL_SALE_HARDCAP = 15;
+// //GENEARL SALE VALUES
+// const MIN_GENERAL_SALE_CONTRIBUTION = 0.01;
+// const MAX_GENERAL_SALE_CONTRIBUTION = 3;
+// const GENERAL_SALE_HARDCAP = 15;
 
 module.exports = async function(deployer, network, accounts) {
 
@@ -149,11 +147,12 @@ module.exports = async function(deployer, network, accounts) {
     await shpController.setContracts(shp.address, trusteeWalletAddress);
 
     //Presale
-    let presale = await Presale.new(
+    let presale = await SharpePresale.new(
         etherEscrowAddress,
         bountyWalletAddress,
         trusteeWalletAddress,
         affiliateUtilityAddress,
+        apiAddress,
         web3.toWei(FIRST_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(SECOND_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
@@ -168,11 +167,12 @@ module.exports = async function(deployer, network, accounts) {
     // General Sale
     let minContributionInWei = web3.toWei(MIN_GENERAL_SALE_CONTRIBUTION / etherPeggedValue);
    
-    let generalSale = await GeneralSale.new(
+    let generalSale = await SharpeCrowdsale.new(
         etherEscrowAddress,
         bountyWalletAddress,
         trusteeWalletAddress,
         affiliateUtilityAddress,
+        apiAddress,
         minContributionInWei);
     
     let generalSaleAddress = await generalSale.address;
@@ -183,6 +183,18 @@ module.exports = async function(deployer, network, accounts) {
 
     console.log("DYNAMIC CEILIENG ABI ARGUMENTS: ", 
     abi.rawEncode(["address","address"], [masterAddress,generalSaleAddress]).toString('hex'));
+
+    console.log("FOUNDERS MULTISIG ABI ARGUMENTS: ", 
+    abi.rawEncode(["address[]","uint"], [foundersAddresses,foundersRequiredSigs]).toString('hex'));
+
+    console.log("RESERVE MULTISIG ABI ARGUMENTS: ", 
+    abi.rawEncode(["address[]","uint"], [reserveAddresses,reserveRequiredSigs]).toString('hex'));
+
+    console.log("ETHER MULTISIG ABI ARGUMENTS: ", 
+    abi.rawEncode(["address[]","uint"], [ethAddresses,ethRequiredSigs]).toString('hex'));
+
+    console.log("BOUNTY MULTISIG ABI ARGUMENTS: ", 
+    abi.rawEncode(["address[]","uint"], [bountyAddresses,bountyRequiredSigs]).toString('hex'));
 
     await generalSale.setDynamicCeilingAddress(dynamicCeiling.address);
     console.log("Dynamic Ceiling" + " has been deployed to: " + dynamicCeilingAddress);
@@ -216,8 +228,8 @@ module.exports = async function(deployer, network, accounts) {
     console.log("SHP Controller ABI ARGUMENTS: ", 
     abi.rawEncode(["address","address"], [reserveAddress,foundersAddress]).toString('hex'));
    
-    console.log("AFIILIATES ABI ARGUMENTS: ", 
-    abi.rawEncode(["uint256","uint256"], [affiliateTierTwo,affiliateTierThree]).toString('hex'));
+    // console.log("AFIILIATES ABI ARGUMENTS: ", 
+    // abi.rawEncode(["uint256","uint256"], [affiliateTierTwo,affiliateTierThree]).toString('hex'));
    
     console.log("PRESALE ABI ARGUMENTS: ", 
     abi.rawEncode(["address",
@@ -235,6 +247,7 @@ module.exports = async function(deployer, network, accounts) {
         bountyWalletAddress,
         trusteeWalletAddress,
         affiliateUtilityAddress,
+        apiAddress,
         web3.toWei(FIRST_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(SECOND_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
@@ -254,6 +267,7 @@ module.exports = async function(deployer, network, accounts) {
         bountyWalletAddress,
         trusteeWalletAddress,
         affiliateUtilityAddress,
+        apiAddress,
         minContributionInWei
     ]).toString('hex'));
 };

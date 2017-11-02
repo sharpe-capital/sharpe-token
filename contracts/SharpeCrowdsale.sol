@@ -20,7 +20,7 @@ import "./TokenSale.sol";
 import "./DynamicCeiling.sol";
 
 
-contract GeneralSale is TokenSale {
+contract SharpeCrowdsale is TokenSale {
 
     uint256 public totalEtherPaid = 0;
     uint256 public minContributionInWei;
@@ -39,17 +39,19 @@ contract GeneralSale is TokenSale {
     /// @param _trusteeAddress the address that will hold the vesting SHP
     /// @param _affiliateUtilityAddress address of the deployed AffiliateUtility contract.
     /// @param _minContributionInWei minimum amount to contribution possilble
-    function GeneralSale( 
+    function SharpeCrowdsale( 
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
         address _affiliateUtilityAddress,
+        address _apiAddress,
         uint256 _minContributionInWei) 
         TokenSale (
         _etherEscrowAddress,
         _bountyAddress,
         _trusteeAddress,
-        _affiliateUtilityAddress) 
+        _affiliateUtilityAddress,
+        _apiAddress) 
     {
         minContributionInWei = _minContributionInWei;
         saleAddress = address(this);
