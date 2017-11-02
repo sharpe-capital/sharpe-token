@@ -17,18 +17,18 @@
     "ethereumjs-testrpc": "^4.1.1",
     "ethereumjs-testrpc-sc": "git+https://github.com/sc-forks/testrpc-sc.git",
     "random-bytes": "^1.0.0",
-    "solc": "0.4.15",
+    "solc": "^0.4.18",
     "solidity-coverage": "^0.2.7",
     "solidity-parser": "^0.4.0",
-    "truffle": "^3.4.9",
-    "truffle-hdwallet-provider": "0.0.3",
+    "truffle-hdwallet-provider": "^0.0.3",
     "web3": "^0.19.1"
   },
   "dependencies": {
     "ethereumjs-abi": "^0.6.4",
     "jsonfile": "^3.0.1",
     "solidity-sha3": "^0.4.1",
-    "truffle-contract": "^3.0.0"
+    "truffle": "^4.0.1",
+    "truffle-contract": "^3.0.1"
   },
   "main": "truffle.js",
   "directories": {
