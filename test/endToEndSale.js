@@ -110,7 +110,7 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
         assert.equal(preSaleEtherPaid, web3.toWei(25));
 
         let whitelistedPlannedContributions = (await testConfig.preSale.whitelistedPlannedContributions()).toNumber();
-        assert.equal(whitelistedPlannedContributions, web3.toWei(25));
+        assert.equal(whitelistedPlannedContributions, web3.toWei(0));
     });
 
     // it('should accept non-whitelisted contribution', async function() {

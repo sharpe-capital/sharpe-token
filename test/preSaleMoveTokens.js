@@ -85,7 +85,7 @@ contract("Presale move tokens", function(accounts) {
         assert.equal(preSaleEtherPaid, web3.toWei(25));
     
         let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
-        assert.equal(preSaleCap, web3.toWei(75));
+        assert.equal(preSaleCap, web3.toWei(50));
     });
 
     it('should not be able to transfer ownership when sale is open', async function() {
