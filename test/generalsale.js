@@ -2,6 +2,7 @@ const assertFail = require("./helpers/assertFail");
 const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
 const assertions = require("./helpers/assertions");
+const time = require("./helpers/time");
 
 contract("General Sale", function(accounts) {
 
@@ -22,6 +23,8 @@ contract("General Sale", function(accounts) {
                 minContributionInWei: minContribution
             }
         );
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should register permitted addresses', async function(){

@@ -1,5 +1,6 @@
 const AffiliateUtility = artifacts.require("AffiliateUtility");
 const assertFail = require("./helpers/assertFail");
+const time = require("./helpers/time");
 
 contract("AffiliateUtility", function(accounts) {
     const ownerAddress = accounts[0];
@@ -21,6 +22,8 @@ contract("AffiliateUtility", function(accounts) {
     before(async function() {
         const tiers = getTiers(300);
         affiliateUtility = await AffiliateUtility.new(tiers.twoMin, tiers.threeMin);
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should not allow non-owner to set the tiers', async function() {

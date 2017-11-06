@@ -1,5 +1,6 @@
 const DynamicCeiling = artifacts.require("DynamicCeiling");
 const assertFail = require("./helpers/assertFail");
+const time = require("./helpers/time");
 
 contract("DynamicCeiling", function (accounts) {
     const ownerAddress = accounts[0];
@@ -35,6 +36,9 @@ contract("DynamicCeiling", function (accounts) {
             hashes.push(web3.sha3(`pwd${i}`));
         }
         console.log("HASHES", hashes);
+
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should not allow non-owner to set the ceilings', async function () {

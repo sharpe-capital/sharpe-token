@@ -32,6 +32,8 @@ contract("Presale whitelist extended", function(accounts) {
                 thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
             }
         );
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should register permitted addresses', async function(){
@@ -77,18 +79,18 @@ contract("Presale whitelist extended", function(accounts) {
         await testConfig.preSale.sendTransaction({
                 value: plannedContribution,
                 from: testConfig.contributorOneAddress
+            })
+            .then(result => {
+                eventsUtil.eventValidator(
+                    result, {
+                        name: "AllowedContributionCheck",
+                        args: {
+                            contribution: web3.toWei('25', 'ether'),
+                            allowedContributionState: 0
+                        }
+                    }
+                );
             });
-            // .then(result => {
-            //     eventsUtil.eventValidator(
-            //         result, {
-            //             name: "AllowedContributionCheck",
-            //             args: {
-            //                 contribution: web3.toWei('25', 'ether'),
-            //                 allowedContributionState: 0
-            //             }
-            //         }
-            //     );
-            // });
 
         assertions.ether({
             etherEscrowBalance: 25,

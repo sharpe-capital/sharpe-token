@@ -28,6 +28,8 @@ contract("End-to-end process for pre-sale, crowdsale & vesting", function(accoun
             secondTierDiscountUpperLimitEther: testConfig.secondTierDiscountUpperLimitEther,
             thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
         });
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should whitelist a contributor', async function() {

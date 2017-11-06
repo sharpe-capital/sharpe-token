@@ -29,6 +29,8 @@ contract("Presale move tokens", function(accounts) {
                 thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
             }
         );
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should register permitted addresses', async function(){

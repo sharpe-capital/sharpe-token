@@ -2,6 +2,7 @@ const assertFail = require("./helpers/assertFail");
 const assertions = require("./helpers/assertions");
 const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
+const time = require("./helpers/time");
 
 contract("Presale discounts", function(accounts) {
 
@@ -24,6 +25,8 @@ contract("Presale discounts", function(accounts) {
             secondTierDiscountUpperLimitEther: testConfig.secondTierDiscountUpperLimitEther,
             thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
         });
+        let beforeWhitelistPeriod = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();
+        await time.increaseTime(beforeWhitelistPeriod);
     });
 
     it('should register permitted addresses', async function(){

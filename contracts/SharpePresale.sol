@@ -175,8 +175,9 @@ contract SharpePresale is TokenSale {
         } 
 
         // TODO: revert
-        AllowedContributionCheck(whiteListedAllowedContribution, AllowedContributionState.NotWhitelisted);
-        return (whiteListedAllowedContribution, whiteListedRefundAmount);
+        revert();
+        // AllowedContributionCheck(whiteListedAllowedContribution, AllowedContributionState.NotWhitelisted);
+        // return (whiteListedAllowedContribution, whiteListedRefundAmount);
     }
 
     /// @notice Returns the contribution to be used for a sender that had previously been whitelisted, and any refund value if expected.
