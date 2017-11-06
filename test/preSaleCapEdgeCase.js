@@ -118,37 +118,4 @@ contract("Presale cap/limits", function(accounts) {
         assert.equal(preSaleEtherPaid, web3.toWei(50));
     });
 
-    it('should not accept ETH when pre-sale has been automatically closed', async function() {
-
-        let closed = await testConfig.preSale.closed();
-        assert.equal(closed, true);
-
-        let contribution = web3.toWei('25', 'ether');
-        await assertFail(async function() {
-            await testConfig.preSale.sendTransaction({
-                value: contribution,
-                from: testConfig.contributorTwoAddress
-            })
-        });
-
-        assertions.ether({
-            etherEscrowBalance: 50,
-            presaleBalance: 0,
-            contributorOneBalance: 75,
-            contributorTwoBalance: 75,
-            reserveBalance: 0,
-            foundersBalance: 0
-        });
-        await assertions.SHP({
-            etherEscrowBalance: 0,
-            presaleBalance: 0,
-            contributorOneBalance: 55000,
-            contributorTwoBalance: 55000,
-            reserveBalance: 0,
-            foundersBalance: 0,
-            trusteeBalance: 125000,
-            bountyBalance: 25000
-        });
-    });
-
 });

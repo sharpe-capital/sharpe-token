@@ -138,9 +138,8 @@ class TestConfig {
         if (capInEther && capInEther > 0) {
             this.preSaleCap = web3.toWei(capInEther);
         } else {
-            this.preSaleCap = web3.toWei(this.PRESALE_CAP / this.etherPeggedValue);
+            this.preSaleCap = web3.toWei(0);
         }
-
         console.log("cap is set to " + this.preSaleCap);
 
         this.honourWhitelistEnd = new Date(2017, 10, 9, 9, 0, 0, 0).getTime();

@@ -51,7 +51,7 @@ contract("Presale whitelist", function(accounts) {
         assert.equal(false, paused);
     });
 
-    it('should allow contribution bellow the cap', async function() {
+    it('should allow contribution below the cap', async function() {
 
         let contribution = web3.toWei('25', 'ether');
         await testConfig.preSale.sendTransaction({
@@ -80,58 +80,5 @@ contract("Presale whitelist", function(accounts) {
     
         let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
         assert.equal(preSaleEtherPaid, web3.toWei(25));
-    });
-
-    it('should allow contributions from whitelisted contributor and disallow excess if there is no cap available', async function() {
-        let plannedContribution = web3.toWei('25', 'ether');
-        await testConfig.preSale.addToWhitelist(
-            testConfig.contributorOneAddress,
-            plannedContribution,
-            {
-                from: testConfig.ownerAddress
-            }
-        );
-
-        
-        let contribution = web3.toWei('50', 'ether');
-        await testConfig.preSale.sendTransaction({
-            value: contribution,
-            from: testConfig.contributorOneAddress
-        })
-        .then(result => {
-            eventsUtil.eventValidator(
-                result, 
-                {
-                    name: "AllowedContributionCheck",
-                    args: {
-                        contribution: plannedContribution,
-                        allowedContributionState: 2
-                    }
-                }
-            );
-        });;
-        
-        assertions.ether({
-            etherEscrowBalance: 50,
-            presaleBalance: 0,
-            contributorOneBalance: 75,
-            contributorTwoBalance: 75,
-            reserveBalance: 0,
-            foundersBalance: 0
-        });
-        await assertions.SHP({
-            etherEscrowBalance: 0,
-            presaleBalance: 0,
-            contributorOneBalance: 55000,
-            contributorTwoBalance: 55000,
-            reserveBalance: 0,
-            foundersBalance: 0,
-            trusteeBalance: 125000,
-            bountyBalance: 25000
-        });
-    
-
-        preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
-        assert.equal(preSaleEtherPaid, web3.toWei(50));
     });
 });

@@ -6,7 +6,7 @@ const testConfig = require("./helpers/testConfig");
 contract("Presale initialization and permissions", function(accounts) {
 
     before(async function() {
-        await testConfig.setupForPreSale(accounts);
+        await testConfig.setupForPreSale(accounts, false, 100);
     });
 
     it('should initialize contract with expected values', async function() {

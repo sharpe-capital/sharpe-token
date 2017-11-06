@@ -2,6 +2,7 @@ const assertFail = require("./helpers/assertFail");
 const assertions = require("./helpers/assertions");
 const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
+const time = require("./helpers/time");
 
 contract("Presale cap/limits", function(accounts) {
 
@@ -28,6 +29,9 @@ contract("Presale cap/limits", function(accounts) {
                 thirdTierDiscountUpperLimitEther: testConfig.thirdTierDiscountUpperLimitEther
             }
         );
+
+        let afterWhitelistPeriod = new Date(2017, 10, 10, 9, 0, 0, 0).getTime();
+        await time.increaseTime(afterWhitelistPeriod);
     });
 
     it('should register permitted addresses', async function(){
@@ -56,6 +60,7 @@ contract("Presale cap/limits", function(accounts) {
             value: testConfig.minPresaleContributionEther,
             from: testConfig.contributorOneAddress
         });
+
         assertions.ether({
             etherEscrowBalance: 25,
             presaleBalance: 0,
@@ -80,6 +85,9 @@ contract("Presale cap/limits", function(accounts) {
 
     it('should accept last contribution before cap and refund exceeds to sender', async function() {
         
+        let preSaleCap = (await testConfig.preSale.preSaleCap()).toNumber();
+        assert.equal(preSaleCap, web3.toWei(25));
+
         let contribution = web3.toWei('26', 'ether');
         await testConfig.preSale.sendTransaction({
             value: contribution,
@@ -94,12 +102,6 @@ contract("Presale cap/limits", function(accounts) {
                         etherAmount: web3.toWei('1', 'ether'),
                         _caller: testConfig.contributorTwoAddress
                     }
-                }
-            );
-            eventsUtil.eventValidator(
-                result, 
-                {
-                    name: "PresaleClosed",
                 }
             );
         });
@@ -125,38 +127,5 @@ contract("Presale cap/limits", function(accounts) {
 
         let preSaleEtherPaid = (await testConfig.preSale.preSaleEtherPaid()).toNumber();
         assert.equal(preSaleEtherPaid, web3.toWei(50));
-    });
-
-    it('should not accept ETH when pre-sale has been automatically closed', async function() {
-
-        let closed = await testConfig.preSale.closed();
-        assert.equal(closed, true);
-
-        let contribution = web3.toWei('25', 'ether');
-        await assertFail(async function() {
-            await testConfig.preSale.sendTransaction({
-                value: contribution,
-                from: testConfig.contributorTwoAddress
-            })
-        });
-
-        assertions.ether({
-            etherEscrowBalance: 50,
-            presaleBalance: 0,
-            contributorOneBalance: 75,
-            contributorTwoBalance: 75,
-            reserveBalance: 0,
-            foundersBalance: 0
-        });
-        await assertions.SHP({
-            etherEscrowBalance: 0,
-            presaleBalance: 0,
-            contributorOneBalance: 55000,
-            contributorTwoBalance: 55000,
-            reserveBalance: 0,
-            foundersBalance: 0,
-            trusteeBalance: 125000,
-            bountyBalance: 25000
-        });
     });
 });
