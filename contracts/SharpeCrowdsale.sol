@@ -32,23 +32,16 @@ contract SharpeCrowdsale is TokenSale {
     uint256 constant public THIRD_TIER_DISCOUNT = 20;
     uint256 constant public FOURTH_TIER_DISCOUNT = 30;
 
-    uint256 public minPresaleContributionEther;
-    uint256 public maxPresaleContributionEther;
+    uint256 public minContributionEther;
+    uint256 public maxContributionEther;
     uint256 public minDiscountEther;
     uint256 public firstTierDiscountUpperLimitEther;
     uint256 public secondTierDiscountUpperLimitEther;
     uint256 public thirdTierDiscountUpperLimitEther;
     
-    enum ContributionState {Paused, Resumed}
-    event ContributionStateChanged(address caller, ContributionState contributionState);
-    enum AllowedContributionState {Whitelisted, NotWhitelisted, AboveWhitelisted, BelowWhitelisted, WhitelistClosed}
-    event AllowedContributionCheck(uint256 contribution, AllowedContributionState allowedContributionState);
     event ValidContributionCheck(uint256 contribution, bool isContributionValid);
     event DiscountApplied(uint256 etherAmount, uint256 tokens, uint256 discount);
-    event ContributionRefund(uint256 etherAmount, address _caller);
-    event CountersUpdated(uint256 preSaleEtherPaid, uint256 totalContributions);
-    event WhitelistedUpdated(uint256 plannedContribution, bool contributed);
-    event WhitelistedCounterUpdated(uint256 whitelistedPlannedContributions, uint256 usedContributions);
+    event CountersUpdated(uint256 paidEther, uint256 totalContributions);
 
     modifier isValidContribution() {
         require(validContribution());
@@ -63,8 +56,8 @@ contract SharpeCrowdsale is TokenSale {
     /// @param _firstTierDiscountUpperLimitEther First discount limits (WEI)
     /// @param _secondTierDiscountUpperLimitEther Second discount limits (WEI)
     /// @param _thirdTierDiscountUpperLimitEther Third discount limits (WEI)
-    /// @param _minPresaleContributionEther Lower contribution range (WEI)
-    /// @param _maxPresaleContributionEther Upper contribution range (WEI)
+    /// @param _minContributionEther Lower contribution range (WEI)
+    /// @param _maxContributionEther Upper contribution range (WEI)
     /// @param _shpExchangeRate The initial SHP exchange rate
     function SharpeCrowdsale(
         address _etherEscrowAddress,
@@ -74,8 +67,8 @@ contract SharpeCrowdsale is TokenSale {
         uint256 _firstTierDiscountUpperLimitEther,
         uint256 _secondTierDiscountUpperLimitEther,
         uint256 _thirdTierDiscountUpperLimitEther,
-        uint256 _minPresaleContributionEther,
-        uint256 _maxPresaleContributionEther,
+        uint256 _minContributionEther,
+        uint256 _maxContributionEther,
         uint256 _shpExchangeRate)
         TokenSale (
             _etherEscrowAddress,
@@ -88,8 +81,8 @@ contract SharpeCrowdsale is TokenSale {
         firstTierDiscountUpperLimitEther = _firstTierDiscountUpperLimitEther;
         secondTierDiscountUpperLimitEther = _secondTierDiscountUpperLimitEther;
         thirdTierDiscountUpperLimitEther = _thirdTierDiscountUpperLimitEther;
-        minPresaleContributionEther = _minPresaleContributionEther;
-        maxPresaleContributionEther = _maxPresaleContributionEther;
+        minContributionEther = _minContributionEther;
+        maxContributionEther = _maxContributionEther;
     }
 
     /// @notice Allows the owner to peg Ether values
@@ -97,15 +90,15 @@ contract SharpeCrowdsale is TokenSale {
     /// @param _firstTierDiscountUpperLimitEther First discount limits (WEI)
     /// @param _secondTierDiscountUpperLimitEther Second discount limits (WEI)
     /// @param _thirdTierDiscountUpperLimitEther Third discount limits (WEI)
-    /// @param _minPresaleContributionEther Lower contribution range (WEI)
-    /// @param _maxPresaleContributionEther Upper contribution range (WEI)
+    /// @param _minContributionEther Lower contribution range (WEI)
+    /// @param _maxContributionEther Upper contribution range (WEI)
     function pegEtherValues(
         uint256 _minDiscountEther,
         uint256 _firstTierDiscountUpperLimitEther,
         uint256 _secondTierDiscountUpperLimitEther,
         uint256 _thirdTierDiscountUpperLimitEther,
-        uint256 _minPresaleContributionEther,
-        uint256 _maxPresaleContributionEther
+        uint256 _minContributionEther,
+        uint256 _maxContributionEther
     ) 
         onlyOwner
     {
@@ -113,8 +106,8 @@ contract SharpeCrowdsale is TokenSale {
         firstTierDiscountUpperLimitEther = _firstTierDiscountUpperLimitEther;
         secondTierDiscountUpperLimitEther = _secondTierDiscountUpperLimitEther;
         thirdTierDiscountUpperLimitEther = _thirdTierDiscountUpperLimitEther;
-        minPresaleContributionEther = _minPresaleContributionEther;
-        maxPresaleContributionEther = _maxPresaleContributionEther;
+        minContributionEther = _minContributionEther;
+        maxContributionEther = _maxContributionEther;
     }
 
     /// @notice This function fires when someone sends Ether to the address of this contract.
@@ -139,7 +132,7 @@ contract SharpeCrowdsale is TokenSale {
     /// @notice Ensure the contribution is valid
     /// @return Returns whether the contribution is valid or not
     function validContribution() private returns (bool) {
-        bool isContributionValid = msg.value >= minPresaleContributionEther && msg.value <= maxPresaleContributionEther;
+        bool isContributionValid = msg.value >= minContributionEther && msg.value <= maxContributionEther;
         ValidContributionCheck(msg.value, isContributionValid);
         return isContributionValid;
     }

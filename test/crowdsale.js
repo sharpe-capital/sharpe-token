@@ -1,6 +1,5 @@
 const assertFail = require("./helpers/assertFail");
 const eventsUtil = require("./helpers/eventsUtil");
-const testConfig = require("./helpers/testConfig");
 const assertions = require("./helpers/assertions");
 const time = require("./helpers/time");
 
@@ -93,8 +92,8 @@ contract("Crowdsale", function(accounts) {
     });
 
     it('should initialize contract with expected values', async function() {
-        assert.equal(await this.sharpeCrowdsale.minPresaleContributionEther(), this.minContribution);
-        assert.equal(await this.sharpeCrowdsale.maxPresaleContributionEther(), this.maxContribution);
+        assert.equal(await this.sharpeCrowdsale.minContributionEther(), this.minContribution);
+        assert.equal(await this.sharpeCrowdsale.maxContributionEther(), this.maxContribution);
         assert.equal(await this.sharpeCrowdsale.minDiscountEther(), this.minDiscount);
         assert.equal(await this.sharpeCrowdsale.firstTierDiscountUpperLimitEther(), this.firstTierDiscountUpperLimit);
         assert.equal(await this.sharpeCrowdsale.secondTierDiscountUpperLimitEther(), this.secondTierDiscountUpperLimit);
@@ -333,8 +332,8 @@ contract("Crowdsale", function(accounts) {
             this.minContribution,
             this.maxContribution
         );
-        assert.equal(await this.sharpeCrowdsale.minPresaleContributionEther(), this.minContribution);
-        assert.equal(await this.sharpeCrowdsale.maxPresaleContributionEther(), this.maxContribution);
+        assert.equal(await this.sharpeCrowdsale.minContributionEther(), this.minContribution);
+        assert.equal(await this.sharpeCrowdsale.maxContributionEther(), this.maxContribution);
         assert.equal(await this.sharpeCrowdsale.minDiscountEther(), this.minDiscount);
         assert.equal(await this.sharpeCrowdsale.firstTierDiscountUpperLimitEther(), this.firstTierDiscountUpperLimit);
         assert.equal(await this.sharpeCrowdsale.secondTierDiscountUpperLimitEther(), this.secondTierDiscountUpperLimit);
