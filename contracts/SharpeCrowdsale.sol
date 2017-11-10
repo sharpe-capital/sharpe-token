@@ -77,12 +77,14 @@ contract SharpeCrowdsale is TokenSale {
             _shpExchangeRate
         )
     {
-        minDiscountEther = _minDiscountEther;
-        firstTierDiscountUpperLimitEther = _firstTierDiscountUpperLimitEther;
-        secondTierDiscountUpperLimitEther = _secondTierDiscountUpperLimitEther;
-        thirdTierDiscountUpperLimitEther = _thirdTierDiscountUpperLimitEther;
-        minContributionEther = _minContributionEther;
-        maxContributionEther = _maxContributionEther;
+        pegEtherValues(
+            _minDiscountEther,
+            _firstTierDiscountUpperLimitEther,
+            _secondTierDiscountUpperLimitEther,
+            _thirdTierDiscountUpperLimitEther,
+            _minContributionEther,
+            _maxContributionEther
+        );
     }
 
     /// @notice Allows the owner to peg Ether values
