@@ -46,8 +46,6 @@ contract TokenSale is Owned, TokenController {
     bool public closed;
     bool public allowTransfer;
 
-    mapping(address => bool) public approvedAddresses;
-
     event Contribution(uint256 etherAmount, address _caller);
     event NewSale(address indexed caller, uint256 etherAmount, uint256 tokensGenerated);
     event SaleClosed(uint256 when);

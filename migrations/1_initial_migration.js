@@ -1,28 +1,64 @@
 var Migrations = artifacts.require("./Migrations.sol");
+var SharpeCrowdsale = artifacts.require("./SharpeCrowdsale.sol");
+var abi = require('ethereumjs-abi');
 
-module.exports = function(deployer, network, accounts) {
-    console.log("DEPLOY", deployer);
-    console.log("NETWORK",network);
+module.exports = async function(deployer, network, accounts) {
 
     if(network == "coverage" || network == "development") {
         return;
     }
 
-    web3.personal.unlockAccount("0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3", "h9y6tZAY12!", 0);
+    const ethRate = 300;
+    const etherEscrowAddress = "0x28350c8ce237bc205b990a40266b46fe65197db4";
+    const bountyAddress = "0x762f11b6509fbb0f7a90b5ba80d3add087bebff5";
+    const trusteeAddress = "0x6d15a5f9c98e272686a5b241bc31516514e18b30";
+    const minDiscount = web3.toWei(1500 / ethRate);
+    const firstTierDiscount = web3.toWei(10000 / ethRate);
+    const secondTierDiscount = web3.toWei(50000 / ethRate);
+    const thirdTierDiscount = web3.toWei(250000 / ethRate);
+    const minContribution = web3.toWei(100 / ethRate);
+    const maxContribution = web3.toWei(500000 / ethRate);
+    const shpRate = 5000;
 
-    function checkAllBalances() {
-            var totalBal = 0;
-        web3.fromWei(web3.eth.getBalance('0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3'),'ether').toString(10)
-        for (var acctNum in accounts) {
-            var acct = accounts[acctNum];
-            var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
-            totalBal += parseFloat(acctBal);
-            console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
-        }
-        
-        console.log("Latest Block " + web3.eth.getBlock("latest").number);
-    };
-    checkAllBalances();
-    //console.log("ACCOUNTS", m);
+    this.sharpeCrowdsale = await SharpeCrowdsale.new(
+        etherEscrowAddress,
+        bountyAddress,
+        trusteeAddress,
+        minDiscount,
+        firstTierDiscount,
+        secondTierDiscount,
+        thirdTierDiscount,
+        minContribution,
+        maxContribution,
+        shpRate
+    );
+
+    console.log('Deployed the Sharpe crowdsale: ' + this.sharpeCrowdsale.address);
+
+    console.log("Crowdsale ABI arguments: ", 
+    abi.rawEncode([
+        "address",
+        "address",
+        "address",
+        "uint256",
+        "uint256",
+        "uint256",
+        "uint256",
+        "uint256",
+        "uint256",
+        "uint256"
+    ], [
+        etherEscrowAddress,
+        bountyAddress,
+        trusteeAddress,
+        minDiscount,
+        firstTierDiscount,
+        secondTierDiscount,
+        thirdTierDiscount,
+        minContribution,
+        maxContribution,
+        shpRate
+    ]).toString('hex'));
+
     deployer.deploy(Migrations);
 };
