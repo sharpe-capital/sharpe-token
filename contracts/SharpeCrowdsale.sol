@@ -19,7 +19,6 @@ pragma solidity 0.4.15;
 import "./lib/SafeMath.sol";
 import "./TokenSale.sol";
 import "./SHP.sol";
-import "./SCD.sol";
 
 
 contract SharpeCrowdsale is TokenSale {

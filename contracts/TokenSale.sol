@@ -20,7 +20,6 @@ import "./lib/SafeMath.sol";
 import "./lib/Owned.sol";
 import "./lib/Trustee.sol";
 import "./SHP.sol";
-import "./SCD.sol";
 
 
 contract TokenSale is Owned, TokenController {
