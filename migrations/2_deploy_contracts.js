@@ -50,7 +50,7 @@ const MAX_PRESALE_CONTRIBUTION = 500000;
 const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
 const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
 const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 500000;
-const PRESALE_CAP = 8000000;
+const PRESALE_CAP = 0;
 const honourWhitelistEnd = new Date(2017, 10, 8, 13, 59, 59, 0).getTime();
 
 //GENEARL SALE VALUES
@@ -158,7 +158,7 @@ module.exports = async function(deployer, network, accounts) {
         web3.toWei(THIRD_TIER_DISCOUNT_UPPER_LIMIT / etherPeggedValue),
         web3.toWei(MIN_PRESALE_CONTRIBUTION / etherPeggedValue),
         web3.toWei(MAX_PRESALE_CONTRIBUTION / etherPeggedValue),
-        web3.toWei(PRESALE_CAP / etherPeggedValue),
+        0,
         honourWhitelistEnd
     );
     let presaleAddress = await presale.address;

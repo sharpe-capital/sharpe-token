@@ -4,7 +4,7 @@ const eventsUtil = require("./helpers/eventsUtil");
 const testConfig = require("./helpers/testConfig");
 const time = require("./helpers/time");
 
-contract("End-to-end process for pre-sale, crowdsale & vesting", function(accounts) {
+contract("End-to-end process for crowdsale & vesting", function(accounts) {
 
     const hashes = [];
     const ceilings = [];

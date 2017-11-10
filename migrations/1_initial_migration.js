@@ -8,7 +8,7 @@ module.exports = function(deployer, network, accounts) {
         return;
     }
 
-    web3.personal.unlockAccount("0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3", "", 0);
+    web3.personal.unlockAccount("0x6b3b6e23acacc712bc6d8531f7a239ca10ac47a3", "h9y6tZAY12!", 0);
 
     function checkAllBalances() {
             var totalBal = 0;

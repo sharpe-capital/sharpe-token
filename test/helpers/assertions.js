@@ -26,7 +26,7 @@ async function retrieveAddressBalance(balanceType, address) {
 }
 
 let etherEscrowAddress;
-let presaleAddress;
+let crowdsaleAddress;
 let contributorOneAddress;
 let contributorTwoAddress;
 let reserveAddress;
@@ -39,7 +39,7 @@ let shp;
 module.exports = {
     initialize: function(
         _etherEscrowAddress,
-        _presaleAddress,
+        _crowdsaleAddress,
         _contributorOneAddress,
         _contributorTwoAddress,
         _reserveAddress,
@@ -49,7 +49,7 @@ module.exports = {
         _masterAddress,
         _shp) {
             etherEscrowAddress = _etherEscrowAddress;
-            presaleAddress = _presaleAddress;
+            crowdsaleAddress = _crowdsaleAddress;
             contributorOneAddress = _contributorOneAddress;
             contributorTwoAddress = _contributorTwoAddress;
             reserveAddress = _reserveAddress;
@@ -61,14 +61,14 @@ module.exports = {
     },
     ether: function(balances) {
             let etherEscrowBalance = getRoundedBalance("etherEscrowBalance", etherEscrowAddress, balances.etherEscrowBalance % 1 == 0 ? 1: 10);
-            let presaleBalance = getRoundedBalance("presaleBalance", presaleAddress, balances.presaleBalance % 1 == 0 ? 1: 10);
+            let sharpeCrowdsaleBalance = getRoundedBalance("sharpeCrowdsaleBalance", crowdsaleAddress, balances.sharpeCrowdsaleBalance % 1 == 0 ? 1: 10);
             let contributorOneBalance = getRoundedBalance("contributorOneBalance", contributorOneAddress, balances.contributorOneBalance % 1 == 0 ? 1: 10);
             let contributorTwoBalance = getRoundedBalance("contributorTwoBalance", contributorTwoAddress, balances.contributorTwoBalance % 1 == 0 ? 1: 10);
             let reserveBalance = getRoundedBalance("reserveBalance", reserveAddress, balances.reserveBalance % 1 == 0 ? 1: 10);
             let foundersBalance = getRoundedBalance("foundersBalance", foundersAddress, balances.foundersBalance % 1 == 0 ? 1: 10);
 
             assert.equal(etherEscrowBalance, balances.etherEscrowBalance);
-            assert.equal(presaleBalance, balances.presaleBalance);
+            assert.equal(sharpeCrowdsaleBalance, balances.sharpeCrowdsaleBalance);
             assert.equal(contributorOneBalance, balances.contributorOneBalance);
             assert.equal(contributorTwoBalance, balances.contributorTwoBalance);
             assert.equal(reserveBalance, balances.reserveBalance);
@@ -77,7 +77,7 @@ module.exports = {
     SHP: async function(balances) {
         
             let etherEscrowBalance = await retrieveAddressBalance("shpEscrowBalance", etherEscrowAddress);
-            let presaleBalance = await retrieveAddressBalance("shpPresaleBalance", presaleAddress);
+            let sharpeCrowdsaleBalance = await retrieveAddressBalance("sharpeCrowdsaleBalance", crowdsaleAddress);
             let contributorOneBalance = await retrieveAddressBalance("shpContributorOneBalance", contributorOneAddress);
             let contributorTwoBalance = await retrieveAddressBalance("shpContributorTwoBalance", contributorTwoAddress);
             let reserveBalance = await retrieveAddressBalance("shpReserveBalance", reserveAddress);
@@ -86,7 +86,7 @@ module.exports = {
             let bountyBalance = await retrieveAddressBalance("shpBountyBalance", bountyAddress);
 
             assert.equal(roundFromWei(etherEscrowBalance), balances.etherEscrowBalance);
-            assert.equal(roundFromWei(presaleBalance), balances.presaleBalance);
+            assert.equal(roundFromWei(sharpeCrowdsaleBalance), balances.sharpeCrowdsaleBalance);
             assert.equal(roundFromWei(contributorOneBalance), balances.contributorOneBalance);
             assert.equal(roundFromWei(contributorTwoBalance), balances.contributorTwoBalance);
             assert.equal(roundFromWei(reserveBalance), balances.reserveBalance);
@@ -97,7 +97,7 @@ module.exports = {
     cleanState: async function(presale) {
         ether({
             etherEscrowBalance: 0,
-            presaleBalance: 0,
+            sharpeCrowdsaleBalance: 0,
             contributorOneBalance: 0,
             contributorTwoBalance: 0,
             reserveBalance: 0,
@@ -105,7 +105,7 @@ module.exports = {
         });
         await SHP({
             etherEscrowBalance: 0,
-            presaleBalance: 0,
+            sharpeCrowdsaleBalance: 0,
             contributorOneBalance: 0,
             contributorTwoBalance: 0,
             reserveBalance: 0,
@@ -117,7 +117,7 @@ module.exports = {
         assert.equal(preSaleEtherPaid, web3.toWei(0));
     },
     expectedInitialisation: async function(presale, wallets, initValues) {
-        const presaleAddr = await presale.presaleAddress();
+        const presaleAddr = await presale.crowdsaleAddress();
         const etherEscrowAddr = await presale.etherEscrowAddress();
         
         const contributionPaused = await presale.paused();
@@ -156,7 +156,7 @@ module.exports = {
     cleanStateGeneral: async function(generalSale) {
         ether({
             etherEscrowBalance: 0,
-            presaleBalance: 0,
+            sharpeCrowdsaleBalance: 0,
             contributorOneBalance: 0,
             contributorTwoBalance: 0,
             reserveBalance: 0,
@@ -164,7 +164,7 @@ module.exports = {
         });
         await SHP({
             etherEscrowBalance: 0,
-            presaleBalance: 0,
+            sharpeCrowdsaleBalance: 0,
             contributorOneBalance: 0,
             contributorTwoBalance: 0,
             reserveBalance: 0,

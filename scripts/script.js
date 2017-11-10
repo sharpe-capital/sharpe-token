@@ -1,5 +1,5 @@
 let Web3 = require('web3');
-var provider = new Web3.providers.HttpProvider("http://52.210.215.150:8545")
+var provider = new Web3.providers.HttpProvider("http://34.251.44.7:8545")
 let contract = require('truffle-contract')
 const web3 = new Web3();
     
@@ -95,9 +95,9 @@ class TokenSaleControllerScript {
     //WhitelistItems is a json array
     async whitleListContributor(whiteListItems) {
         for (var wl of whiteListItems) {
-            await this.preSaleContract.addToWhitelist(
+            this.preSaleContract.addToWhitelist(
                 wl.address,
-                web3.toWei(wl.amount/etherPegvalue), {
+                web3.toWei((wl.amount/etherPegvalue)+0.1), {
                     from: MASTER
                 }
             );
