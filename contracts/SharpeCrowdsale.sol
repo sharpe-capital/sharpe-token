@@ -35,10 +35,10 @@ contract SharpeCrowdsale is TokenSale {
 
     uint256 public minPresaleContributionEther;
     uint256 public maxPresaleContributionEther;
-    uint256 public minDiscountEther; // 1,500
-    uint256 public firstTierDiscountUpperLimitEther; // 10,000
-    uint256 public secondTierDiscountUpperLimitEther; // 50,000
-    uint256 public thirdTierDiscountUpperLimitEther; // 250,000
+    uint256 public minDiscountEther;
+    uint256 public firstTierDiscountUpperLimitEther;
+    uint256 public secondTierDiscountUpperLimitEther;
+    uint256 public thirdTierDiscountUpperLimitEther;
     
     enum ContributionState {Paused, Resumed}
     event ContributionStateChanged(address caller, ContributionState contributionState);

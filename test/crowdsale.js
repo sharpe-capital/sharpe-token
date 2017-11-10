@@ -78,7 +78,7 @@ contract("Crowdsale", function(accounts) {
         await this.trusteeWallet.changeOwner(this.sharpeCrowdsale.address);
         await this.shp.changeController(this.sharpeCrowdsale.address);
         await this.sharpeCrowdsale.setShp(this.shp.address);
-
+        
         assertions.initialize(
             this.etherEscrowAddress,
             this.sharpeCrowdsale.address,
@@ -112,7 +112,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(false, paused);
     });
     it('should process discount tier 1', async function() {
-
         let contribution = web3.toWei('11', 'ether');
         await this.sharpeCrowdsale.sendTransaction({
             value: contribution,
@@ -141,7 +140,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(etherPaid, web3.toWei(11));
     });
     it('should process discount tier 2', async function() {
-
         let contribution = web3.toWei('21', 'ether');
         await this.sharpeCrowdsale.sendTransaction({
             value: contribution,
@@ -170,7 +168,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(etherPaid, web3.toWei(32));
     });
     it('should process discount tier 3', async function() {
-
         let contribution = web3.toWei('31', 'ether');
         await this.sharpeCrowdsale.sendTransaction({
             value: contribution,
@@ -199,7 +196,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(etherPaid, web3.toWei(63));
     });
     it('should process discount tier 4', async function() {
-
         let contribution = web3.toWei('41', 'ether');
         await this.sharpeCrowdsale.sendTransaction({
             value: contribution,
@@ -228,7 +224,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(etherPaid, web3.toWei(104));
     });
     it('should process no discount', async function() {
-
         let contribution = web3.toWei('6', 'ether');
         await this.sharpeCrowdsale.sendTransaction({
             value: contribution,
@@ -460,7 +455,6 @@ contract("Crowdsale", function(accounts) {
         const closed = await this.sharpeCrowdsale.closed();
         assert.equal(true, closed);
     });
-
     it('should transfer ownership to the SHP controller', async function() {
         await this.sharpeCrowdsale.transferOwnership(this.shpController.address, this.shpController.address, {
             from: this.ownerAddress
@@ -470,7 +464,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(owner, this.shpController.address);
         assert.equal(controller, this.shpController.address);
     });
-
     it('should set token counts', async function() {
         let founderTokenCount = await this.sharpeCrowdsale.founderTokenCount();
         let reserveTokenCount = await this.sharpeCrowdsale.reserveTokenCount();
@@ -482,7 +475,6 @@ contract("Crowdsale", function(accounts) {
         assert.equal(founderTokenCount.toNumber(), founderTokenCount);
         assert.equal(reserveTokenCount.toNumber(), reserveTokenCount);
     });
-
     it('should create the vesting grants', async function() {
         await this.shpController.createVestingGrants({
             from: this.ownerAddress
@@ -490,11 +482,9 @@ contract("Crowdsale", function(accounts) {
         let grantsCreated = await this.shpController.grantsCreated();
         assert.equal(grantsCreated, true);
     });
-
     it('should move bounty tokens immediately after the sale closes', async function() {
         let withdraw = web3.toWei(5500 + 10500 + 15500 + 20500 + 3000);
         let data = await this.shp.contract.transfer.getData(this.contributorOneAddress, withdraw);
-
         await this.bountyWallet.submitTransaction(
             this.shp.address, 
             0, 
@@ -503,7 +493,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.bountySignAddress
             }
         );
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
@@ -515,12 +504,9 @@ contract("Crowdsale", function(accounts) {
             bountyBalance: 0
         });
     });
-    
     it('should not be able to move SHP founders tokens before cliff', async function() {
-
         let withdraw = web3.toWei(50);
         let data = await this.shp.contract.transfer.getData(this.contributorOneAddress, withdraw);
-
         await this.foundersWallet.submitTransaction(
             this.shp.address, 
             0, 
@@ -529,7 +515,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.foundersSignAddress
             }
         );
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
@@ -541,13 +526,10 @@ contract("Crowdsale", function(accounts) {
             bountyBalance: 0
         });
     });
-
     it('should move some SHP reserve tokens after cliff', async function() {
         const sevenMonths = (60 * 60 * 24 * 30) * 7;
         await time.increaseTime(sevenMonths);
-
         let data = await this.trusteeWallet.contract.unlockVestedTokens.getData();  
-        
         await this.reserveWallet.submitTransaction(
             this.trusteeWallet.address, 
             0, 
@@ -556,7 +538,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.reserveSignAddress
             }
         );
-        
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
@@ -569,9 +550,7 @@ contract("Crowdsale", function(accounts) {
         });
     });
      it('should move some SHP founders tokens after cliff', async function() {
-
         let data = await this.trusteeWallet.contract.unlockVestedTokens.getData();
-        
         await this.foundersWallet.submitTransaction(
             this.trusteeWallet.address, 
             0, 
@@ -580,7 +559,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.foundersSignAddress
             }
         );
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
@@ -592,14 +570,10 @@ contract("Crowdsale", function(accounts) {
             bountyBalance: 0
         });
     });
-
     it('should move all SHP reserve tokens when fully vested', async function() {
-
         const eighteenMonths = (60 * 60 * 24 * 30) * 18;
         await time.increaseTime(eighteenMonths);
-
         let data = await this.trusteeWallet.contract.unlockVestedTokens.getData();
-        
         await this.reserveWallet.submitTransaction(
             this.trusteeWallet.address, 
             0, 
@@ -608,7 +582,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.reserveSignAddress
             }
         );
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
@@ -620,11 +593,8 @@ contract("Crowdsale", function(accounts) {
             bountyBalance: 0
         });
     });
-
     it('should move all SHP founders tokens when fully vested', async function() {
-
         let data = await this.trusteeWallet.contract.unlockVestedTokens.getData();
-        
         await this.foundersWallet.submitTransaction(
             this.trusteeWallet.address, 
             0, 
@@ -633,7 +603,6 @@ contract("Crowdsale", function(accounts) {
                 from: this.foundersSignAddress
             }
         );
-
         await assertions.SHP({
             etherEscrowBalance: 0,
             sharpeCrowdsaleBalance: 0,
