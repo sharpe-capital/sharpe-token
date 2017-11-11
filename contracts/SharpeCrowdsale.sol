@@ -153,13 +153,13 @@ contract SharpeCrowdsale is TokenSale {
 
         uint256 discount = 0;
 
-        if (_etherAmount > minDiscountEther && _etherAmount <= firstTierDiscountUpperLimitEther) {
+        if (_etherAmount >= minDiscountEther && _etherAmount < firstTierDiscountUpperLimitEther) {
             discount = _contributorTokens.mul(FIRST_TIER_DISCOUNT).div(100); // 5%
-        } else if (_etherAmount > firstTierDiscountUpperLimitEther && _etherAmount <= secondTierDiscountUpperLimitEther) {
+        } else if (_etherAmount >= firstTierDiscountUpperLimitEther && _etherAmount < secondTierDiscountUpperLimitEther) {
             discount = _contributorTokens.mul(SECOND_TIER_DISCOUNT).div(100); // 10%
-        } else if (_etherAmount > secondTierDiscountUpperLimitEther && _etherAmount <= thirdTierDiscountUpperLimitEther) {
+        } else if (_etherAmount >= secondTierDiscountUpperLimitEther && _etherAmount < thirdTierDiscountUpperLimitEther) {
             discount = _contributorTokens.mul(THIRD_TIER_DISCOUNT).div(100); // 20%
-        } else if (_etherAmount > thirdTierDiscountUpperLimitEther) {
+        } else if (_etherAmount >= thirdTierDiscountUpperLimitEther) {
             discount = _contributorTokens.mul(FOURTH_TIER_DISCOUNT).div(100); // 30%
         }
 

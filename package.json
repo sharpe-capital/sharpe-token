@@ -16,7 +16,7 @@
     "bignumber.js": "^4.0.2",
     "ethereumjs-testrpc": "^4.1.1",
     "random-bytes": "^1.0.0",
-    "solc": "^0.4.18",
+    "solc": "0.4.15",
     "solidity-coverage": "^0.2.7",
     "solidity-parser": "^0.4.0",
     "truffle-hdwallet-provider": "^0.0.3",
