@@ -1,0 +1,38 @@
+{
+    "master": "0x167b7133b1caa3ce98a911df67c3f760889a37be",
+    "api": "0x167b7133b1caa3ce98a911df67c3f760889a37be",
+   
+    "bounty":{
+        "l":"0x0f586d0a27E28784312245a11b66F3011a0af27C",
+        "i":"0x7620DA4995f170314b71421E2b22111FEF0E6f97",
+        "j":"0x3Ec07aee1F9d104C9C930e41BE0f523446c49490",
+        "req": 2,
+        "total": 3
+    },
+    
+    "ether":{
+        "l":"0x0f586d0a27E28784312245a11b66F3011a0af27C",
+        "i":"0x7620DA4995f170314b71421E2b22111FEF0E6f97",
+        "j":"0x3Ec07aee1F9d104C9C930e41BE0f523446c49490",
+        "taas": "0x9ED700f9D14b95135a16bFa96169543C3974F16f",
+        "req": 2,
+        "total": 4
+    },
+    
+    "founders":{
+        "l":"0x0f586d0a27E28784312245a11b66F3011a0af27C",
+        "i":"0x7620DA4995f170314b71421E2b22111FEF0E6f97",
+        "j":"0x3Ec07aee1F9d104C9C930e41BE0f523446c49490",
+        "req": 2,
+        "total": 3
+    },
+    
+    "reserve":{
+        "l":"0x0f586d0a27E28784312245a11b66F3011a0af27C",
+        "i":"0x7620DA4995f170314b71421E2b22111FEF0E6f97",
+        "j":"0x3Ec07aee1F9d104C9C930e41BE0f523446c49490",
+        "taas":"0x9ED700f9D14b95135a16bFa96169543C3974F16f",
+        "req": 2,
+        "total": 4
+    }
+}
