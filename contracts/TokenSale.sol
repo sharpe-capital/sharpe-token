@@ -20,15 +20,12 @@ import "./lib/SafeMath.sol";
 import "./lib/Owned.sol";
 import "./lib/Trustee.sol";
 import "./SHP.sol";
-import "./SCD.sol";
-import "./AffiliateUtility.sol";
 
 
 contract TokenSale is Owned, TokenController {
     using SafeMath for uint256;
     
     SHP public shp;
-    AffiliateUtility public affiliateUtility;
     Trustee public trustee;
 
     address public etherEscrowAddress;
@@ -37,15 +34,17 @@ contract TokenSale is Owned, TokenController {
 
     uint256 public founderTokenCount = 0;
     uint256 public reserveTokenCount = 0;
+    uint256 public shpExchangeRate = 0;
 
-    uint256 constant public CALLER_EXCHANGE_RATE = 2000;
-    uint256 constant public RESERVE_EXCHANGE_RATE = 1500;
-    uint256 constant public FOUNDER_EXCHANGE_RATE = 1000;
-    uint256 constant public BOUNTY_EXCHANGE_RATE = 500;
+    uint256 constant public CALLER_EXCHANGE_SHARE = 40;
+    uint256 constant public RESERVE_EXCHANGE_SHARE = 30;
+    uint256 constant public FOUNDER_EXCHANGE_SHARE = 20;
+    uint256 constant public BOUNTY_EXCHANGE_SHARE = 10;
     uint256 constant public MAX_GAS_PRICE = 50000000000;
 
     bool public paused;
     bool public closed;
+    bool public allowTransfer;
 
     mapping(address => bool) public approvedAddresses;
 
@@ -71,15 +70,12 @@ contract TokenSale is Owned, TokenController {
         _;
     }
 
-    modifier isApproved() {
-        require(approvedAddresses[msg.sender]);
-        _;
+    function setShpExchangeRate(uint256 _shpExchangeRate) public onlyOwner {
+        shpExchangeRate = _shpExchangeRate;
     }
 
-    /// @notice Adds an approved address for the sale
-    /// @param _addr The address to approve for contribution
-    function approveAddress(address _addr) public onlyOwner {
-        approvedAddresses[_addr] = true;
+    function setAllowTransfer(bool _allowTransfer) public onlyOwner {
+        allowTransfer = _allowTransfer;
     }
 
     /// @notice This method sends the Ether received to the Ether escrow address
@@ -94,18 +90,21 @@ contract TokenSale is Owned, TokenController {
 
         Contribution(etherAmount, _caller);
 
-        uint256 callerTokens = etherAmount.mul(CALLER_EXCHANGE_RATE);
+        uint256 callerExchangeRate = shpExchangeRate.mul(CALLER_EXCHANGE_SHARE).div(100);
+        uint256 reserveExchangeRate = shpExchangeRate.mul(RESERVE_EXCHANGE_SHARE).div(100);
+        uint256 founderExchangeRate = shpExchangeRate.mul(FOUNDER_EXCHANGE_SHARE).div(100);
+        uint256 bountyExchangeRate = shpExchangeRate.mul(BOUNTY_EXCHANGE_SHARE).div(100);
+
+        uint256 callerTokens = etherAmount.mul(callerExchangeRate);
         uint256 callerTokensWithDiscount = applyDiscount(etherAmount, callerTokens);
 
-        uint256 reserveTokens = etherAmount.mul(RESERVE_EXCHANGE_RATE);
-        uint256 founderTokens = etherAmount.mul(FOUNDER_EXCHANGE_RATE);
-        uint256 bountyTokens = etherAmount.mul(BOUNTY_EXCHANGE_RATE);
+        uint256 reserveTokens = etherAmount.mul(reserveExchangeRate);
+        uint256 founderTokens = etherAmount.mul(founderExchangeRate);
+        uint256 bountyTokens = etherAmount.mul(bountyExchangeRate);
         uint256 vestingTokens = founderTokens.add(reserveTokens);
 
         founderTokenCount = founderTokenCount.add(founderTokens);
         reserveTokenCount = reserveTokenCount.add(reserveTokens);
-
-        payAffiliate(callerTokensWithDiscount, msg.value, msg.sender);
 
         shp.generateTokens(_caller, callerTokensWithDiscount);
         shp.generateTokens(bountyAddress, bountyTokens);
@@ -117,6 +116,19 @@ contract TokenSale is Owned, TokenController {
 
         etherEscrowAddress.transfer(etherAmount);
         updateCounters(etherAmount);
+    }
+
+    /// @notice Allows the owner to manually mint some SHP to an address if something goes wrong
+    /// @param _tokens the number of tokens to mint
+    /// @param _destination the address to send the tokens to
+    function mintTokens(
+        uint256 _tokens, 
+        address _destination
+    ) 
+        onlyOwner 
+    {
+        shp.generateTokens(_destination, _tokens);
+        NewSale(_destination, 0, _tokens);
     }
 
     /// @notice Applies the discount based on the discount tiers
@@ -132,33 +144,21 @@ contract TokenSale is Owned, TokenController {
     /// @param _etherEscrowAddress the address that will hold the crowd funded Ether
     /// @param _bountyAddress the address that will hold the bounty scheme SHP
     /// @param _trusteeAddress the address that will hold the vesting SHP
-    /// @param _affiliateUtilityAddress address of the deployed AffiliateUtility contract.
+    /// @param _shpExchangeRate the initial SHP exchange rate
     function TokenSale (
         address _etherEscrowAddress,
         address _bountyAddress,
         address _trusteeAddress,
-        address _affiliateUtilityAddress
+        uint256 _shpExchangeRate
     ) {
         etherEscrowAddress = _etherEscrowAddress;
         bountyAddress = _bountyAddress;
         trusteeAddress = _trusteeAddress;
-        affiliateUtility = AffiliateUtility(_affiliateUtilityAddress);
+        shpExchangeRate = _shpExchangeRate;
         trustee = Trustee(_trusteeAddress);
         paused = true;
         closed = false;
-    }
-
-    /// @notice Pays an affiliate if they are valid and present in the transaction data
-    /// @param _tokens The contribution tokens used to calculate affiliate payment amount
-    /// @param _etherValue The Ether value sent
-    /// @param _caller The address of the caller
-    function payAffiliate(uint256 _tokens, uint256 _etherValue, address _caller) internal {
-        if (affiliateUtility.isAffiliateValid(_caller)) {
-            address affiliate = affiliateUtility.getAffiliate(_caller);
-            var (affiliateBonus, contributorBonus) = affiliateUtility.applyAffiliate(_caller, _tokens, _etherValue);
-            shp.generateTokens(affiliate, affiliateBonus);
-            shp.generateTokens(_caller, contributorBonus);
-        }
+        allowTransfer = false;
     }
 
     /// @notice Sets the SHP token smart contract
@@ -203,14 +203,14 @@ contract TokenSale is Owned, TokenController {
 
     // In between the offering and the network. Default settings for allowing token transfers.
     function proxyPayment(address) public payable returns (bool) {
-        return false;
+        return allowTransfer;
     }
 
     function onTransfer(address, address, uint256) public returns (bool) {
-        return false;
+        return allowTransfer;
     }
 
     function onApprove(address, address, uint256) public returns (bool) {
-        return false;
+        return allowTransfer;
     }
 }

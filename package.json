@@ -1,41 +1,44 @@
 {
-    "name": "sharpe-capital-token",
-    "version": "0.1.0",
-    "description": "Sharpe capital token",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/sharpe-capital/sharpe-token.git"
-    },
-    "license": "GPL-3.0",
-    "bugs": {
-        "url": "https://github.com/sharpe-capital/sharpe-token/issues"
-    },
-    "homepage": "https://github.com/sharpe-capital/sharpe-token",
-    "devDependencies": {
-        "async": "^2.5.0",
-        "bignumber.js": "^4.0.2",
-        "ethereumjs-testrpc": "^4.1.1",
-        "ethereumjs-testrpc-sc": "git+https://github.com/sc-forks/testrpc-sc.git",
-        "random-bytes": "^1.0.0",
-        "solc": "^0.4.15",
-        "solidity-coverage": "^0.2.3",
-        "solidity-parser": "^0.4.0",
-        "truffle": "^3.4.9",
-        "truffle-hdwallet-provider": "0.0.3",
-        "web3": "^0.19.1"
-    },
-    "dependencies": {
-        "jsonfile": "^3.0.1"
-    },
-    "main": "truffle.js",
-    "directories": {
-        "test": "test"
-    },
-    "scripts": {
-        "pretest": "testrpc -a 10 > /dev/null 2>&1 &",
-        "posttest": "killall -9 node",
-        "test": "truffle test",
-        "lint": "solium --dir contracts",
-        "coverage": "./node_modules/.bin/solidity-coverage"
-    }
+  "name": "sharpe-capital-token",
+  "version": "0.1.0",
+  "description": "Sharpe capital token",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharpe-capital/sharpe-token.git"
+  },
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/sharpe-capital/sharpe-token/issues"
+  },
+  "homepage": "https://github.com/sharpe-capital/sharpe-token",
+  "devDependencies": {
+    "async": "^2.5.0",
+    "bignumber.js": "^4.0.2",
+    "ethereumjs-testrpc": "^4.1.1",
+    "random-bytes": "^1.0.0",
+    "solc": "0.4.15",
+    "solidity-coverage": "^0.2.7",
+    "solidity-parser": "^0.4.0",
+    "truffle-hdwallet-provider": "^0.0.3",
+    "web3": "^0.19.1"
+  },
+  "dependencies": {
+    "ethereumjs-abi": "^0.6.4",
+    "ethereumjs-testrpc-sc": "^6.0.7",
+    "jsonfile": "^3.0.1",
+    "solidity-sha3": "^0.4.1",
+    "truffle": "^4.0.1",
+    "truffle-contract": "^3.0.1"
+  },
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "pretest": "testrpc -a 10 > /dev/null 2>&1 &",
+    "posttest": "killall -9 node",
+    "test": "truffle test",
+    "lint": "solium --dir contracts",
+    "coverage": "./node_modules/.bin/solidity-coverage"
+  }
 }
