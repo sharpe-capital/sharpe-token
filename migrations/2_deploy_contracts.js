@@ -28,52 +28,6 @@ const foundersRequiredSigs = Keys.founders.req;
 const reserveAddresses = [Keys.reserve.i,Keys.reserve.j,Keys.reserve.l,Keys.reserve.taas];
 const reserveRequiredSigs = Keys.reserve.req;
 
-/////////
-//// Live Values
-////////
-// Ether to Dollar Value
-// const etherPeggedValue = 300;
-
-// // Affiliate Tiers
-// const affiliateTierTwo = web3.toWei(1) * (20000 / etherPeggedValue);
-// const affiliateTierThree = web3.toWei(1) * (50000 / etherPeggedValue);
-
-// //PRESALE VALUSE:
-// const MIN_PRESALE_CONTRIBUTION = 10000;
-// const MAX_PRESALE_CONTRIBUTION = 500000;
-// const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 49999;
-// const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 249999;
-// const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 500000;
-// const PRESALE_CAP = 0;
-// const honourWhitelistEnd = new Date(2017, 10, 8, 13, 59, 59, 0).getTime();
-
-// //GENEARL SALE VALUES
-// const MIN_GENERAL_SALE_CONTRIBUTION = 100;
-
-
-/////////
-//// Test Values
-////////
-// const etherPeggedValue = 1;
-
-// // Affiliate Tiers
-// const affiliateTierTwo = web3.toWei(1) * 0.5;
-// const affiliateTierThree = web3.toWei(1) * 1;
-
-// //PRESALE VALUSE:
-// const MIN_PRESALE_CONTRIBUTION = 1;
-// const MAX_PRESALE_CONTRIBUTION = 3;
-// const FIRST_TIER_DISCOUNT_UPPER_LIMIT = 1.4;
-// const SECOND_TIER_DISCOUNT_UPPER_LIMIT = 1.9;
-// const THIRD_TIER_DISCOUNT_UPPER_LIMIT = 3;
-// const PRESALE_CAP = 10;
-// const honourWhitelistEnd = new Date(2017, 10, 23, 9, 0, 0, 0).getTime();
-
-// //GENEARL SALE VALUES
-// const MIN_GENERAL_SALE_CONTRIBUTION = 0.01;
-// const MAX_GENERAL_SALE_CONTRIBUTION = 3;
-// const GENERAL_SALE_HARDCAP = 15;
-
 module.exports = async function(deployer, network, accounts) {
 
     console.log("ADRESSES");
